@@ -19,9 +19,14 @@ Sequential list of what was done today:
 8. Yeh chat summary banayi
 
 ### 🚀 GitHub Pe Kya Push Kiya
-- **File**: `lessons/day-XXX.md`
+- **File**: `lessons/day-XXX-topic-slug.md` (e.g. `day-005-product-listing.md`)
 - **Size**: XX KB | **Commit**: `<sha>`
 - **Link**: [GitHub pe lesson kholo](<url>)
+
+**Naming rule**:
+- `day-XXX` = 3-digit zero-padded day number (sorts correctly to day-999)
+- `-topic-slug` = kebab-case short topic name (no level, no date)
+- Example: `day-005-product-listing.md`, `day-051-saga-pattern.md`
 
 ### 📧 Email
 - **Status**: Gmail draft ID `<id>`

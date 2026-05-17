@@ -20,13 +20,13 @@
 
 ## 📅 Daily Log
 
-| Day | Date | Topic | OOP Focus | Status |
-|-----|------|-------|-----------|--------|
-| 1 | 2026-05-13 | User Registration + Email Verification | Encapsulation | ✅ Done |
-| 2 | 2026-05-14 | User Login with JWT | Abstraction | ✅ Done |
-| 3 | 2026-05-15 | User Profile Update | Inheritance | ✅ Done |
-| 4 | 2026-05-16 | Password Reset Flow | Polymorphism (Overriding) | ✅ Done |
-| 5 | 2026-05-17 | Basic Product Listing | Composition over Inheritance | ⏳ Pending |
+| Day | Date | Topic | OOP Focus | Status | File |
+|-----|------|-------|-----------|--------|------|
+| 1 | 2026-05-13 | User Registration + Email Verification | Encapsulation | ✅ Done | [day-001](./lessons/day-001-user-registration.md) |
+| 2 | 2026-05-14 | User Login with JWT | Abstraction | ✅ Done | [day-002](./lessons/day-002-user-login-jwt.md) |
+| 3 | 2026-05-15 | User Profile Update | Inheritance | ✅ Done | [day-003](./lessons/day-003-user-profile-update.md) |
+| 4 | 2026-05-16 | Password Reset Flow | Polymorphism (Overriding) | ✅ Done | [day-004](./lessons/day-004-password-reset.md) |
+| 5 | 2026-05-17 | Basic Product Listing | Composition over Inheritance | ⏳ Pending | — |
 
 ---
 

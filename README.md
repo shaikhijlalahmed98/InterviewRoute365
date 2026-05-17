@@ -11,11 +11,11 @@ Daily learning units covering **5 stacks** + **OOP/Design Patterns** + **System 
 ├── curriculum.md            ← full 365-day plan
 ├── progress.md              ← daily tracker + streak
 │
-├── lessons/                 ← daily curriculum content (day-001.md → day-365.md)
+├── lessons/                 ← daily curriculum content
 │   ├── _CHAT_RESPONSE_TEMPLATE.md   ← short chat reply format
 │   ├── _DEPTH_STANDARD.md           ← quality bar for every lesson
 │   ├── _LESSON_TEMPLATE.md          ← full lesson skeleton
-│   └── day-XXX.md
+│   └── day-XXX-topic-slug.md        ← e.g. day-004-password-reset.md
 │
 ├── notes/                   ← personal reflections, "aha moments"
 ├── labs/                    ← actual code projects per topic
@@ -38,13 +38,13 @@ Daily learning units covering **5 stacks** + **OOP/Design Patterns** + **System 
 
 | Level | Days | Folder Range |
 |-------|------|--------------|
-| 🟢 Beginner | 1-20 | `lessons/day-001.md` to `day-020.md` |
-| 🟡 Intermediate | 21-50 | `day-021.md` to `day-050.md` |
-| 🟠 Advanced | 51-90 | `day-051.md` to `day-090.md` |
-| 🔴 Expert | 91-140 | `day-091.md` to `day-140.md` |
-| ⚫ Master | 141-200 | `day-141.md` to `day-200.md` |
-| 🟣 Architect | 201-270 | `day-201.md` to `day-270.md` |
-| 💎 Principal | 271-365 | `day-271.md` to `day-365.md` |
+| 🟢 Beginner | 1-20 | `lessons/day-001-*.md` to `day-020-*.md` |
+| 🟡 Intermediate | 21-50 | `day-021-*.md` to `day-050-*.md` |
+| 🟠 Advanced | 51-90 | `day-051-*.md` to `day-090-*.md` |
+| 🔴 Expert | 91-140 | `day-091-*.md` to `day-140-*.md` |
+| ⚫ Master | 141-200 | `day-141-*.md` to `day-200-*.md` |
+| 🟣 Architect | 201-270 | `day-201-*.md` to `day-270-*.md` |
+| 💎 Principal | 271-365 | `day-271-*.md` to `day-365-*.md` |
 
 See [curriculum.md](./curriculum.md) for full topic list per day.
 See [progress.md](./progress.md) for current status + streak.
