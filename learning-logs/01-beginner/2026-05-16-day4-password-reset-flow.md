@@ -3,299 +3,965 @@
 **Overall Day**: Day 4 of 365
 **Current Level**: 🟢 Beginner
 **Level Progress**: Day 4 of 20 in this level
-**Today's Theme**: Secure password reset using one-time tokens — and how Polymorphism (method overriding) makes the notification system pluggable.
+**Today's Theme**: Secure password reset using one-time tokens — aur Polymorphism (method overriding) ka use jisse notification system pluggable banta hai.
 
 ---
 
-## 📖 The Brainer Scenario (Real Problem) — Step by Step
+## 📖 The Brainer Scenario (Real Problem) — Time Pe Step By Step
 
-Bhai, situation yeh hai. **Daraz** pe Ahmed bhai ka account hai. Kal raat tak login ho raha tha. Aaj subah password bhool gaya. Ab usko reset karna hai.
+Bhai, soch ek situation. **Daraz** pe Ahmed bhai ka account hai. Kal raat tak login ho raha tha. Aaj subah password bhool gaya. Ab reset karna hai.
 
-Yeh "Forgot Password" feature dikhne mein 2 textbox aur 1 button hai — but **andar 11 cheezein ho rahi hain** jo agar koi bhi galat ho jaye, security breach ho jata hai.
+Yeh "Forgot Password" feature dikhne mein simple lagta hai — 2 textbox aur 1 button. Lekin **andar 11 cheezein ho rahi hain**. Agar koi bhi 1 cheez galat ho gayi, toh security breach ho jata hai.
 
-**Step-by-step kya hota hai (clock ke saath):**
+**Pura flow step-by-step (clock ke saath ke kab kya hua):**
 
 ```
-T+0ms     Ahmed clicks "Forgot Password" link on Daraz
-T+1ms     Browser shows form: "Apna email daalein"
-T+2000ms  Ahmed types "ahmed@gmail.com", clicks Submit
-T+2010ms  Browser sends POST request to Daraz backend
-T+2015ms  Backend checks: "Is this IP spamming? More than 3 requests/hour?"
-T+2020ms  Backend checks: "Does ahmed@gmail.com exist in users table?"
-T+2025ms  YES exists → Generate a secret token (32 random bytes)
-T+2026ms  Hash the token (SHA-256), save HASH (not raw token) to DB
-T+2030ms  Publish event to Kafka: "Send reset link to user X"
-T+2040ms  Return HTTP 200 to browser (FAST — don't wait for email)
-T+2045ms  Browser shows: "If this email is registered, link sent"
-T+5000ms  (Async) Email service picks up Kafka event
-T+7000ms  (Async) Email arrives in Ahmed's inbox with the RAW token in URL
-T+30000ms Ahmed clicks the email link
-T+30050ms Browser opens: daraz.pk/reset?token=abc123xyz...
-T+45000ms Ahmed types new password, clicks Submit
-T+45050ms Backend hashes the received token, looks up in DB
-T+45055ms Found + not expired + not used → atomically mark used=true
-T+45060ms Update user's password_hash with new BCrypt hash
-T+45065ms Delete ALL active sessions for Ahmed (force logout everywhere)
-T+45070ms Return success → Browser redirects to login page
+T+0ms     Ahmed Daraz pe "Forgot Password" link click karta hai
+T+1ms     Browser ek form dikhata hai: "Apna email daalein"
+T+2000ms  Ahmed "ahmed@gmail.com" type karta hai, Submit click karta hai
+T+2010ms  Browser HTTP POST request bhejta hai Daraz backend ko
+T+2015ms  Backend check karta hai: "Is IP se 1 ghante mein 3 se zyada requests aayi hain?"
+T+2020ms  Backend check karta hai: "Kya 'ahmed@gmail.com' users table mein hai?"
+T+2025ms  HAAN exist karta hai → ek secret token banao (32 random bytes)
+T+2026ms  Token ka HASH (fingerprint) banao, HASH ko DB mein save karo (raw token nahi)
+T+2030ms  Kafka mein event publish karo: "User X ko reset link bhejo"
+T+2040ms  Browser ko HTTP 200 return karo (FAST — email ka wait mat karo)
+T+2045ms  Browser show karta hai: "Agar email registered hai, link bhej diya"
+T+5000ms  (Background mein) Email service Kafka event uthata hai
+T+7000ms  (Background mein) Email Ahmed ke inbox mein pohnch jata hai with RAW token URL mein
+T+30000ms Ahmed email mein link click karta hai
+T+30050ms Browser open karta hai: daraz.pk/reset?token=abc123xyz...
+T+45000ms Ahmed naya password type karta hai, Submit click karta hai
+T+45050ms Backend received token ko hash karta hai, DB mein dekhta hai
+T+45055ms Mil gaya + expired nahi + used nahi → atomically used=true mark karo
+T+45060ms User ka password_hash naye BCrypt hash se update karo
+T+45065ms Ahmed ke saare active sessions DELETE karo (har device pe logout)
+T+45070ms Success response → Browser login page pe redirect ho jata hai
 ```
 
-**11 critical things hidden in here**: rate limiting, anti-enumeration, secure randomness, token hashing for storage, async email dispatch, expiry timing, single-use enforcement, atomic SQL update, password hashing, session invalidation, polymorphic notification.
-
-Aaj hum **har step ke "kyun"** ko depth mein samjhenge.
+Iss 11-second drama ke andar **11 critical decisions** chupe hain. Aaj hum har ek ka "kyun" depth mein samjhenge.
 
 ---
 
-### The Real Challenge (The "Gotchas" — 4 Attacks Hackers Use)
+### The 4 Attacks Hackers Use (Gotchas Explained With Stories)
 
-#### 🪤 Gotcha 1: Timing Attack (User Enumeration via Stopwatch)
+#### 🪤 Attack 1: Timing Attack (Stopwatch Se Enumeration)
 
-**Attack**: Hacker tries `random123@gmail.com` (fake email). Server takes 50ms to respond. Hacker tries `ahmed@gmail.com` (real email). Server takes 250ms (because it generated token, saved to DB, queued email — extra work). Hacker now **knows** Ahmed has an account on Daraz.
+**"Enumeration" ka matlab kya hai pehle samjho**: "Enumeration" = list bana lena. **User enumeration attack** matlab — hacker yeh figure out kar leta hai ke konse emails Daraz pe registered hain (matlab valid accounts). Phir woh saare emails ko target karta hai password guessing ya phishing ke liye.
 
-**Why it matters**: Hacker collects a list of confirmed real emails. Phir credential stuffing attack — wahi emails Facebook, gmail, banking sites pe try karta hai with leaked passwords from other breaches. Many users **reuse passwords** → mass account takeover.
+**Attack kaise hota hai**:
 
-**Fix**: Both code paths (exists / doesn't exist) take **equal time**. Or accept the tiny leak but eliminate the **obvious** leaks (different response message, different status code).
-
----
-
-#### 🪤 Gotcha 2: Token Storage in Plaintext
-
-**Attack**: Daraz DB gets breached (SQL injection, insider leak, backup theft). If reset tokens are stored in plaintext, attacker copies all active tokens → uses them to reset every active user's password in next 15 minutes → mass account takeover before anyone notices.
-
-**Why it matters**: Tokens are **credentials**. Treat them like passwords — never store plaintext.
-
-**Fix**: Store **SHA-256 hash** of the token. When user clicks link, hash the token they send and compare hashes. (More on what hash means below.)
-
----
-
-#### 🪤 Gotcha 3: Double-Click Race Condition (TOCTOU Bug)
-
-**TOCTOU** = **Time Of Check, Time Of Use** — bug where you *check* a condition (e.g. "is token unused?"), then *use* it (mark as used), but **between** check and use, something changes.
-
-**Attack**: Ahmed opens email on phone aur laptop dono pe. Email link click karta hai dono jagah simultaneously (race). Server gets 2 requests at same millisecond:
+Hacker ek script likhta hai jo 10,000 random emails Daraz ke "Forgot Password" endpoint pe bhejta hai aur **response time stopwatch se measure** karta hai.
 
 ```
-Request A (phone):    SELECT used FROM tokens WHERE hash=X → used=false → OK
-Request B (laptop):   SELECT used FROM tokens WHERE hash=X → used=false → OK
-Request A:            UPDATE tokens SET used=true WHERE hash=X
-Request B:            UPDATE tokens SET used=true WHERE hash=X
-                      Both requests proceed to set password!
+Test email: random1234567@gmail.com (fake)
+   Server time: 50ms (kyunki bas DB mein dhundha, nahi mila, return)
+
+Test email: ahmed@gmail.com (real)
+   Server time: 250ms (DB lookup + token generate + hash + DB insert + Kafka publish)
 ```
 
-**Why it matters**: Double password reset. If Ahmed's email was compromised AND he himself clicks link, hacker can hijack the second use.
+Difference: **200ms**. Hacker ke script ko clear pata chal gaya — `ahmed@gmail.com` real account hai.
 
-**Fix**: **Atomic** check-and-update in single SQL statement: `UPDATE tokens SET used=true WHERE hash=X AND used=false`. SQL engine takes a row lock — only ONE update succeeds, other gets rowcount=0.
+**Yeh kyun matter karta hai**:
 
----
+Hacker ab 10,000 emails mein se shayad 500 confirmed real emails identify kar leta hai. Phir wo karta hai **credential stuffing attack** — "credential stuffing" matlab leaked passwords ki list (jo 2014-2024 ke breaches mein leak hui) se same emails Daraz, Facebook, banking sites pe try karta hai. Bohot users **same password** har jagah use karte hain. Result: massive account takeover.
 
-#### 🪤 Gotcha 4: Old Sessions Survive Password Change
-
-**Attack**: Hacker stole Ahmed's password 2 days ago, logged in, has an active session/JWT. Ahmed notices weird activity, resets password. **But hacker's session JWT is still valid for next 24 hours** (until it expires) — hacker still has access!
-
-**Why it matters**: Password reset ka **whole point** unauthorized access kaatna hai. Agar old sessions zinda hain, reset useless hai.
-
-**Fix**: On password change, invalidate **all** active sessions for this user. (We'll cover 4 techniques for this in the Senior Question.)
+**Fix**: Dono code paths (email exists / nahi exists) ko **same time** lena chahiye. Ya kam-se-kam obvious leaks eliminate karo (same response message, same HTTP status code, similar response size).
 
 ---
 
-### Why This Matters in Production
+#### 🪤 Attack 2: Plaintext Token Storage (DB Leak Ka Nightmare)
 
-- **Stripe** (payments): 1-hour expiry, HMAC-signed tokens. HMAC = **H**ash-based **M**essage **A**uthentication **C**ode = a hash combined with a secret key, so server can verify "yes I generated this token" without DB lookup.
-- **GitHub**: Returns identical response for both valid and invalid emails — explicitly mentioned in their security docs as enumeration prevention.
-- **Google**: Resets invalidate ALL OAuth refresh tokens + all browser sessions globally — one of the strongest implementations in industry.
-- **AWS Cognito**: Uses 6-digit OTP code instead of long link, stored hashed, auto-marked used on first attempt (right or wrong).
+**"Plaintext" ka matlab**: Bina encryption ya hashing ke, original readable form mein. Jaise tum likhte ho "MyPassword123" aur woh exactly aise hi store ho jata hai DB mein — to woh plaintext storage hai.
+
+**Attack scenario**:
+
+Daraz ka database breach ho jata hai. Common causes:
+- **SQL injection** — hacker website ke search box mein special SQL command daal deta hai jo database access karwati hai
+- **Insider leak** — koi unhappy employee database export kar ke bech deta hai
+- **Backup theft** — backup file kisi insecure server pe rakhi thi, hacker ne download kar liya
+
+Agar tokens **plaintext** mein store the:
+
+```
+DB row:
+  token: "abc123xyz789..."     ← Hacker ko mil gaya raw token
+  user_id: 5
+  expires_at: 2026-05-16 12:30:00
+  used: false
+```
+
+Hacker turant URL banata hai: `https://daraz.pk/reset?token=abc123xyz789...`
+URL open karta hai, naya password set kar deta hai. **15 minutes ke andar har active user ka account kha gaya**.
+
+**Yeh kyun matter karta hai**:
+
+Tokens basically temporary passwords hote hain. Inko bhi same care chahiye jo passwords ko chahiye. Industry rule: **never store secrets in plaintext, ever, anywhere**.
+
+**Fix**: **Hashed storage** — token ka SHA-256 hash store karo, raw token sirf email mein bhejo. Hashing ka detailed concept aage Stack 1 mein aayega — abhi yaad rakho ke hash ek **one-way fingerprint** hota hai — fingerprint se asli token wapas nahi nikal sakti.
+
+---
+
+#### 🪤 Attack 3: Double-Click Race Condition (TOCTOU Bug)
+
+**"TOCTOU" ka matlab** — yeh ek classic concurrency bug ka acronym hai:
+
+- **T** — Time
+- **O** — Of
+- **C** — Check
+- **T** — Time
+- **O** — Of
+- **U** — Use
+
+**Asaan tareeqe se samjho**: Tum ek condition **check** karte ho (e.g., "kya token unused hai?"), phir **use** karte ho (mark as used). **Check aur use ke beech mein** koi aur process state change kar deta hai. Iss "beech ke time" mein bug hota hai.
+
+**Real example — bank withdrawal**:
+
+```
+Tumhare account mein 1000 hain.
+Tumhara code:
+   balance = SELECT balance FROM accounts WHERE id=X;  -- returns 1000
+   if (balance >= 500):
+       UPDATE accounts SET balance = balance - 500;
+       cash de do 500
+```
+
+Tum aur tumhari biwi same waqt withdraw karte ho 500-500 each:
+
+```
+You (T+0ms):    SELECT balance → 1000  ✓ (>= 500, OK)
+Wife (T+1ms):   SELECT balance → 1000  ✓ (>= 500, OK)
+You (T+2ms):    UPDATE balance = 1000 - 500 = 500
+Wife (T+3ms):   UPDATE balance = 1000 - 500 = 500
+You (T+4ms):    Cash 500 nikal gaya
+Wife (T+5ms):   Cash 500 nikal gaya
+Final balance: 500
+Total withdrawn: 1000
+Bank lost: 500 ← BUG!
+```
+
+Yeh hua TOCTOU. Check (balance >= 500) aur use (balance update) ke beech main state change ho gayi.
+
+**Password reset mein same problem**:
+
+Ahmed ne email phone aur laptop dono pe open kar di. Galti se dono pe simultaneously link click kar diya:
+
+```
+Phone request (T+0ms):    SELECT used FROM tokens WHERE hash=X → used=false ✓
+Laptop request (T+1ms):   SELECT used FROM tokens WHERE hash=X → used=false ✓
+Phone (T+2ms):            UPDATE tokens SET used=true
+Laptop (T+3ms):           UPDATE tokens SET used=true
+Phone (T+4ms):            naya password set ✓
+Laptop (T+5ms):           naya password set bhi ✓ ← Double consumption!
+```
+
+**Yeh kyun matter karta hai**:
+
+Real attack scenario: hacker ne Ahmed ka email compromise kar liya, link nikal liya. Ahmed bhi same waqt try kar raha hai. **Dono successfully reset kar dete hain**. Hacker ka set kiya hua password latest hai, Ahmed lock out ho jata hai.
+
+**Fix**: **Atomic** check-and-update — single SQL statement mein dono kaam karwao. SQL engine row pe lock leta hai, sirf ONE update success hota hai, doosra rowcount=0 return karta hai. Detailed explanation Stack 3 (SQL) mein aayega.
+
+---
+
+#### 🪤 Attack 4: Purane Sessions Reset Ke Baad Bhi Zinda
+
+**"Session" ka matlab kya hota hai pehle samjho**:
+
+Jab tum login karte ho kisi website pe, server tumhe ek "session token" deta hai (cookie ya JWT). Yeh basically ek "ticket" hai jo prove karta hai "yeh user already login ho chuka hai". Har subsequent request mein browser yeh ticket bhejta hai, server check karta hai, access deta hai.
+
+Sessions ke 2 types:
+- **Server-side sessions**: Server DB mein record rakhta hai "session abc123 belongs to Ahmed". Validation = DB lookup.
+- **JWT (JSON Web Token)**: Token khud apne andar info contain karta hai (cryptographically signed). Server DB lookup nahi karta — bas signature verify karta hai. Aage detail aayegi.
+
+**Attack scenario**:
+
+Hacker ne Ahmed ka password 2 din pehle steal kar liya tha (phishing ya keylogger se). Login kar liya tha, **active session JWT** abhi bhi valid hai (24-hour expiry).
+
+Ahmed kuch suspicious activity dekhta hai — "kisi ne mera profile picture badla?!" Turant password reset karta hai.
+
+**Lekin hacker ka session JWT abhi bhi 22 ghante valid hai!** Hacker still has full access. Reset useless ho gaya.
+
+**Yeh kyun matter karta hai**:
+
+Password reset ka **whole point** unauthorized access kaatna hai. Agar purane sessions zinda hain, reset sirf ek illusion hai — security theater.
+
+**Fix**: Password change pe **saare active sessions** invalidate karo. 4 different techniques hain (server sessions, refresh tokens, token versioning, Redis blocklist) — detail Stack 5 + Senior Question mein aayegi.
+
+---
+
+### Why This Matters In Production (Real Companies)
+
+- **Stripe** (payments): 1-hour token expiry. Tokens **HMAC-signed** — HMAC = Hash-based Message Authentication Code = hash + secret key se signature banta hai jo prove karta hai "yes I generated this". Server signature verify karke validate karta hai bina DB lookup ke (stateless).
+
+- **GitHub**: Same response chahe email registered ho ya na — explicitly mentioned in their security docs as enumeration prevention. 3-hour expiry.
+
+- **Google**: Resets invalidate **saare OAuth refresh tokens + saari browser sessions globally**. Industry mein strongest implementations mein se ek.
+
+- **AWS Cognito**: Long URL ki bajaye 6-digit OTP code. Hashed storage. Pehli galat attempt pe token auto-mark used (brute force prevention).
 
 ---
 
 ## 🔧 Stack 1: Java / Spring Boot (Backend Logic)
 
-**Concept needed**: Secure random token generation, one-way hashing, atomic single-use enforcement, pluggable notifier via interfaces.
+**Goal of this section**: Pehle 5 foundational concepts samjho. Yeh foundation hai — woh hi banaye ge tumhe code samajhne ke kaabil.
 
-### Under the Hood — Yeh Kaise Kaam Karta Hai (Step by Step)
+### Foundation Concept 1: Random Numbers Ka Pura Drama
 
-Pehle 4 cheezein samjho — yeh hi foundation hai:
+#### Step 1.1: Pehle yeh samjho ke computer "random" bana hi nahi sakta
 
-#### 1. `Random` vs `SecureRandom` — Kya Farak Hai?
+Computer fundamentally **deterministic machine** hai. "Deterministic" ka matlab — same input do, same output milega, **hamesha**. Yeh **predictable** hai by design (warna programs unreliable ho jate).
 
-Java mein `Random` class **predictable** hai. Internally yeh ek **Linear Congruential Generator (LCG)** use karta hai — matlab next number = `(previous * a + c) % m`. Math formula hai. Agar tum 5-6 outputs dekho, attacker formula reverse engineer karke aage ke saare numbers predict kar sakta hai.
+To "random number" kaise banayega computer? Asli random impossible hai mathematically. Solution: **pseudo-random** ("pseudo" = naqli/fake) numbers banao — kuch formula se number generate karo jo **human ko random lage** but reality mein formula-driven hai.
 
-`SecureRandom` ek **CSPRNG** use karta hai = **C**ryptographically **S**ecure **P**seudo-**R**andom **N**umber **G**enerator. "Pseudo" matlab "fake hai lekin asli jaisa lagta hai". "Cryptographically secure" matlab — **even if you see a million past outputs, you can't predict the next bit**. This is the mathematical guarantee.
+#### Step 1.2: Java mein 2 random classes — `Random` vs `SecureRandom`
 
-Internally Linux pe `SecureRandom` `/dev/urandom` se bytes uthata hai. **`/dev/urandom` kya hai?** — yeh ek special "file" hai jo Linux OS provide karta hai. OS hardware se **entropy** collect karta hai (keyboard timings, mouse movements, disk read latencies, network packet arrival times — yeh sab physical chaos hai jo predict nahi ho sakta). Yeh chaos accumulate hota hai ek pool mein. Jab tum `/dev/urandom` read karte ho, OS is pool se hashing through random bytes deta hai.
+🟥 **`Random` class** — kaise kaam karti hai:
 
-**Bottom line**: For tokens, **always** `SecureRandom`. `Random` use karna = `Math.random()` use karna = security ka qatal.
+Yeh ek simple math formula use karti hai jisko bolte hain **Linear Congruential Generator (LCG)**:
 
-#### 2. SHA-256 — One-Way Hash Function Kya Hota Hai?
+```
+next_number = (current_number × 1103515245 + 12345) % 2147483648
+```
 
-**Hash function** ka kaam: koi bhi input do (1 byte ya 1 GB), fixed-size output deta hai (SHA-256 ka case mein 256 bits = 32 bytes).
+Bas. Itna hi. Ek multiplication, ek addition, ek modulo. Yeh 1960s ka formula hai.
 
-3 properties critical hain:
+**Iska problem**: Agar tum mujhe 3-4 outputs do, main reverse-engineer kar sakta hoon formula ko, aur **saare aage ke numbers predict** kar sakta hoon.
 
-- **Deterministic** — same input ne always same hash deta hai. `SHA-256("hello") = 2cf24dba5fb0a30e26e83b...` har baar.
-- **One-way / pre-image resistant** — hash dekh ke original input nikalna **computationally impossible** (would take billions of years).
-- **Avalanche effect** — input mein 1 bit change → output mein ~50% bits change.
+```java
+Random r = new Random(42);  // "42" is the "seed" (starting value)
+r.nextInt();  // -1170105035
+r.nextInt();  // 234785527
+// Agar hacker yeh dono numbers dekhe → woh next nikal sakta hai!
+```
+
+**Use case**: Sirf games, dice rolls, simulations, non-security stuff ke liye. **Security ke liye kabhi use mat karo**.
+
+🟩 **`SecureRandom` class** — yeh different tareeqe se kaam karti hai:
+
+Yeh apna formula nahi chalati. Yeh **Operating System se "real randomness" maangti hai**.
+
+#### Step 1.3: "Real randomness" OS ke paas kahan se aati hai? — Yeh hai **Entropy**
+
+**"Entropy" ka simple matlab**: "physical world ki choti choti chaos jo predict nahi ho sakti."
+
+Tumhara OS (Linux ya Windows) background mein continuously yeh cheezein **measure** karta rehta hai:
+
+- ⌨️ **Keyboard timings** — tum kab key dabate ho, exact microsecond (1 second ka 10 lakh-vaan part) tak
+- 🖱️ **Mouse movements** — exact path aur speed har milli-second mein
+- 💾 **Disk read latencies** — hard disk se data padhne mein kitne nanoseconds lage (electrical noise affect karta hai, har baar thoda alag)
+- 🌐 **Network packet arrival times** — kab packet aaya
+- 🌡️ **CPU temperature fluctuations** — tiny variations
+- 🔌 **Interrupt timings** — hardware interrupts ka exact moment
+
+Yeh sab cheezein **physically unpredictable** hain. Tum khud nahi predict kar sakte ke tumhari agli keystroke kab hogi millisecond-precise. Hacker to bilkul nahi.
+
+OS in saari "chaos values" ko ek container mein collect karta hai. Iss container ko bolte hain **"entropy pool"** — basically random bits ka thaila jo OS slowly bharta rehta hai background mein.
+
+#### Step 1.4: `/dev/urandom` kya hai? — Entropy Pool Ka "Tap"
+
+Linux mein **`/dev/urandom`** ek special "file" hai. Lekin yeh **asal mein disk pe file nahi hai**.
+
+Ek concept samjho: Linux ka philosophy hai **"everything is a file"** — kernel apne saare interfaces ko file ki shakal mein expose karta hai, taake same simple read/write commands sab pe kaam karen.
+
+`/dev/urandom` is concept ka example hai — yeh **kernel ka interface** hai jo file ki shakal mein dikhta hai. Jab koi program is "file" ko **read** karta hai:
+
+1. Linux kernel entropy pool se kuch random bits uthata hai
+2. Unko **cryptographic hash function** se mix karta hai (taake aur secure ho jaye — agar pool kuch predictable bhi ho, hash unpredictable bana deta hai)
+3. Caller ko random bytes return karta hai
+
+`/dev/urandom` se bytes maange = OS ke physical chaos pool se randomness mile = **truly unpredictable**.
+
+#### Step 1.5: "Wrap karta hai" ka matlab
+
+**"Wrap" ka matlab software mein**: ek class/function jo doosri cheez ke upar ek **layer add karke usko use-karne-mein-asaan banata hai**. English mein "wrapper" — kuch chhupa ke chhota interface dene wala.
+
+Tumhe `/dev/urandom` se bytes chahiye Java code mein. **Without wrapper**, tumhe yeh karna parta:
+
+```java
+// AGAR WRAPPER NA HOTA — manual file I/O karna parta
+FileInputStream fis = new FileInputStream("/dev/urandom");
+byte[] bytes = new byte[32];
+fis.read(bytes);
+fis.close();
+// Aur agar Windows pe code chala? Windows mein /dev/urandom hi nahi hai!
+// Windows ke liye alag API hai (CryptGenRandom)
+// Mac ke liye alag (SecRandomCopyBytes)
+// Tumhe 3 versions likhne parte cross-platform support ke liye.
+```
+
+Bohot kaam. OS-specific code. Error-prone.
+
+**Java ki `java.security.SecureRandom` class yeh sab tumse hide karti hai** — yeh hai "wrapper". Tum sirf likhte ho:
+
+```java
+SecureRandom random = new SecureRandom();
+byte[] bytes = new byte[32];
+random.nextBytes(bytes);  // Done!
+```
+
+Andar **`SecureRandom` khud decide karti hai**:
+- Linux pe ho? → `/dev/urandom` se padh lo
+- Windows pe ho? → CryptGenRandom API call karo
+- Mac pe ho? → SecRandomCopyBytes call karo
+
+Tumhe OS-specific complexity ka pata nahi chalta. **Yeh hi "wrap karna" hai** — complexity hide karna behind a simple interface.
+
+**Roman Urdu analogy**: Tum Careem book karte ho. App tumhe ek simple button deta hai "Book Ride". Andar app: Google Maps API call kar raha, driver matching algorithm chala raha, payment gateway integrate kar raha, GPS track kar raha, real-time ETA calculate kar raha. Yeh sab tumhe nahi dikhta — app ne "wrap" kar diya hai pura complexity ko ek button ke pichhe.
+
+#### Step 1.6: Token Banana — 32 Bytes Kyun?
+
+```java
+SecureRandom random = new SecureRandom();
+byte[] tokenBytes = new byte[32];  // ← yahi line
+random.nextBytes(tokenBytes);
+```
+
+32 bytes kyun? 32 bytes = **256 bits** = 2^256 possible values.
+
+**Yeh number kitna bara hai? Concretely samjho**:
+
+- 2^256 = ~10^77 (10 ke saath 77 zero)
+- Pure universe mein atoms ki estimated count = ~10^80
+- Sun ki age = ~5 billion years = ~10^17 seconds
+- Modern fastest supercomputer = ~10^18 operations/second
+
+Agar koi supercomputer pure universe ka age tak guess karta rahe non-stop, woh sirf **10^17 × 10^18 = 10^35** guesses kar sakta hai. Yeh 2^256 ka **microscopic fraction** hai.
+
+**Conclusion**: 32-byte token brute force karna **mathematically impossible** hai. Yeh hi reason hai 32 bytes industry standard hai security tokens ke liye.
+
+---
+
+### Foundation Concept 2: Hash Functions Ki Magic (SHA-256)
+
+#### Step 2.1: "Hash function" kya hai? — Asaan Analogy
+
+Imagine kar ek **magic shredder machine**. Tum koi bhi document daalo (1 page ya 1000 pages), machine ek **fixed-size unique receipt** banake deti hai — bas 32 characters ka. Receipt unique hai (har different document ki different receipt), aur **receipt se asli document banana impossible** hai.
+
+Yeh hai hash function. Computer science mein:
+
+```
+Input:  "Hello World"           (any length)
+Output: "a591a6d40bf420404a..." (fixed length, 64 hex chars for SHA-256)
+
+Input:  pura "Quran-e-Pak" PDF (millions of bytes)
+Output: "7d8a4b9f2e5c1a..."    (still 64 hex chars)
+```
+
+Output ki length hamesha **same** — chahe input 1 byte ho ya 1 GB.
+
+#### Step 2.2: Hash Function Ki 3 Critical Properties
+
+**Property 1: Deterministic (predictable consistency)**
+
+Same input → **always same hash**, har machine pe, har time pe.
+
+```
+SHA-256("hello") = 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+   Tum bhi run karo, mein bhi karoon, 100 saal baad bhi — same output.
+```
+
+**Property 2: One-way / Pre-image resistant**
+
+Hash dekh ke original input **wapas nahi nikal sakte**. Mathematically computationally impossible (would take longer than age of universe).
+
+```
+"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+   ↑ Iss hash ko dekh ke kabhi nahi pata chalega ke input "hello" tha.
+```
+
+Yeh "one-way" property hi security ka backbone hai.
+
+**Property 3: Avalanche effect**
+
+Input mein **1 bit** change → output mein **~50% bits** change. Output unpredictably different ho jata hai.
 
 ```
 SHA-256("hello")  = 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
 SHA-256("hello!") = ce06092fb948d9ffac7d1a376e404b26b7575bcc11ee05a4615fef4fec3a308b
+                    ↑↑↑↑↑↑↑↑ bilkul alag, koi pattern nahi
 ```
 
-Bilkul alag dikh raha hai sirf `!` add karne se.
+Tum hash dekh ke andaaz nahi laga sakte ke input mein chhoti change thi ya badi.
 
-**Why we hash tokens before storing**: If DB leaks, attacker sees hashes only. To use a token, you need the RAW value (which was only ever in user's email). Hash se raw value nahi nikal sakti. So leaked DB = useless tokens.
+#### Step 2.3: Yeh Properties Tokens Pe Kaise Apply Hoti Hain?
 
-**Why SHA-256 (and not BCrypt) for tokens?**: BCrypt is slow on purpose (designed to take 100-200ms). Passwords are short and low-entropy (humans pick weak ones), so slowness prevents brute force. Tokens are 32 random bytes — already 2^256 possibilities. No brute force possible. Fast SHA-256 is fine — and fast matters because we validate tokens on every reset click.
+Hum ne kaha "raw token email mein bhejo, hash DB mein store karo." Ab clear hoga **kyun**:
 
-#### 3. BCrypt for Passwords — Why Different?
+```
+T+0ms:   SecureRandom 32 bytes generate karta hai → "abc123xyz..."
+T+1ms:   Hum SHA-256(raw token) calculate karte hain → "9f86d081884c..."
+T+2ms:   DB mein store karte hain: hash = "9f86d081884c..."
+T+3ms:   Email Ahmed ko jata hai with raw token = "abc123xyz..." in URL
+```
 
-**BCrypt** is a **password hashing algorithm** specifically designed to be **slow** (configurable via "cost factor"). It has 2 built-in features:
+**Ab agar DB breach ho gaya**: Hacker ko dikhta hai sirf hash. Hash se raw token wapas nahi nikal sakta (one-way property). URL banane ke liye raw token chahiye — hacker ke paas nahi hai. **Tokens bach gaye.**
 
-- **Built-in salt** — "salt" = random bytes added to password before hashing. So even if Ahmed and Ali both use password "12345", their stored hashes are different because their salts are different. Without salt, attacker can use a "rainbow table" (precomputed hashes of common passwords) to crack thousands of passwords instantly. With salt, attacker must crack each one separately.
-- **Cost factor** (typically 10-12) — exponential slowness. Cost 10 = 2^10 = 1024 internal rounds. Cost 12 = 4096 rounds. Doubles every increment. Makes brute force 10000x slower than SHA-256.
+**Ab agar Ahmed link click karta hai**: Browser raw token send karta hai → server SHA-256 hash calculate karta hai → DB mein stored hash se compare karta hai → match? Token valid. Yeh hi reason hai deterministic property zaroori hai — same raw token always same hash banayega.
 
-`BCryptPasswordEncoder` Spring class ka method `encode(rawPassword)` automatically random salt generate karta hai, hash karta hai, aur saari info ek single string mein pack karta hai jisme prefix bhi hota hai (`$2a$10$...`). `matches(raw, stored)` method same salt extract karke verify karta hai.
+#### Step 2.4: SHA-256 vs BCrypt — Tokens Mein SHA-256, Passwords Mein BCrypt Kyun?
 
-#### 4. `@Version` Aur Optimistic Locking — Kaise Kaam Karta Hai
+Yeh confusing point hai jo bohot logon ko ulta padta hai. Carefully samjho.
 
-**Optimistic locking** ka philosophy: "Main assume karta hoon ke koi conflict nahi hoga. Check karunga commit ke time. Agar tab tak koi aur ne update kar diya, main fail ho jaunga."
+**SHA-256** — fast. 1 microsecond mein hash banata hai modern CPU pe. Designed for **integrity checking** (verify ke file change nahi hui), digital signatures, etc.
 
-**Pessimistic locking** ka opposite philosophy: "Pehle row LOCK karo, phir koi aur touch nahi kar sakta. Safe but slow."
+**BCrypt** — slow on purpose. 100-200 milliseconds (yes, milliseconds, not microseconds) per hash. **100,000x slower than SHA-256.**
 
-JPA mein `@Version` annotation lagao ek field pe (`Long version`). Hibernate hr UPDATE ke saath WHERE clause mein version check add kar deta hai:
+**Kyun? Aur kiske liye konsa?**
+
+**For passwords (BCrypt use karo)**:
+
+Human passwords low-entropy hote hain. "Entropy" yahan matlab "unpredictability". Insaan likhte hain "Password123", "Ahmed@2024", "Karachi786" — **predictable patterns**. Hacker ke paas "rainbow tables" hoti hain — pre-computed hashes of millions of common passwords.
+
+Agar tumne SHA-256 use kiya passwords ke liye:
+- Hacker DB breach mein hashes le jata hai
+- Apni rainbow table mein lookup karta hai
+- Common passwords (jo 80% users use karte hain) **seconds mein crack**
+- 1 second mein 1 billion guesses possible (GPU-accelerated)
+
+BCrypt ko **deliberately slow** banaya gaya hai. 1 hash check = 200ms = 5 guesses/second per CPU core. 1 billion guesses karne mein **6+ years**. Hacker give up kar deta hai.
+
+**For tokens (SHA-256 use karo)**:
+
+Tokens **high-entropy** hote hain — 32 random bytes from CSPRNG. 2^256 possibilities. Brute force impossible regardless of hash speed.
+
+To hash speed matter nahi karta security ke liye. **Lekin tum tokens validate karte ho frequently** (har email click pe). Agar BCrypt use karoge to har validation 200ms slow — user UX kharab + server pe load.
+
+**Rule**:
+- Low-entropy input (passwords) → **slow hash** (BCrypt, Argon2, scrypt)
+- High-entropy input (random tokens) → **fast hash** (SHA-256, SHA-512)
+
+#### Step 2.5: "Salt" Kya Hota Hai Aur Kyun?
+
+Bonus concept jo passwords ke liye critical hai.
+
+**Problem without salt**:
+
+Imagine 100 users ne password "password123" use kiya (sad but reality). SHA-256("password123") sab ke liye **same hash** banayega.
+
+```
+DB:
+  ahmed   → hash_X
+  ali     → hash_X
+  fatima  → hash_X
+  ...100 more users → hash_X
+```
+
+Hacker DB breach mein dekhta hai — 100 users ka same hash. Ek crack karo, **100 crack**.
+
+**"Salt" ka solution**:
+
+Password ke saath ek **random string** (salt) add karo before hashing. Har user ka different random salt.
+
+```
+ahmed:   salt="rxQz81" → BCrypt("password123" + "rxQz81") → hash_A
+ali:     salt="pL7m2k" → BCrypt("password123" + "pL7m2k") → hash_B (totally different!)
+fatima:  salt="9nVy3w" → BCrypt("password123" + "9nVy3w") → hash_C
+```
+
+Ab DB mein **same password ka 100 different hashes**. Rainbow tables useless. Hacker ko har account separately attack karna parega.
+
+**BCrypt automatically salt handle karta hai** — `encode()` method internally salt generate karta hai aur hash mein embed kar deta hai. Stored format: `$2a$10$saltsaltsalt$hashhashhash`.
+
+Tum manually salt manage nahi karte BCrypt use karte time — yeh hi reason hai BCrypt convenient hai vs raw SHA-256.
+
+---
+
+### Foundation Concept 3: Spring Ka @Transactional — "Transaction" Kya Hai?
+
+Yahan tum likhoge `@Transactional` annotation method pe, lekin pehle samjho yeh kar kya raha hai.
+
+#### Step 3.1: Pehle "Transaction" Concept Database Mein Samjho
+
+**Transaction** = ek **group of database operations** jinhe **ek single unit** ki tarah treat karna hai. Yaa **sab successful**, yaa **sab fail** (rollback).
+
+**Classic example — bank transfer**:
+
+Tum Ali ko 500 transfer karte ho. 2 operations:
+
+```
+Operation 1: UPDATE accounts SET balance = balance - 500 WHERE id = 'you';
+Operation 2: UPDATE accounts SET balance = balance + 500 WHERE id = 'ali';
+```
+
+Imagine kar Operation 1 succeed ho gaya, phir power chala gaya, Operation 2 nahi hua. Result: **tumhare 500 udd gaye, Ali ko mile nahi**. Bank loss.
+
+**Transaction yeh problem solve karti hai**:
+
+```
+BEGIN TRANSACTION;
+   UPDATE accounts SET balance = balance - 500 WHERE id = 'you';
+   UPDATE accounts SET balance = balance + 500 WHERE id = 'ali';
+COMMIT;
+-- ya phir if anything fails:
+ROLLBACK;
+```
+
+DB engine guarantee karta hai: dono operations ya to **sab commit** honge atomically (one moment they're not, next moment they are), ya **dono rollback** honge (jaise kabhi hua hi nahi).
+
+Yeh hai **"A" in ACID** = Atomicity.
+
+#### Step 3.2: ACID Properties — Pure Family
+
+**ACID** = 4 properties jo har serious database guarantee karta hai:
+
+- **A — Atomicity**: Saari operations ek group mein hain. Sab success ya sab fail. Beech mein interrupt nahi.
+
+- **C — Consistency**: Transaction ke baad database ek **valid state** mein hi hoga. Foreign keys, unique constraints, business rules — sab maintained. Agar invalid state hone wala hai, transaction reject ho jata hai.
+
+- **I — Isolation**: 2 concurrent transactions ek doosre ki **uncommitted changes** nahi dekhte. Tumhara transaction chal raha hai, dosra bhi chal raha hai — dono ek doosre ko ignore karte hain jab tak commit nahi ho jate. Isolation ke 4 "levels" hote hain — detail Stack 3 mein.
+
+- **D — Durability**: Ek baar commit ho gaya, **kabhi nahi khoyega**. Power chali jaye, server crash kare, RAM ud jaye — committed data disk pe persisted hai aur recovery pe wapas mil jayega. Yeh "Write-Ahead Log" se hota hai (Stack 3 mein detail).
+
+#### Step 3.3: Spring Ka @Transactional Annotation — Yeh Kya Karta Hai?
+
+Spring mein agar tum method pe `@Transactional` likho:
+
+```java
+@Service
+public class PasswordResetService {
+    @Transactional
+    public void confirmReset(String rawToken, String newPassword) {
+        // Step 1: token mark as used
+        // Step 2: password update
+        // Step 3: sessions delete
+    }
+}
+```
+
+**Yeh annotation Spring ko bolta hai**:
+
+> "Bhai, jab koi is method ko call kare, **uss se pehle** automatically `BEGIN TRANSACTION` chala dena. Method successfully complete ho jaye to `COMMIT` kar dena. Agar koi exception throw ho method ke andar, automatically `ROLLBACK` kar dena."
+
+Tumhe manually BEGIN/COMMIT/ROLLBACK nahi likhna parta. Annotation se Spring automatically transaction boundaries handle karta hai.
+
+#### Step 3.4: Yeh Annotation Kaam Kaise Karti Hai? — "Proxy" Magic
+
+Yeh thoda mind-blowing concept hai, lekin samjho — interviews mein bohot poocha jata hai.
+
+**Problem**: Tumne `confirmReset()` method likhi, kahin bhi `BEGIN TRANSACTION` nahi likha. Spring kahan se interrupt karta hai?
+
+**Solution — "Proxy Pattern"**:
+
+Jab Spring application start hota hai, woh dekhta hai tumhari class mein `@Transactional` annotation hai. Spring **runtime pe ek nayi class dynamically generate karta hai** jo tumhari class extend karti hai. Yeh nayi class call hoti hai **"proxy"**.
+
+```
+Conceptually:
+class PasswordResetService_Proxy extends PasswordResetService {
+    @Override
+    public void confirmReset(String rawToken, String newPassword) {
+        // Spring ka magic code:
+        transactionManager.begin();
+        try {
+            super.confirmReset(rawToken, newPassword);  // tumhari original method
+            transactionManager.commit();
+        } catch (Exception e) {
+            transactionManager.rollback();
+            throw e;
+        }
+    }
+}
+```
+
+Jab koi `PasswordResetService` inject karta hai Spring se, **Spring asli class ki bajaye proxy inject karta hai**. Caller ko pata bhi nahi chalta — usse lagta hai woh asli class use kar raha hai.
+
+**Method call ka actual flow**:
+```
+Caller code: passwordResetService.confirmReset(...)
+   ↓
+Actually calling: PasswordResetService_Proxy.confirmReset(...)
+   ↓
+Proxy starts transaction
+   ↓
+Proxy calls original PasswordResetService.confirmReset(...)
+   ↓
+Original method runs
+   ↓
+Proxy commits or rolls back transaction
+   ↓
+Caller gets response
+```
+
+Yeh hi **Spring AOP** (Aspect-Oriented Programming) ka core mechanism hai. AOP = behavior add karna code ko bina actual code modify kiye, using proxies. Spring Security ke `@PreAuthorize`, Spring Cache ke `@Cacheable`, sab same mechanism use karte hain.
+
+---
+
+### Foundation Concept 4: Optimistic Locking (@Version)
+
+#### Step 4.1: "Locking" Kya Hai Database Mein?
+
+**Problem**: Do users same data ko same waqt modify karna chahte hain. Without coordination, data corrupt ho jata hai (TOCTOU bug jo hum dekh chuke).
+
+**Solution**: **Locking** — coordination mechanism jo ensure karta hai data race-free updates ho.
+
+2 philosophies hain:
+
+#### Step 4.2: Pessimistic vs Optimistic Locking
+
+**Pessimistic Locking** ka philosophy:
+
+> "Main maan ke chal raha hoon ke conflict hoga. Isliye pehle hi row lock karta hoon. Jab tak main kaam khatam nahi karta, koi aur touch nahi kar sakta."
 
 ```sql
--- Tumne likha:
-UPDATE tokens SET used = true WHERE id = 5;
-
--- Hibernate actually executes:
-UPDATE tokens SET used = true, version = 6 WHERE id = 5 AND version = 5;
+BEGIN TRANSACTION;
+SELECT * FROM tokens WHERE id=5 FOR UPDATE;  -- Row locked!
+-- Sab kuch wait karta hai jab tak main commit/rollback nahi karta
+-- Do something with row
+UPDATE tokens SET used=true WHERE id=5;
+COMMIT;  -- Lock released
 ```
 
-Agar `version = 5` match nahi karta (kyunki kisi aur ne update kiya, version 6 ban gaya), rowcount = 0 ho jata hai. Hibernate yeh detect karta hai aur `OptimisticLockException` throw karta hai. Iska matlab "kisi aur ne pehle modify kar diya, tumhara update reject."
+- ✅ **Pros**: Conflicts impossible. Simple to reason about.
+- ❌ **Cons**: Throughput kam. Doosre transactions wait karte hain. Long-held locks deadlock risk.
 
-Real-life analogy: shaadi ka pandit. Pehle wala bola "Rajesh ki shaadi Priya se." Pandit: "Theek hai, mere register mein note kar leta hoon — version 1." Doosra bola "Rajesh ki shaadi Sonia se." Pandit: "Ek minute, mere register mein abhi to Priya likha hai (version 1). Tum kis version pe baat kar rahe ho?" Conflict detected.
+**Optimistic Locking** ka philosophy:
+
+> "Main maan ke chal raha hoon ke conflict nahi hoga (kyunki actually low contention hai). Lock nahi leta. Lekin commit ke time check karunga — agar kisi aur ne meanwhile modify kar diya, main fail ho jaunga."
+
+```sql
+-- Read karte time version number bhi padho
+SELECT *, version FROM tokens WHERE id=5;
+-- Returns: token data + version=3
+
+-- Update karte time version check karo
+UPDATE tokens SET used=true, version=4
+WHERE id=5 AND version=3;  -- ← version check!
+
+-- Agar kisi aur ne pehle update kar diya tha:
+-- DB mein version=4 ho gaya hoga
+-- Tumhara UPDATE WHERE version=3 → 0 rows affected
+-- Detect: conflict!
+```
+
+- ✅ **Pros**: No locking overhead. High throughput. Better for low-contention scenarios.
+- ❌ **Cons**: Failed transactions retry karne parte hain agar conflict ho.
+
+**Password reset jaisa scenario — optimistic better hai** kyunki:
+- Conflicts rare (Ahmed kabhi-kabhi double-click karega, sirf 0.001% requests mein)
+- Throughput chahiye (high traffic Daraz)
+- Conflict detected ho to "token already used" error theek hai (just retry)
+
+#### Step 4.3: JPA Ka @Version Annotation Kaise Kaam Karta Hai
+
+**JPA** = Java Persistence API = standard interface jo databases se kaam karne ka. **Hibernate** is the most popular implementation of JPA.
+
+Tum entity class mein ek field pe `@Version` annotation lagao:
+
+```java
+@Entity
+public class PasswordResetToken {
+    @Id
+    private UUID id;
+
+    private String tokenHash;
+    private boolean used;
+
+    @Version
+    private Long version;  // ← yahi optimistic lock ka magic
+}
+```
+
+**Ab kya hota hai automatically**:
+
+Jab tum entity update karte ho aur save karte ho:
+
+```java
+PasswordResetToken token = repo.findById(tokenId);
+// Suppose version = 3 at this moment
+token.setUsed(true);
+repo.save(token);
+```
+
+Hibernate **automatically** SQL generate karta hai:
+
+```sql
+UPDATE password_reset_tokens
+SET used = true, version = 4   -- version increment
+WHERE id = ?
+  AND version = 3              -- ← original version match karo!
+```
+
+Agar yeh UPDATE 0 rows affect karta hai (kyunki kisi aur ne pehle update kar diya, version ab 4 ho chuka hai), Hibernate detect karta hai aur **`OptimisticLockException`** throw karta hai.
+
+**Pandit analogy**:
+
+Pandit ke paas register hai. Pehla banda aata hai: "Rajesh ki shaadi Priya se." Pandit register check karta hai, current version 1 hai, likh deta hai version 2 banake.
+
+Doosra banda aata hai: "Rajesh ki shaadi Sonia se." Pandit puchta hai: "Tum kis version pe baat kar rahe ho?" Doosra: "Version 1." Pandit: "Beta, register mein abhi version 2 hai (Priya wali). Tumhara update purane state pe based hai — reject."
+
+Yeh exactly optimistic locking hai. Concurrent updates detect ho jate hain by version mismatch.
 
 ---
 
-### Bhai, Simple Mein Samjho (One-Paragraph Mental Model)
+### Foundation Concept 5: Dependency Injection (DI) Aur Interfaces
 
-Soch: Tum ek school principal ho. Bachcha bolta hai "Mera report card chahiye." Tum:
-1. **Random reference number generate karte ho** (32-character koi bhi guess na kar sake) — yeh hai SecureRandom token.
-2. Reference number ka **fingerprint** apne register mein likhte ho, asli number bachey ki maa ko sealed envelope mein dete ho — yeh hai SHA-256 hashing for storage.
-3. Bolte ho "15 minute mein wapas aana, warna naya number lena parega" — yeh hai expiry.
-4. Maa wapas aati hai, asli number deti hai, tum fingerprint match karte ho, **register mein "used" mark karte ho usi waqt** — atomic single-use.
-5. Doosra bachcha duplicate maa banake aaya same number lekar? Register mein already used hai, reject. Race condition handled.
+#### Step 5.1: "Dependency" Kya Hai?
+
+Code mein **dependency** = ek class jo doosri class pe **depend** karti hai kaam karne ke liye.
+
+```java
+public class PasswordResetService {
+    private EmailSender emailSender;  // ← PasswordResetService depends on EmailSender
+
+    public void sendResetLink(User user) {
+        emailSender.send(user.getEmail(), "Reset link...");
+    }
+}
+```
+
+`PasswordResetService` ki dependency hai `EmailSender`. Bina `EmailSender` ke, `PasswordResetService` apna kaam nahi kar sakta.
+
+#### Step 5.2: Without DI — Pareshani Wala Tareeqa
+
+Naive approach: class apni dependencies khud banaye.
+
+```java
+public class PasswordResetService {
+    private EmailSender emailSender = new EmailSender();  // ← khud banaya
+
+    public void sendResetLink(User user) {
+        emailSender.send(user.getEmail(), "...");
+    }
+}
+```
+
+**Problems**:
+
+1. **Testing impossible**: Tum unit test likhna chahte ho `PasswordResetService` ka without actually sending emails. Lekin yeh hard-coded `new EmailSender()` har time real email bhejega. Mock nahi kar sakte.
+
+2. **Tight coupling**: Agar kal tum `EmailSender` ko `BetterEmailSender` se replace karna chaho, **har class mein change** karna parega jisne `new EmailSender()` use kiya hai. Probably 50 jagah.
+
+3. **Configuration nightmare**: `EmailSender` ko host, port, password chahiye. Har class jo `new EmailSender()` karti hai, woh configuration provide karna parta hai. Repetition.
+
+#### Step 5.3: DI Ka Solution — "Tum Mere Liye Bana Ke Do, Main Nahi Banaunga"
+
+**Dependency Injection** = class apni dependencies khud nahi banati. **Bahar se "inject" hoti hain** (provide hoti hain).
+
+```java
+public class PasswordResetService {
+    private final EmailSender emailSender;  // ← interface or class
+
+    // Constructor receives dependency from outside
+    public PasswordResetService(EmailSender emailSender) {
+        this.emailSender = emailSender;
+    }
+
+    public void sendResetLink(User user) {
+        emailSender.send(user.getEmail(), "...");
+    }
+}
+```
+
+Ab `PasswordResetService` ko parwaah nahi `EmailSender` kahan se aaya — koi bhi de sakta hai.
+
+**Test mein**:
+```java
+EmailSender mockSender = mock(EmailSender.class);  // fake one
+PasswordResetService service = new PasswordResetService(mockSender);
+service.sendResetLink(user);
+verify(mockSender).send("ahmed@gmail.com", "...");  // verify mock was called
+```
+
+Real email nahi gaya. Test fast aur isolated.
+
+#### Step 5.4: Spring's DI Container — Magic Behind The Scenes
+
+Manually `new PasswordResetService(new EmailSender())` har jagah likhna painful hai badi application mein. Hierarchy deep ho gayi to constructor calls disgusting ho jate.
+
+**Spring's DI container ka solution**:
+
+1. Tum classes pe `@Service`, `@Component`, `@Repository` annotations lagao.
+2. Spring application start ke time **scan** karta hai saari annotations.
+3. **Spring khud objects banata hai aur connections wire karta hai**.
+
+```java
+@Service  // Spring ko bolta hai "yeh class manage karo"
+public class PasswordResetService {
+    private final EmailSender emailSender;
+
+    public PasswordResetService(EmailSender emailSender) {
+        this.emailSender = emailSender;
+    }
+    // ...
+}
+
+@Component
+public class EmailSender {
+    // ...
+}
+```
+
+Spring boot karte time:
+1. Spring scan karta hai → `@Service PasswordResetService` mila, `@Component EmailSender` mila.
+2. Spring sochta hai: "PasswordResetService ko EmailSender chahiye constructor mein."
+3. Spring pehle `EmailSender` ka instance banata hai.
+4. Phir `new PasswordResetService(emailSenderInstance)` call karta hai.
+5. Dono instances Spring's "container" mein stored hain.
+
+Tumhe kahin bhi `new` nahi karna parta. Spring sab kuch automatically wire kar deta hai. **Yeh hi "Dependency Injection container" hai**.
+
+#### Step 5.5: Interface Ka Power — Polymorphism Setup
+
+Magic level up: instead of `EmailSender` concrete class, use **interface**:
+
+```java
+public interface NotificationSender {  // contract only
+    void send(User user, String message);
+}
+
+@Component
+public class EmailSender implements NotificationSender {
+    @Override
+    public void send(User user, String message) {
+        // email-specific logic
+    }
+}
+
+@Component
+public class SmsSender implements NotificationSender {
+    @Override
+    public void send(User user, String message) {
+        // SMS-specific logic
+    }
+}
+
+@Service
+public class PasswordResetService {
+    private final NotificationSender notifier;  // ← interface, not concrete class
+
+    public PasswordResetService(NotificationSender notifier) {
+        this.notifier = notifier;
+    }
+}
+```
+
+Spring confusion: "do implementations hain `NotificationSender` ki — `EmailSender` aur `SmsSender`. Konsi inject karoon?"
+
+Tum decide karte ho `@Primary` annotation se ya `@Qualifier` se. Ya inject karwa do **List<NotificationSender>** to get all of them — yeh hi polymorphism setup ka raasta hai jo aaj ke OOP section mein detailed cover hoga.
+
+**Yeh hi reason hai DI + Interfaces saath chalti hain** — polymorphic dispatch enables extensibility without modification.
 
 ---
 
-### Code Pattern (Full Working Example with Inline Comments)
+### Bhai, Yeh Sab Yaad Karne Ka Mental Model
+
+Pichle 5 concepts ek story mein bandh kar yaad rakh:
+
+> "Ek **secret reference number** (SecureRandom) banao. Uska **fingerprint** (SHA-256 hash) safe-keeping mein rakho, asli reference number bahar bhejo. Iss sab kaam ko ek **transaction** (atomic unit) ke andar do — ya sab succeed ya sab fail. Concurrent modifications detect karne ke liye **version number** (optimistic locking) use karo. Aur saara setup **interfaces + DI** se pluggable banao — kal naya tareeqa add karna ho, sirf nayi class likho."
+
+Iss story mein har keyword tumhe Daraz scenario ke saath jodna chahiye.
+
+---
+
+### Ab Code Padho (Inline Comments Ke Saath)
+
+Yeh code padhne se pehle ke woh 5 concepts pakke ho jane chahiye — warna code random magic lagega.
 
 ```java
 // ============ ENTITY (Database table mapping) ============
+// @Entity = Spring/JPA ko bolta hai "yeh class ek DB table represent karti hai"
 @Entity
-@Table(name = "password_reset_tokens",
+@Table(
+    name = "password_reset_tokens",
     indexes = {
-        // Index = DB ka "phone directory" — fast lookup
+        // Index = phone directory ki tarah, fast lookup ka tareeqa
+        // Bina index ke, query pure table ko scan karti hai (slow on millions of rows)
+        // unique = true → DB enforce karega ke koi do tokens ka same hash na ho
         @Index(name = "idx_token_hash", columnList = "tokenHash", unique = true),
+        // Composite index — multiple columns. Query pattern: WHERE user_id=? AND ...
         @Index(name = "idx_user_expiry", columnList = "userId, expiresAt")
-    })
+    }
+)
 public class PasswordResetToken {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;  // UUID = 128-bit random ID, collision practically impossible
+    @Id  // Primary key — har row uniquely identify karta hai
+    @GeneratedValue(strategy = GenerationType.UUID)  // ID khud generate kare DB
+    private UUID id;  // UUID = 128-bit unique ID, collision practically impossible
 
+    // SHA-256 hex string is always exactly 64 characters
+    // length=64 storage optimize karta hai (varchar fixed)
     @Column(nullable = false, length = 64)
-    private String tokenHash;  // SHA-256 hex = 64 characters always
+    private String tokenHash;
 
     @Column(nullable = false)
     private Long userId;
 
+    // Instant = UTC timestamp, timezone-independent
+    // Don't use LocalDateTime — timezone bugs cause production headaches
     @Column(nullable = false)
-    private Instant expiresAt;  // Instant = UTC timestamp, timezone-independent
+    private Instant expiresAt;
 
     @Column(nullable = false)
     private boolean used = false;
 
+    // @Version = optimistic locking magic
+    // Hibernate auto-increment karta hai aur WHERE clause mein check karta hai
     @Version
-    private Long version;  // For optimistic locking — explained above
+    private Long version;
 }
 
 // ============ SERVICE (Business logic layer) ============
-@Service
-@RequiredArgsConstructor  // Lombok — generates constructor with all final fields
+@Service  // Spring ko bolta hai "yeh class manage karo, DI mein register karo"
+@RequiredArgsConstructor  // Lombok: auto-generate constructor with all final fields
 public class PasswordResetService {
 
+    // final = constructor mein set hoga, baad mein change nahi
+    // Spring DI in dependencies ko inject karega constructor ke through
     private final UserRepository userRepo;
     private final PasswordResetTokenRepository tokenRepo;
-    private final PasswordEncoder passwordEncoder;  // Interface — BCrypt actual impl
+    private final PasswordEncoder passwordEncoder;  // interface! BCrypt actual impl
     private final SessionService sessionService;
-    private final NotificationSender notifier;  // Interface — polymorphism magic!
-    private final SecureRandom random = new SecureRandom();  // CSPRNG instance
+    private final NotificationSender notifier;  // interface! Polymorphism magic
 
-    /**
-     * Called when user clicks "Forgot Password" and submits email.
-     * GOAL: generate token, save hash, send email/SMS.
-     * SECURITY: must look IDENTICAL whether email exists or not (anti-enumeration).
-     */
-    @Transactional  // Spring wraps this method in DB transaction (auto rollback on exception)
+    // SecureRandom instance — one per service, thread-safe
+    private final SecureRandom random = new SecureRandom();
+
+    @Transactional  // Spring proxy automatic BEGIN/COMMIT/ROLLBACK manage karega
     public void requestReset(String email) {
 
+        // Optional<User> = either has User or empty (Java 8+ null-safe pattern)
         Optional<User> userOpt = userRepo.findByEmail(email);
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
 
-            // STEP 1: Generate 32 random bytes from CSPRNG
-            // 32 bytes = 256 bits = 2^256 possibilities ≈ 10^77
-            // (universe mein atoms 10^80 hain — practically uncrackable)
+            // STEP 1: 32 random bytes generate karo CSPRNG se
             byte[] tokenBytes = new byte[32];
             random.nextBytes(tokenBytes);
 
-            // STEP 2: Convert bytes to URL-safe string
-            // Base64 URL encoding: uses A-Z a-z 0-9 - _ (no + / which break URLs)
-            // 32 bytes → 43 character string
+            // STEP 2: Bytes ko URL-safe string mein convert karo
+            // 32 bytes → 43-character string
             String rawToken = Base64.getUrlEncoder()
                 .withoutPadding()
                 .encodeToString(tokenBytes);
 
-            // STEP 3: Hash the token before storing
-            // RAW token goes only to user's email. DB has only HASH.
+            // STEP 3: Token ko hash karo store karne se pehle
             String tokenHash = sha256Hex(rawToken);
 
-            // STEP 4: Kill any previous unused tokens for this user
-            // (User clicked "Forgot Password" 5 times? Only LATEST link works.)
+            // STEP 4: Pehle ke unused tokens kill kar do
             tokenRepo.markAllUserTokensAsUsed(user.getId());
 
-            // STEP 5: Save new token with 15-minute expiry
+            // STEP 5: Naya token save karo with 15-minute expiry
             PasswordResetToken token = new PasswordResetToken();
             token.setUserId(user.getId());
             token.setTokenHash(tokenHash);
             token.setExpiresAt(Instant.now().plus(15, ChronoUnit.MINUTES));
             tokenRepo.save(token);
 
-            // STEP 6: Send notification via polymorphic dispatch
-            // notifier could be EmailSender, SmsSender, WhatsAppSender — service doesn't care
+            // STEP 6: Notification bhejo via polymorphic dispatch
             String resetLink = "https://daraz.pk/reset?token=" + rawToken;
             notifier.send(user, new PasswordResetMessage(resetLink));
         }
 
-        // CRITICAL: We don't throw exception or return different status if user not found.
-        // Same code path = same response time = no enumeration leak.
+        // CRITICAL: agar user nahi mila, hum exception throw nahi karte
+        // Same code path = same response time = no enumeration leak
     }
 
-    /**
-     * Called when user clicks email link and submits new password.
-     * GOAL: validate token, update password, kill all sessions.
-     * SECURITY: atomic single-use enforcement, no token reuse possible.
-     */
     @Transactional
     public void confirmReset(String rawToken, String newPassword) {
 
-        // Hash incoming token to compare with stored hash
         String tokenHash = sha256Hex(rawToken);
 
-        // Find token: must be unused, not expired
-        // Note: just SELECT here, atomic enforcement is in setUsed below
         PasswordResetToken token = tokenRepo
             .findByTokenHashAndUsedFalseAndExpiresAtAfter(tokenHash, Instant.now())
             .orElseThrow(() -> new InvalidTokenException("Token invalid or expired"));
@@ -303,25 +969,17 @@ public class PasswordResetService {
         User user = userRepo.findById(token.getUserId())
             .orElseThrow(() -> new InvalidTokenException("User not found"));
 
-        // Hash and save new password
-        // BCrypt internally generates random salt, embeds it in output
+        // BCrypt internally salt generate karta hai, hash mein embed karta hai
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepo.save(user);
 
-        // Mark token used. @Version protects against race:
-        // If another concurrent request already marked it used (incrementing version),
-        // this save() throws OptimisticLockException.
+        // @Version protects against concurrent click race
         token.setUsed(true);
         tokenRepo.save(token);
 
-        // Critical: kill all active sessions/JWTs for this user
-        // Without this, hacker who knew old password keeps access.
         sessionService.invalidateAllSessions(user.getId());
     }
 
-    /**
-     * SHA-256 hash, return as 64-char hex string.
-     */
     private String sha256Hex(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -334,64 +992,140 @@ public class PasswordResetService {
 }
 ```
 
-**Interview phrasing**:
-"Iss scenario mein raw token sirf email mein jata hai, DB mein sirf SHA-256 hash store hota hai — taake DB breach pe tokens leak na hon. Single-use guarantee `@Version` ke saath optimistic locking se enforce hoti hai. Aur user enumeration roknay ke liye, exists / not-exists dono code paths same response return karte hain."
+**Interview Phrasing**:
+
+"Iss scenario mein raw token sirf email mein jata hai, DB mein sirf SHA-256 hash store hota hai — taake DB breach pe tokens leak na hon. Single-use guarantee `@Version` ke saath optimistic locking se enforce hoti hai. User enumeration roknay ke liye — exists/not-exists dono code paths same response return karte hain."
 
 ---
 
 ## 🔧 Stack 2: .NET / C# (Enterprise Backend Perspective)
 
-**Concept needed**: `RandomNumberGenerator`, `IPasswordHasher<TUser>`, EF Core concurrency tokens, polymorphic resolution via DI.
+**Goal**: Same logic, different framework. .NET ki terminology aur internals samjho.
 
-### Under the Hood — .NET Mein Yeh Kaise Kaam Karta Hai
+### Foundation Concept 1: .NET Mein Random Number — `RandomNumberGenerator`
 
-`RandomNumberGenerator.Fill()` exact same security guarantee deta hai jo Java ka `SecureRandom` deta hai. Windows pe yeh **CNG** = **C**ryptography **N**ext **G**eneration use karta hai (Windows ka modern crypto API, replaced old CryptoAPI). Linux pe yeh bhi `/dev/urandom` use karta hai. Same OS entropy source.
+Java ke `SecureRandom` ka equivalent .NET mein hai **`RandomNumberGenerator`** class (namespace: `System.Security.Cryptography`).
 
-EF Core ka `[Timestamp]` attribute SQL Server mein `ROWVERSION` column banata hai. **ROWVERSION kya hai?** — SQL Server ka special data type (8 bytes). Har baar jab row update hoti hai, SQL Server **automatically** is column ko increment kar deta hai — tum manually set nahi karte. Yeh database-wide unique counter hai (har row pe nahi, pure database mein ek hi counter).
+Same exact security guarantees:
+- Predictable nahi
+- OS entropy use karta hai
 
-EF Core jab UPDATE generate karta hai, automatic WHERE clause mein original rowversion add kar deta hai (just like Hibernate `@Version`):
+Windows mein OS-level API ka naam different hai: **CNG** = **Cryptography Next Generation**. Yeh Windows ka modern crypto API hai jo purani CryptoAPI ki jagah aaya (early 2000s mein). Yeh same kaam karta hai jo Linux ka `/dev/urandom` — hardware entropy collect karke unpredictable bytes provide karta hai.
 
-```sql
-UPDATE tokens SET used = 1
-WHERE id = @id AND rowversion = @originalRowVersion;
-```
-
-Agar update ne 0 rows affect kiye (kyunki rowversion mismatch — kisi aur ne pehle update kar diya), EF Core `DbUpdateConcurrencyException` throw karta hai.
-
-**Polymorphic DI in .NET**: Agar tum constructor mein `IEnumerable<INotificationSender>` inject karo, .NET ka DI container **saari** registered implementations ko collection mein de deta hai. .NET 8+ mein "keyed services" feature aaya — tum naam de ke specific implementation maang sakte ho:
+`RandomNumberGenerator.Fill()` static method automatically OS-appropriate path use karta hai. Same "wrapper" concept jo humne Java mein dekha.
 
 ```csharp
-services.AddKeyedScoped<INotificationSender, EmailNotificationSender>("email");
-var emailSender = serviceProvider.GetRequiredKeyedService<INotificationSender>("email");
+var tokenBytes = new byte[32];
+RandomNumberGenerator.Fill(tokenBytes);  // OS entropy from CNG / urandom
 ```
 
-### Bhai, .NET Mein Yeh Kaise Hota Hai
+### Foundation Concept 2: `IPasswordHasher<TUser>` — .NET Ka Password Hashing
 
-Logic 100% same — sirf framework syntax change. EF Core ka `SaveChangesAsync()` Hibernate ke `save()` jaisa hai — change tracker dekh ke automatic SQL generate karta hai. **Change tracker kya hai?** — EF Core background mein note rakhta hai konsi entity property change hui. Tum `entity.Name = "new"` likhte ho, change tracker note kar leta hai "Name modified". `SaveChangesAsync` pe sirf modified fields ka UPDATE generate karta hai (efficient).
+.NET Core 3.0+ mein password hashing ka standard interface hai **`IPasswordHasher<TUser>`**. **Default implementation** PBKDF2 use karta hai.
 
-### Code Pattern
+**PBKDF2** = **P**assword-**B**ased **K**ey **D**erivation **F**unction **2**. Yeh BCrypt ka cousin hai — same purpose (slow, salted password hashing). Slightly different math but same concept.
+
+### Foundation Concept 3: EF Core Aur Change Tracker
+
+**Entity Framework Core (EF Core)** = .NET ka ORM. **ORM** = **O**bject-**R**elational **M**apper = library jo aapke C# objects ko SQL tables mein automatically map karta hai aur SQL queries generate karta hai aap ki bajaye.
+
+**Java mein equivalent**: Hibernate / JPA.
+
+**"Change Tracker" ka concept**:
+
+EF Core background mein har loaded entity ko **track** karta hai. Yaad rakhta hai entity ka original state. Jab tum koi property modify karte ho:
 
 ```csharp
-// ============ ENTITY ============
+var user = await dbContext.Users.FindAsync(5);
+// EF Core records original state
+
+user.Name = "Ahmed Khan";
+// Change tracker note karta hai: "Name modified"
+
+await dbContext.SaveChangesAsync();
+// EF Core sirf modified columns ka UPDATE generate karta hai:
+// UPDATE Users SET Name = 'Ahmed Khan' WHERE Id = 5;
+```
+
+**Smart**: Sirf badle hue fields update hote hain.
+
+### Foundation Concept 4: `[Timestamp]` Attribute — .NET Mein Optimistic Locking
+
+Java ka `@Version` ka equivalent .NET mein `[Timestamp]` attribute hai.
+
+```csharp
 public class PasswordResetToken
 {
-    public Guid Id { get; set; }                          // .NET ka UUID = Guid
+    public Guid Id { get; set; }
+    public string TokenHash { get; set; }
+    public bool Used { get; set; }
+
+    [Timestamp]
+    public byte[] RowVersion { get; set; }
+}
+```
+
+**`[Timestamp]`** SQL Server mein **`ROWVERSION`** column type use karta hai. ROWVERSION database-wide unique 8-byte counter hai — har baar koi bhi row update hoti hai, ROWVERSION auto-increment hota hai.
+
+Jab EF Core UPDATE generate karta hai:
+
+```sql
+UPDATE password_reset_tokens
+SET used = 1
+WHERE id = @id
+  AND rowversion = @originalRowVersion;  -- ← concurrency check
+```
+
+Agar mismatch — `DbUpdateConcurrencyException`.
+
+### Foundation Concept 5: .NET Mein DI
+
+.NET Core mein built-in DI container hai. Spring se conceptually same hai.
+
+```csharp
+// Program.cs
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<INotificationSender, EmailNotificationSender>();
+builder.Services.AddScoped<PasswordResetService>();
+
+// Service
+public class PasswordResetService
+{
+    private readonly INotificationSender _notifier;
+
+    public PasswordResetService(INotificationSender notifier)
+    {
+        _notifier = notifier;
+    }
+}
+```
+
+**Scopes**:
+- `Singleton` — pura app ek instance
+- `Scoped` — har HTTP request ka apna instance (default for web)
+- `Transient` — har injection pe naya
+
+### .NET Code Pattern
+
+```csharp
+public class PasswordResetToken
+{
+    public Guid Id { get; set; }
     public string TokenHash { get; set; } = default!;
     public long UserId { get; set; }
     public DateTime ExpiresAt { get; set; }
     public bool Used { get; set; }
 
-    [Timestamp]  // EF Core: this is the optimistic concurrency token
+    [Timestamp]
     public byte[] RowVersion { get; set; } = default!;
 }
 
-// ============ SERVICE ============
 public class PasswordResetService
 {
     private readonly AppDbContext _db;
     private readonly IPasswordHasher<User> _hasher;
     private readonly ISessionService _sessions;
-    private readonly INotificationSender _notifier;  // Polymorphic interface
+    private readonly INotificationSender _notifier;
 
     public PasswordResetService(
         AppDbContext db,
@@ -399,36 +1133,25 @@ public class PasswordResetService
         ISessionService sessions,
         INotificationSender notifier)
     {
-        _db = db;
-        _hasher = hasher;
-        _sessions = sessions;
-        _notifier = notifier;
+        _db = db; _hasher = hasher; _sessions = sessions; _notifier = notifier;
     }
 
     public async Task RequestResetAsync(string email)
     {
-        var user = await _db.Users
-            .FirstOrDefaultAsync(u => u.Email == email);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
 
         if (user != null)
         {
-            // STEP 1: 32 cryptographically secure random bytes
             var tokenBytes = new byte[32];
             RandomNumberGenerator.Fill(tokenBytes);
-
-            // STEP 2: URL-safe Base64 encoding
             var rawToken = Base64UrlEncoder.Encode(tokenBytes);
-
-            // STEP 3: Hash for storage
             var tokenHash = Sha256Hex(rawToken);
 
-            // STEP 4: Invalidate old unused tokens — single SQL UPDATE, no entity loading
-            // ExecuteUpdateAsync (EF Core 7+) = bulk update without change tracker overhead
+            // Bulk update without loading entities (EF Core 7+)
             await _db.PasswordResetTokens
                 .Where(t => t.UserId == user.Id && !t.Used)
                 .ExecuteUpdateAsync(s => s.SetProperty(t => t.Used, true));
 
-            // STEP 5: Insert new token
             _db.PasswordResetTokens.Add(new PasswordResetToken
             {
                 Id = Guid.NewGuid(),
@@ -440,11 +1163,9 @@ public class PasswordResetService
 
             await _db.SaveChangesAsync();
 
-            // STEP 6: Polymorphic notification dispatch
             var resetLink = $"https://daraz.pk/reset?token={rawToken}";
             await _notifier.SendAsync(user, new PasswordResetMessage(resetLink));
         }
-        // No enumeration leak — same response path
     }
 
     public async Task ConfirmResetAsync(string rawToken, string newPassword)
@@ -463,18 +1184,15 @@ public class PasswordResetService
         var user = await _db.Users.FindAsync(token.UserId)
             ?? throw new InvalidTokenException("User not found");
 
-        // HashPassword internally generates salt, embeds in output
         user.PasswordHash = _hasher.HashPassword(user, newPassword);
         token.Used = true;
 
         try
         {
-            // EF Core compares RowVersion in WHERE clause automatically
             await _db.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
-            // Concurrent click won the race — this attempt fails cleanly
             throw new InvalidTokenException("Token already used");
         }
 
@@ -483,335 +1201,444 @@ public class PasswordResetService
 
     private static string Sha256Hex(string input)
     {
-        using var sha = SHA256.Create();  // SHA-256 instance, disposed after use
+        using var sha = SHA256.Create();
         var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
-        return Convert.ToHexString(bytes).ToLowerInvariant();  // 64-char hex
+        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }
 ```
 
-### Java vs .NET Comparison Table (With Plain-English Explanations)
+### Java vs .NET Comparison Table
 
-| Feature | Java/Spring | .NET/C# | What it does |
-|---------|-------------|---------|--------------|
-| Secure random | `SecureRandom.nextBytes()` | `RandomNumberGenerator.Fill()` | Gives bytes unpredictable to attacker |
-| Password hashing | `BCryptPasswordEncoder` | `IPasswordHasher<TUser>` (PBKDF2 default) | Slow hash designed to resist brute force |
-| SHA-256 | `MessageDigest.getInstance("SHA-256")` | `SHA256.Create()` | Fast one-way hash for non-password data |
-| Optimistic lock | `@Version` on field | `[Timestamp]` on `byte[]` field | Detect concurrent updates, reject conflict |
-| Async pattern | `@Async` + `TaskExecutor` | `async/await` + `Task` | Non-blocking I/O, free thread for other work |
-| Polymorphic DI | `@Qualifier` or `List<Interface>` | `IEnumerable<Interface>` or keyed services | Inject multiple implementations of same interface |
-| URL-safe Base64 | `Base64.getUrlEncoder()` | `Base64UrlEncoder.Encode` | Convert bytes to URL-friendly string |
-| Bulk update | `@Modifying` + JPQL | `ExecuteUpdateAsync` (EF 7+) | Single SQL UPDATE without loading entities |
+| Feature | Java/Spring | .NET/C# | Plain English |
+|---------|-------------|---------|---------------|
+| CSPRNG | `SecureRandom.nextBytes()` | `RandomNumberGenerator.Fill()` | Predictable nahi bytes from OS |
+| Password hashing | `BCryptPasswordEncoder` | `IPasswordHasher<TUser>` (PBKDF2) | Slow hash with salt |
+| SHA-256 | `MessageDigest.getInstance("SHA-256")` | `SHA256.Create()` | Fast one-way hash |
+| Optimistic lock | `@Version` on field | `[Timestamp]` on byte[] field | Concurrent update detection |
+| Async I/O | `@Async` + `CompletableFuture` | `async/await` + `Task` | Non-blocking operations |
+| ORM | Hibernate (JPA) | EF Core | Object ↔ SQL mapping |
+| Transaction | `@Transactional` | `using var tx = await db.Database.BeginTransactionAsync()` | Atomic group |
+| DI container | Spring @Service, @Autowired | builder.Services.Add* | Constructor injection |
 
 ---
 
 ## 🔧 Stack 3: SQL (Data Layer)
 
-**Concept needed**: Atomic check-and-update, B-tree indexes, isolation levels, row versioning for optimistic locking.
+**Goal**: Database internals samjho — locks, isolation, indexes, transactions.
 
-### Under the Hood — SQL Engine Yeh Kaise Karta Hai (Step by Step)
+### Foundation Concept 1: Database "Lock" Kya Hota Hai?
 
-#### 1. UPDATE Statement Locking — Frame by Frame
+Database concurrent access ke liye **locks** use karta hai. Lock = "yeh resource main use kar raha hoon, dosre wait karo".
 
-Jab tum likhte ho:
+**3 main types**:
+
+#### 🔵 Shared Lock (S-Lock) — "Padh Raha Hoon, Tum Bhi Padh Sakte Ho"
+
+Read karte time S-Lock. **Multiple transactions** same row pe S-Lock le sakte hain. Lekin koi write nahi kar sakta.
+
+```
+A: SELECT ... id=5  → S-Lock on row 5
+B: SELECT ... id=5  → S-Lock on row 5 (allowed)
+C: UPDATE ... id=5  → Wait!
+```
+
+#### 🔴 Exclusive Lock (X-Lock) — "Sirf Main"
+
+Modify karte time X-Lock. **Sirf ONE transaction** X-Lock le sakta hai. Doosre wait.
+
+```
+A: UPDATE ... id=5  → X-Lock on row 5
+B: SELECT ... id=5  → Wait!
+C: UPDATE ... id=5  → Wait!
+```
+
+#### 🟡 Update Lock (U-Lock) — Intermediate
+
+DB engine UPDATE statement execute karte time pehle U-Lock leta hai (safely read karne ke liye), agar update karna hai to X-Lock mein convert karta hai. Yeh deadlock prevent karta hai.
+
+### Foundation Concept 2: ACID Properties (Stack 1 Mein Touch Kiya Tha)
+
+**ACID** = 4 promises:
+
+- **A — Atomicity**: Sab commit ya sab rollback
+- **C — Consistency**: Constraints maintained
+- **I — Isolation**: Concurrent transactions ek doosre se isolated
+- **D — Durability**: Committed data crash mein bhi safe
+
+### Foundation Concept 3: Write-Ahead Log (WAL) — Durability Ka Mechanism
+
+**Problem**: COMMIT kiya, 1 second baad power off. Data RAM mein tha, disk pe nahi. **Lost?**
+
+**Solution — WAL**:
+
+DB har change **pehle sequential log file** mein likhta hai, **phir** actual data file mein. Log file append-only = fast.
+
+```
+1. Transaction modifying data in memory
+2. COMMIT triggered
+3. WAL mein log entry write (synchronously to disk):
+   "Transaction#42 committed: UPDATE tokens SET used=1 WHERE id=5"
+4. WAL write confirmed → COMMIT acknowledged
+5. (Async) Actual data file later updated
+```
+
+**Crash recovery**:
+1. DB restart
+2. WAL padhta hai end to end
+3. Committed-but-not-flushed transactions replay
+4. Consistent state restore
+
+WAL sequential write = fast. Actual data files ka random write slow — async kar diye.
+
+### Foundation Concept 4: Indexes — B-Tree Ki Magic
+
+#### Step 4.1: Bina Index Ke Search Slow
 
 ```sql
-UPDATE tokens SET used = 1 WHERE token_hash = 'abc...' AND used = 0;
+SELECT * FROM tokens WHERE token_hash = 'abc123...';
 ```
 
-SQL Server (or any RDBMS) yeh karta hai:
+**Without index** = **full table scan** — har row check. 1 million rows = 1 million comparisons.
+
+#### Step 4.2: Phone Directory Analogy
+
+**Index** = pre-sorted lookup structure. Phone directory jaisa — naam sorted. Tum middle se start karte ho, half eliminate karte ho har step. 1 million names = ~20 steps.
+
+DB index **B-tree** structure use karta hai (sorted, balanced tree).
+
+#### Step 4.3: B-Tree Visual
 
 ```
-Step 1: Parser checks SQL syntax
-Step 2: Query Optimizer dekhta hai indexes available — picks idx_token_hash
-Step 3: Engine seeks to that token's row using B-tree index
-Step 4: Acquires "U-Lock" (Update Lock) on that row
-        — U-Lock = "I might update this, no one else lock for write"
-Step 5: Reads current row, checks WHERE clause (used = 0?)
-Step 6: If condition matches:
-        a. Converts U-Lock to X-Lock (Exclusive Lock = "no one read or write")
-        b. Modifies row data
-        c. Writes change to Write-Ahead Log (WAL) first — durability
-        d. Marks row dirty in buffer pool (will flush to disk later)
-        e. Releases X-Lock at transaction commit
-        f. Returns rowcount = 1
-Step 7: If condition doesn't match (used was already 1):
-        a. Releases U-Lock
-        b. Returns rowcount = 0
+                    [Page 1: 'm']
+                   /              \
+              [Page 2: 'g']      [Page 3: 's']
+              /     |     \      /     |     \
+         [a-d]   [e-f]  [h-l]  [n-q] [r]   [t-z]
+         leaves with actual data pointers
 ```
 
-**Write-Ahead Log (WAL)** kya hai? Database har change pehle ek sequential log file mein likhta hai, **phir** actual data file mein. Kyun? Crash recovery. Power chala gaya middle of update mein? On restart, DB log file padhta hai aur incomplete transactions ko replay/rollback karke consistent state mein restore karta hai. This is the "D" in **ACID** = Durability.
+Search "tahir":
+1. Root: 't' > 'm', right
+2. Next: 't' > 's', right
+3. Find in leaf "t-z"
+4. Done — 3 steps for huge table
 
-**B-tree index** kya hai? Imagine kar phone directory — naam alphabetically sorted. Tum middle se start karte ho, decide karte ho left ya right side. Har step mein search space half ho jata hai. 1 million entries mein search = ~20 steps (log₂ of 1M). B-tree wahi hai, lekin disk-page-friendly structure mein. Index = pre-sorted lookup ka shortcut, full table scan se 1000x faster.
+"B" = balanced — tree height equal har taraf, ensuring consistent log(n) performance.
 
-#### 2. Atomic Check-and-Update — Race Ko Eliminate Karna
+#### Step 4.4: Disk Pages
 
-Yeh teen scenarios compare karo:
+DB disk se data **pages** mein read karta hai (typically 8KB blocks). B-tree nodes = disk pages. Wide fanout (dozens of children per node) → shallow tree (3-4 levels even for billions of rows).
 
-**❌ Approach 1: SELECT then UPDATE (TOCTOU bug)**
+Practical: lookup = 3-4 disk reads = milliseconds. Vs full scan = seconds/minutes.
+
+### Foundation Concept 5: Composite Index Aur Leftmost-Prefix Rule
 
 ```sql
--- App code:
-SELECT used FROM tokens WHERE token_hash = 'abc';  -- Returns false
--- App checks: "OK, not used yet"
-UPDATE tokens SET used = 1 WHERE token_hash = 'abc';  -- Always updates
+CREATE INDEX idx_user_active
+    ON password_reset_tokens(user_id, used, expires_at);
 ```
 
-Race: 2 concurrent requests both SELECT (both see used=false), both UPDATE. Double consumption.
+Internally sorted: pehle `user_id`, phir `used`, phir `expires_at`.
 
-**❌ Approach 2: SELECT FOR UPDATE then UPDATE (Pessimistic Locking — works but slower)**
+#### Leftmost-Prefix Rule
+
+✅ **Index used** (left-to-right columns in WHERE):
+- `WHERE user_id = ?`
+- `WHERE user_id = ? AND used = false`
+- `WHERE user_id = ? AND used = false AND expires_at > NOW()`
+
+❌ **Index NOT used**:
+- `WHERE used = false` (skipped leftmost)
+- `WHERE expires_at > NOW()` (skipped first two)
+
+**Why**: Index sorted by user_id first. Without user_id condition, DB ko start point nahi pata — full scan.
+
+### Foundation Concept 6: Isolation Levels — 4 Levels
+
+ACID ka "I" = Isolation. 4 standard levels:
+
+| Level | Behavior | Use case |
+|-------|----------|----------|
+| **READ UNCOMMITTED** | Doosre ki uncommitted changes bhi dekho (dirty reads) | Almost never |
+| **READ COMMITTED** (default in SQL Server, Oracle, Postgres) | Sirf committed data. Same query different result possible. | Most apps |
+| **REPEATABLE READ** (MySQL default) | Padhi hui row frozen for your transaction. Phantom rows possible. | When you re-read same row |
+| **SERIALIZABLE** | Transactions appear one-by-one | Banking, critical financial |
+
+**Password reset**: **READ COMMITTED enough**. Single-statement atomic UPDATE row-level lock leta hai automatically.
+
+### Foundation Concept 7: Atomic UPDATE Pattern
+
+#### ❌ TOCTOU (Multi-Statement)
 
 ```sql
-BEGIN TRANSACTION;
-SELECT used FROM tokens WHERE token_hash = 'abc' FOR UPDATE;  -- Locks row
--- App checks: "OK, not used yet"
-UPDATE tokens SET used = 1 WHERE token_hash = 'abc';
-COMMIT;
+SELECT used FROM tokens WHERE hash='abc';  -- returns false
+-- Application: "OK, not used"
+UPDATE tokens SET used=1 WHERE hash='abc';  -- always updates
 ```
 
-Lock holds across multiple statements. Other requests **wait**. Safe but creates contention.
+Race: 2 concurrent SELECTs both see false, both UPDATE.
 
-**✅ Approach 3: Atomic UPDATE with WHERE (Best)**
+#### ✅ Atomic UPDATE (Single Statement)
 
 ```sql
-UPDATE tokens SET used = 1 WHERE token_hash = 'abc' AND used = 0;
--- Check rowcount
+UPDATE tokens
+SET used = 1
+WHERE token_hash = 'abc'
+  AND used = 0;       -- ← check AND update atomic
 ```
 
-Single statement. SQL Server internally acquires U-Lock, checks `used=0`, converts to X-Lock if match, updates. **All in one atomic operation**. Two concurrent requests? One succeeds (rowcount=1), other fails (rowcount=0). No waiting, no contention beyond microseconds.
+**Internal flow**:
 
-This is the **gold standard pattern** for single-use tokens, counter increments, claim flags, etc.
-
-#### 3. Index Design for This Table
-
-Tumhare table mein 3 query patterns hain:
-
-```sql
--- Pattern A: Lookup by token hash (every confirm reset)
-WHERE token_hash = ?
-
--- Pattern B: Find user's active tokens (during request reset, to invalidate old)
-WHERE user_id = ? AND used = 0
-
--- Pattern C: Cleanup expired tokens (cron job)
-WHERE expires_at < NOW()
+```
+1. DB seeks row using idx_token_hash
+2. Acquires U-Lock
+3. Reads row, checks: used=0?
+4. If YES:
+   - Convert U-Lock → X-Lock
+   - Modify row: used=1
+   - Write to WAL
+   - Release X-Lock at COMMIT
+   - rowcount=1
+5. If NO:
+   - Release U-Lock
+   - rowcount=0
 ```
 
-Indexes:
+**Concurrent race**:
 
-```sql
--- Unique index on token_hash: O(log n) lookup, also enforces no duplicate hashes
-CREATE UNIQUE INDEX idx_token_hash ON password_reset_tokens(token_hash);
-
--- Composite index for user_id queries
--- Order matters: leftmost columns must be in WHERE
-CREATE INDEX idx_user_active ON password_reset_tokens(user_id, used, expires_at);
-
--- For cleanup job
-CREATE INDEX idx_expires ON password_reset_tokens(expires_at);
+```
+A: UPDATE → U-Lock → used=0 → X-Lock → updates → rowcount=1 ✓
+B: UPDATE → wants U-Lock → BLOCKED by A's X-Lock → WAIT
+   A commits, releases X-Lock
+   B gets U-Lock → sees used=1 (changed by A) → WHERE fails → rowcount=0 ✗
 ```
 
-**Composite index leftmost-prefix rule** kya hai? Index `(user_id, used, expires_at)` ka matlab DB ne data sort kiya: first by user_id, then by used, then by expires_at. Tum query kar sakte ho:
-- `WHERE user_id = ?` ✅ Uses index
-- `WHERE user_id = ? AND used = 0` ✅ Uses index
-- `WHERE user_id = ? AND used = 0 AND expires_at > NOW()` ✅ Uses index
-- `WHERE used = 0` ❌ Cannot use (skipped leftmost column user_id)
-- `WHERE expires_at > NOW()` ❌ Cannot use (skipped first two)
+One succeeds, other cleanly rejected. No corruption.
 
-Yeh "leftmost-prefix rule" hai — sirf left-to-right columns use kar sakte ho, beech ka skip nahi.
-
-### Bhai, Database Mein Yeh Problem Kaise Solve Hoti Hai
-
-Two flows yaad rakh:
-
-1. **Token banao** — Pehle purane unused tokens mark `used=1` (single user 5 baar click kare to sirf latest valid). Phir naya insert.
-2. **Token use karo** — **Atomic UPDATE** with WHERE. `rowcount=1` matlab success. `rowcount=0` matlab token invalid/expired/used.
-
-### SQL Example (Full Working)
+### Pura SQL Code
 
 ```sql
--- ============ TABLE DEFINITION ============
+-- ============ TABLE ============
 CREATE TABLE password_reset_tokens (
     id              UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     user_id         BIGINT NOT NULL,
-    token_hash      CHAR(64) NOT NULL,            -- SHA-256 hex, always 64 chars
+    token_hash      CHAR(64) NOT NULL,  -- SHA-256 hex always 64 chars
     expires_at      DATETIME2 NOT NULL,
-    used            BIT NOT NULL DEFAULT 0,       -- BIT = 1 bit boolean
+    used            BIT NOT NULL DEFAULT 0,
     used_at         DATETIME2 NULL,
     created_at      DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-    row_version     ROWVERSION,                   -- Auto-managed concurrency token
-
+    row_version     ROWVERSION,
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- ============ INDEXES ============
-CREATE UNIQUE INDEX idx_token_hash
-    ON password_reset_tokens(token_hash);
+CREATE UNIQUE INDEX idx_token_hash ON password_reset_tokens(token_hash);
+CREATE INDEX idx_user_active ON password_reset_tokens(user_id, used, expires_at);
+CREATE INDEX idx_cleanup ON password_reset_tokens(expires_at);
 
-CREATE INDEX idx_user_active
-    ON password_reset_tokens(user_id, used, expires_at);
-
-CREATE INDEX idx_cleanup
-    ON password_reset_tokens(expires_at);
-
--- ============ ATOMIC SINGLE-USE CONSUMPTION ============
+-- ============ ATOMIC CONSUMPTION ============
 BEGIN TRANSACTION;
 
--- Atomic: only succeeds if token unused AND not expired
 UPDATE password_reset_tokens
-SET used = 1,
-    used_at = SYSUTCDATETIME()
+SET used = 1, used_at = SYSUTCDATETIME()
 WHERE token_hash = @tokenHash
   AND used = 0
   AND expires_at > SYSUTCDATETIME();
 
 IF @@ROWCOUNT = 0
 BEGIN
-    -- Either token doesn't exist, is expired, or already used
-    -- Same error for all 3 → no info leak to attacker
     ROLLBACK TRANSACTION;
     THROW 51000, 'Token invalid, expired, or already used', 1;
 END
 
--- Now safely update the password
 DECLARE @userId BIGINT = (
-    SELECT user_id FROM password_reset_tokens
-    WHERE token_hash = @tokenHash
+    SELECT user_id FROM password_reset_tokens WHERE token_hash = @tokenHash
 );
 
 UPDATE users
-SET password_hash = @newPasswordHash,
-    password_changed_at = SYSUTCDATETIME()
+SET password_hash = @newPasswordHash, password_changed_at = SYSUTCDATETIME()
 WHERE id = @userId;
 
--- Also kill all sessions for this user
 DELETE FROM user_sessions WHERE user_id = @userId;
 
 COMMIT TRANSACTION;
 ```
 
-### The Gotcha (Detailed Explanation)
-
-**TOCTOU bug ka real-world example**: ATM cash withdraw imagine karo without atomic check.
-
-```
-Bhai code:
-  balance = SELECT balance FROM accounts WHERE id = X;  -- Returns 1000
-  if (balance >= 500):
-      UPDATE accounts SET balance = balance - 500 WHERE id = X;
-      dispense_cash(500);
-```
-
-Tum aur tumhari biwi same time withdraw karte ho 500 each:
-
-```
-You:    SELECT balance → 1000  ✓ ≥ 500
-Wife:   SELECT balance → 1000  ✓ ≥ 500
-You:    UPDATE balance = 1000-500 = 500
-Wife:   UPDATE balance = 1000-500 = 500
-You:    Cash dispensed 500
-Wife:   Cash dispensed 500
-Final balance: 500. But you withdrew 1000 total! Bank lost 500.
-```
-
-**Atomic fix**:
-
-```sql
-UPDATE accounts SET balance = balance - 500
-WHERE id = X AND balance >= 500;
--- Check rowcount
-```
-
-SQL engine row pe X-lock leta hai before checking. Second request waits, sees balance=500, condition `balance >= 500` fails, rowcount=0. Bank safe.
-
-Same pattern, same lifesaver, for token consumption.
-
-### Isolation Level Choice — Plain English
-
-**Isolation level** = "How much do concurrent transactions see each other's uncommitted changes?" 4 standard levels:
-
-| Level | What you see | Use case |
-|-------|--------------|----------|
-| READ UNCOMMITTED | Even uncommitted changes by others ("dirty reads") | Almost never use |
-| READ COMMITTED | Only committed data, but data can change between reads in your transaction | **Default, fine for most** |
-| REPEATABLE READ | Once you read a row, it stays the same in your transaction | When you SELECT same row twice and need consistency |
-| SERIALIZABLE | Transactions appear to run one-by-one | When you need absolute correctness over performance |
-
-For password reset: **READ COMMITTED is enough**. Why? Because our atomic UPDATE statement is itself atomic at row level — SQL Server takes X-lock on the row, no other transaction can interleave. Higher isolation = more locks = worse performance, no extra safety here.
-
 ---
 
 ## 🔧 Stack 4: Angular (Frontend Layer)
 
-**Concept needed**: Reactive Forms, RxJS operators, route param extraction, debouncing for performance, identical error UX.
+**Goal**: Frontend-specific concepts samjho.
 
-### Under the Hood — Angular Yeh Kaise Karta Hai
+### Foundation Concept 1: Reactive Programming Aur Observable
 
-#### 1. Reactive Forms — Form As an Observable
+#### Step 1.1: "Reactive Programming" Kya Hai?
 
-Angular ke 2 form types hain: **Template-Driven** (form in HTML, simple) aur **Reactive** (form in TypeScript, powerful). For anything beyond basic, use Reactive.
+**Traditional (imperative)**: step-by-step instructions.
 
-`FormControl` ka `valueChanges` ek **Observable<value>** hai. **Observable kya hai?** — sochne ka tarika: Observable ek "future stream of values" hai. Tum `subscribe` karte ho, jab bhi value change hoti hai, tumhara callback chalta hai. Like newsletter subscription — naya issue aaye, tumhe deliver hota hai. Promise sirf ek baar resolve hota hai, Observable multiple times values emit kar sakta hai.
-
-#### 2. `debounceTime` — Spam Roknay Ki Magic
-
-Soch: User password field mein type kar raha hai "MySecret123". Har keystroke pe agar tum password strength API call karo, **10 API calls** ho jayenge for one password.
-
-`debounceTime(300)` solution: "Last keystroke ke 300ms baad agar koi naya keystroke nahi aaya, tab proceed karo. Drmiyaan mein agar aur key dabe, timer reset ho jaye."
-
-Internally yeh `setTimeout` use karta hai aur `clearTimeout` se cancel karta hai. Result: 10 keystrokes → 1 final emit after 300ms idle.
-
-```typescript
-this.form.get('password')!.valueChanges.pipe(
-  debounceTime(300),
-  distinctUntilChanged()  // skip if value is same as last emitted
-).subscribe(value => calculateStrength(value));
+```javascript
+let total = 0;
+total = price * quantity;
+// Phir price ya quantity change ho, manually recalculate
 ```
 
-#### 3. Zone.js — Angular Ka Change Detection Engine
+**Reactive**: data ke beech **relationships** declare karo. Change pe **automatic update**.
 
-Angular ko kaise pata chalta hai "kuch change hua, UI refresh karna hai"? **Zone.js** library JavaScript ke saare async APIs (setTimeout, fetch, addEventListener) ko **monkey-patch** karti hai = unke around wrapper add karti hai. Jab bhi koi async operation complete hota hai, Zone.js Angular ko notify karta hai "ho gaya, check kar le". Angular `tick()` chalata hai jo component tree traverse karta hai aur dirty components ko re-render karta hai.
+Mental model: spreadsheet. A3 = `=A1*A2`. Tum A1 change karo, A3 automatically recompute.
 
-Yeh "Magic" hai jo `setTimeout(() => this.x = 'new')` ke baad UI automatically update hoti hai bina tumhare kuch likhe.
+#### Step 1.2: "Observable" — Newsletter Analogy
 
-#### 4. HttpClient Observables — Cold vs Hot
+**Observable** = "future stream of values". Tum **subscribe** karte ho — value emit ho, tumhara callback chalta hai.
 
-`this.http.post(...)` ek **cold Observable** return karta hai. "Cold" matlab — **subscribe karne tak request fire hi nahi hoti**. Subscribe karte hi HTTP call jata hai. Har naye subscriber pe naya HTTP call fire hota hai (potentially dangerous if you forget).
-
-`async` pipe HTML mein (`{{ data$ | async }}`) automatically subscribe + unsubscribe handle karta hai component destroy pe — memory leak avoid.
-
-### Bhai, Frontend Pe Yeh Kaise Handle Karein
-
-User enumeration roknay ke liye **frontend pe bhi same message** chahiye, chahe email registered ho ya na. Token URL se uthao, naye password ka form dikhao, real-time strength check (debounced for performance).
-
-### Code Pattern
+Newsletter subscription: subscribe karo. Future mein naya issue → mil jata hai. Doosra bhi subscribe karta hai, woh bhi receive karta hai.
 
 ```typescript
-// ============ REQUEST RESET COMPONENT ============
+const counter$: Observable<number> = interval(1000);
+counter$.subscribe(value => console.log(value));
+// 0 (after 1s), 1 (after 2s), 2 (after 3s)...
+```
+
+#### Step 1.3: Observable vs Promise
+
+**Promise** = ek single future value. Resolve once, khatam.
+
+**Observable** = stream of values. Kitne bhi values emit over time. Cancellable.
+
+```typescript
+fromEvent(button, 'click').subscribe(event => handle(event));
+// Click 1, Click 2, Click 3...
+```
+
+#### Step 1.4: RxJS Aur Operators
+
+**RxJS** = library for Observables + operators.
+
+**Operators** = functions jo streams transform karte hain (like SQL for streams).
+
+```typescript
+interval(1000).pipe(
+    filter(n => n % 2 === 0),
+    map(n => n * 10)
+).subscribe(console.log);
+// 0, 20, 40, 60...
+```
+
+### Foundation Concept 2: `debounceTime` — Spam Roknay Ki Magic
+
+**Problem**: search box mein har keystroke pe API call = 5 calls for "ahmed".
+
+**Solution**:
+
+```typescript
+searchInput.valueChanges.pipe(
+    debounceTime(300)
+).subscribe(value => api.search(value));
+```
+
+**Step-by-step**:
+
+```
+T+0ms:    Type 'a' → emit → timer set (300ms)
+T+100ms:  Type 'h' → cancel timer, new emit → new timer
+T+200ms:  Type 'm' → cancel, emit → new timer
+T+300ms:  Type 'e' → cancel, emit → new timer
+T+400ms:  Type 'd' → cancel, emit → new timer
+T+700ms:  No input for 300ms → final emit → subscriber called
+```
+
+5 keystrokes → 1 API call. Internally setTimeout/clearTimeout.
+
+### Foundation Concept 3: Angular Reactive Forms
+
+**2 form types**:
+- **Template-Driven**: simple, state in HTML
+- **Reactive**: powerful, state in TypeScript
+
+`FormControl`'s **`valueChanges`** = Observable. Value change → emit.
+
+```typescript
+this.form.get('email')!.valueChanges.subscribe(value => {
+    console.log('Email:', value);
+});
+```
+
+### Foundation Concept 4: Change Detection Aur Zone.js
+
+#### Angular Ko Kaise Pata Chalta Hai Variable Change Hua?
+
+```typescript
+@Component({ template: `<p>{{ count }}</p>` })
+class MyComponent {
+    count = 0;
+    increment() { this.count++; }
+}
+```
+
+Button click → `count++` → UI update. **Kaise?**
+
+#### Zone.js — JavaScript Ka Spy
+
+**Zone.js** = library jo JavaScript ke async APIs ko intercept karti hai. "Monkey-patching" karti hai — standard JS functions replace karti hai apne versions se.
+
+**Monkey-patching example**:
+
+```javascript
+const originalSetTimeout = window.setTimeout;
+window.setTimeout = function(callback, delay) {
+    return originalSetTimeout(function() {
+        callback();
+        notifyAngularToCheckForChanges();  // Zone notifies Angular
+    }, delay);
+};
+```
+
+Zone.js patches: setTimeout, addEventListener, fetch, Promises — **har async API**.
+
+#### Full Mechanism
+
+1. App start → Zone.js loads, monkey-patches everything
+2. User clicks → Zone intercepts
+3. Click handler: `this.count++`
+4. Handler done → Zone notifies Angular
+5. Angular runs change detection — traverses component tree
+6. `{{ count }}` re-renders with new value
+
+### Foundation Concept 5: HttpClient Cold Observables
+
+```typescript
+const data$ = this.http.get('/api/users');  // NO request yet
+data$.subscribe(...);  // NOW request fires
+data$.subscribe(...);  // ANOTHER request (separate!)
+```
+
+**Cold** = subscribe nahi karte to nothing happens. 2 subscribes = 2 requests.
+
+**Async pipe**:
+
+```html
+<div *ngFor="let user of users$ | async">
+  {{ user.name }}
+</div>
+```
+
+`async` pipe auto-subscribe + auto-unsubscribe on component destroy. **No memory leak**.
+
+### Angular Code
+
+```typescript
 @Component({
   selector: 'app-forgot-password',
   template: `
     <form [formGroup]="form" (ngSubmit)="submit()">
-      <input formControlName="email"
-             type="email"
-             placeholder="Apna email daalein" />
-
-      <!-- Show validation error -->
-      <div *ngIf="form.get('email')?.invalid &&
-                  form.get('email')?.touched"
-           class="error">
-        Valid email daalein
-      </div>
-
+      <input formControlName="email" type="email" placeholder="Email" />
       <button [disabled]="form.invalid || loading">
-        {{ loading ? 'Bhej raha hai...' : 'Reset Link Bhejo' }}
+        {{ loading ? 'Bhej raha hai...' : 'Reset Link' }}
       </button>
     </form>
-
-    <!-- IDENTICAL message regardless of whether email exists -->
+    <!-- IDENTICAL message — anti-enumeration -->
     <div *ngIf="submitted" class="success">
-      Agar yeh email registered hai, reset link bhej diya gaya hai.
-      Inbox check karein (spam folder bhi).
+      Agar email registered hai, reset link bhej diya gaya hai.
     </div>
   `
 })
@@ -819,7 +1646,6 @@ export class ForgotPasswordComponent {
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]]
   });
-
   loading = false;
   submitted = false;
 
@@ -827,47 +1653,27 @@ export class ForgotPasswordComponent {
 
   submit() {
     this.loading = true;
-
     this.auth.requestPasswordReset(this.form.value.email!)
-      .pipe(
-        // finalize runs whether success or error — always reset loading
-        finalize(() => this.loading = false)
-      )
+      .pipe(finalize(() => this.loading = false))
       .subscribe({
-        // CRITICAL: same UI behavior on both success AND error
-        // If we show different messages, attacker uses DevTools to enumerate
+        // CRITICAL: same UI on success AND error
         next: () => this.submitted = true,
         error: () => this.submitted = true
       });
   }
 }
 
-// ============ CONFIRM RESET COMPONENT ============
 @Component({
   selector: 'app-reset-password',
   template: `
     <form [formGroup]="form" (ngSubmit)="submit()">
-      <input formControlName="password"
-             type="password"
-             placeholder="Naya Password (8+ characters)" />
-
-      <!-- Real-time strength meter -->
-      <div class="strength-bar" [ngClass]="(strength$ | async) || 'weak'">
+      <input formControlName="password" type="password" />
+      <div class="strength" [ngClass]="(strength$ | async) || 'weak'">
         Strength: {{ strength$ | async }}
       </div>
-
-      <input formControlName="confirm"
-             type="password"
-             placeholder="Password confirm karein" />
-
-      <div *ngIf="form.errors?.['mismatch'] && form.get('confirm')?.touched"
-           class="error">
-        Passwords match nahi karte
-      </div>
-
-      <button [disabled]="form.invalid || loading">
-        {{ loading ? 'Set kar raha hai...' : 'Naya Password Set Karein' }}
-      </button>
+      <input formControlName="confirm" type="password" />
+      <div *ngIf="form.errors?.['mismatch']">Passwords nahi match</div>
+      <button [disabled]="form.invalid">Set Password</button>
     </form>
   `
 })
@@ -889,19 +1695,10 @@ export class ResetPasswordComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Extract token from URL: /reset?token=abc...
     this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
+    if (!this.token) { this.router.navigate(['/login']); return; }
 
-    if (!this.token) {
-      // No token in URL → useless page, redirect
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    // Real-time password strength
-    // debounceTime(250): wait 250ms after last keystroke
-    // distinctUntilChanged: skip if same value as before
-    // map: transform value to strength rating
+    // Real-time strength — debounced
     this.strength$ = this.form.get('password')!.valueChanges.pipe(
       debounceTime(250),
       distinctUntilChanged(),
@@ -911,44 +1708,22 @@ export class ResetPasswordComponent implements OnInit {
 
   submit() {
     this.loading = true;
-
     this.auth.confirmReset(this.token, this.form.value.password!)
       .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: () => {
-          // Success: redirect to login with success message
-          this.router.navigate(['/login'], {
-            queryParams: { resetSuccess: 'true' }
-          });
-        },
-        error: err => {
-          // Generic error — could be expired, used, or invalid
-          // Don't leak which one to attacker
-          alert(err.error?.message ?? 'Link expired ya invalid. Dobara request karein.');
-        }
+        next: () => this.router.navigate(['/login']),
+        error: err => alert(err.error?.message ?? 'Link expired')
       });
   }
 
-  // Custom validator: check password === confirm
   private matchValidator(group: AbstractControl): ValidationErrors | null {
-    const pw = group.get('password')?.value;
-    const cf = group.get('confirm')?.value;
-    return pw === cf ? null : { mismatch: true };
+    return group.get('password')?.value === group.get('confirm')?.value
+      ? null : { mismatch: true };
   }
 
-  // Password strength calculator
-  // 4 criteria: uppercase, lowercase, digit, symbol
   private calculateStrength(pw: string): 'weak' | 'medium' | 'strong' {
     if (pw.length < 8) return 'weak';
-
-    const hasUpper = /[A-Z]/.test(pw);
-    const hasLower = /[a-z]/.test(pw);
-    const hasDigit = /\d/.test(pw);
-    const hasSymbol = /[^A-Za-z0-9]/.test(pw);
-
-    const score = [hasUpper, hasLower, hasDigit, hasSymbol]
-      .filter(Boolean).length;
-
+    const score = [/[A-Z]/, /[a-z]/, /\d/, /[^A-Za-z0-9]/].filter(r => r.test(pw)).length;
     if (score >= 3 && pw.length >= 12) return 'strong';
     if (score >= 2) return 'medium';
     return 'weak';
@@ -956,357 +1731,404 @@ export class ResetPasswordComponent implements OnInit {
 }
 ```
 
-### UX Concern
+### UX Concern — Anti-Enumeration Frontend Pe Bhi
 
-Agar tum frontend pe alag message dikhao ("Email not found" vs "Reset sent"), attacker DevTools open karta hai, Network tab dekhta hai, fields/messages diff karta hai → enumeration done. **Identical response** har layer pe non-negotiable hai. UX team agar bole "user ko clear message do" — to bhi security wins. Industry standard yahi hai (GitHub, Stripe, Google sab same approach).
+Different message dikhao → DevTools → Network tab → enumeration. **Identical response har layer pe** non-negotiable.
 
 ---
 
-## 🔧 Stack 5: System Design (Architecture View)
+## 🔧 Stack 5: System Design
 
-**Pattern needed**: Strategy Pattern (Polymorphism in action) + Event-Driven async + Rate Limiting.
+**Goal**: System level — messaging, async, rate limiting.
 
-### Under the Hood — Yeh Architecture Pattern Kaise Kaam Karta Hai
+### Foundation Concept 1: Synchronous vs Asynchronous
 
-#### 1. Strategy Pattern — Polymorphism Ka Practical Use
-
-**Strategy Pattern** = "Algorithm ko alag classes mein wrap karo, interchangeable banao at runtime". Yeh literally polymorphism + intent ka combo hai.
-
-Tumhare paas ek `NotificationSender` interface hai. Concrete implementations: `EmailNotificationSender`, `SmsNotificationSender`, `WhatsAppSender`. Service code sirf `INotificationSender` reference rakhta hai. Runtime pe DI container decide karta hai konsa actual class inject karna hai (user preference, configuration, etc.).
-
-**Benefit**: Naya channel add karna = naya class likhna. Service code **untouched**. This is the **Open/Closed Principle** in action (Day 12 mein detail).
-
-#### 2. Event-Driven Async — Kafka/Queue Ka Use
-
-**Async architecture** ka philosophy: "Slow operations ko main request thread se hatao." API user ka response 50ms mein return kar de, slow email sending (2-5 seconds SMTP delay) **background** mein chale.
-
-**Kafka kya hai?** — Distributed message broker. Producer message publish karta hai ek "topic" pe. Consumer subscribe karta hai. Messages disk pe persist hote hain (durable). Kafka guarantees: ordering within partition, at-least-once delivery, replay capability (read old messages).
-
-**Flow**:
-```
-API:        Save token + publish event "PasswordResetRequested" → respond 200 in 50ms
-Kafka:      Stores event durably
-Consumer:   Email service picks event, sends SMTP, takes 3 seconds — no problem
-Failure:    If SMTP fails 3 times → message moves to Dead Letter Queue (DLQ)
-DLQ:        Special queue for failed messages, ops team reviews, retries manually
-```
-
-**Dead Letter Queue (DLQ)** = bin where messages go after exhausting retries. Without DLQ, failed messages either get retried infinitely (clogging system) or are silently dropped (lost data). DLQ = "I gave up, human please look."
-
-#### 3. Token Bucket Rate Limiter
-
-**Token Bucket Algorithm** explanation:
-
-Imagine ek bucket jo X tokens hold kar sakta hai (capacity = 100). Bucket mein Y tokens/sec refill hote hain (rate = 10/sec). Har incoming request 1 token consume karta hai. Bucket khaali hai? Request rejected (429 Too Many Requests).
-
-For password reset endpoint: capacity = 3, refill = 1/hour. Yani max 3 requests per hour per user/IP. Brute force attempt? Banda 4th try pe block ho jata hai.
-
-Redis pe implement karte hain — Redis atomic INCR + EXPIRE commands have us covered:
+**Sync**: tum karte ho, **wait** karte ho, aage badhte ho.
 
 ```
-Key: "rate_limit:forgot_password:USER_IP"
-Value: counter, TTL: 1 hour
-On request: INCR key, EXPIRE key 3600 IF not set
-If counter > 3: reject
+Client → Server (DB+SMTP 2200ms) → Response
+Total: 2.2s — user dekhta loading spinner — UX kharab
 ```
 
-### Bhai, Architecture Level Pe Yeh Kaise Design Karein
+**Async**: slow operations background mein, user ko fast response.
 
-Reset request aaye → **synchronously** token banao + DB save → **asynchronously** notification dispatch via event/queue. User ko 50ms response, email background mein. Notification service crash ho jaye → DLQ mein chala jaye for retry. Polymorphic sender allows runtime channel selection.
+```
+Client → Server (DB + publish event 21ms) → Response
+Total: 21ms — fast!
+
+Background: Queue consumer → SMTP (2s) → email delivered
+```
+
+User ko 21ms mein "link sent". Email background mein. No waiting.
+
+**Trade-offs**:
+- ✅ Fast response, scalable, resilient
+- ❌ Complex architecture, eventual delivery, debugging harder
+
+### Foundation Concept 2: Message Broker (Kafka)
+
+**Message broker** = middleware jo messages **producers** se receive karke **consumers** tak deliver karta hai.
+
+Analogy: **Post office**. Tum letter dete ho, post office store karta hai, recipient tak deliver karta hai.
+
+**Apache Kafka** distributed broker. Multiple servers ("brokers") milke cluster banate hain. Messages replicate hote hain durability ke liye.
+
+**Key concepts**:
+- **Topic** = category/channel (`password.reset.events`)
+- **Producer** = publishes (Auth Service)
+- **Consumer** = subscribes and reads (Notification Service)
+- **Partition** = topic subdivision for parallelism
+- **Offset** = sequential message ID
+
+**Durability**: messages disk pe write immediately. Crash mein safe. Configurable retention (default 7 days) — replay possible.
+
+### Foundation Concept 3: Dead Letter Queue (DLQ)
+
+**Problem**: notification fail ho gayi (SMTP down). Kya karein message ka?
+
+❌ Retry infinitely → clog system
+❌ Silently drop → data loss
+
+**✅ DLQ**: separate queue for **failed messages**. After N retries, message moves to DLQ.
+
+```
+Original queue: process → fail → retry → fail → retry → fail
+                                                          ↓
+DLQ:                                                  message here
+Ops team:    monitors DLQ → reviews → manually retry or fix
+```
+
+Graceful degradation. System keeps running, problems isolated.
+
+### Foundation Concept 4: Rate Limiting — Token Bucket Algorithm
+
+**Rate limiting** = max N requests per time window per user/IP.
+
+**Token Bucket**:
+
+Imagine bucket holding X tokens (capacity 100). Refills Y tokens/sec (rate 10/sec). Each request consumes 1.
+
+```
+Time 0s:   Bucket [100/100]
+           Request → consume 1 → [99/100]
+Time 0.1s: Auto-refill 1 → [100/100]
+           10 requests → consume 10 → [90/100]
+...
+Heavy traffic:
+           Bucket drains → 0 → requests REJECTED (429)
+           Traffic stops → bucket refills → service resumes
+```
+
+Self-recovering. Allows bursts, sustains long-term limits.
+
+**Redis implementation**: in-memory key-value store, microseconds latency. Atomic INCR + EXPIRE commands. Lua script for race-free updates.
 
 ### Architecture Diagram
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│  USER (Browser/Mobile App)                                     │
-│  Angular Forms: /forgot-password and /reset?token=...          │
-└─────────────────────────┬──────────────────────────────────────┘
-                          │ HTTPS POST
-                          ▼
-┌────────────────────────────────────────────────────────────────┐
-│  API GATEWAY                                                   │
-│  + Rate Limiter (Token Bucket: 3 requests/hour/IP)             │
-│  + TLS termination, request validation                         │
-└─────────────────────────┬──────────────────────────────────────┘
-                          │
-                          ▼
-┌────────────────────────────────────────────────────────────────┐
-│  AUTH SERVICE (Spring Boot / .NET)                             │
-│                                                                │
-│  requestReset(email):                                          │
-│    1. Lookup user                                              │
-│    2. SecureRandom 32 bytes → raw token                        │
-│    3. SHA-256 hash → save to DB                                │
-│    4. Publish event to Kafka                                   │
-│    5. Return 200 (don't wait for email)                        │
-│                                                                │
-│  confirmReset(token, password):                                │
-│    1. Hash token, atomic UPDATE used=1                         │
-│    2. Update password_hash (BCrypt)                            │
-│    3. Delete all sessions                                      │
-│    4. Return 200                                               │
-└─────────┬────────────────────────────┬─────────────────────────┘
-          │                            │
-          ▼                            ▼
-┌──────────────────────┐   ┌──────────────────────────────────┐
-│  SQL DATABASE        │   │  KAFKA (or AWS SNS/RabbitMQ)     │
-│                      │   │  Topic: "password.reset.events"  │
-│  - users             │   │  Durable, replayable             │
-│  - reset_tokens      │   └──────────┬───────────────────────┘
-│  - sessions          │              │
-│                      │              ▼
-│  Indexes:            │   ┌──────────────────────────────────┐
-│  - token_hash UNIQUE │   │  NOTIFICATION SERVICE            │
-│  - user_id+used+exp  │   │                                  │
-└──────────────────────┘   │  INotificationSender (interface) │
-                           │     ▲                            │
-                           │     │ implements                 │
-                           │     ├─ EmailSender (AWS SES)     │
-                           │     ├─ SmsSender (Twilio)        │
-                           │     ├─ PushSender (Firebase FCM) │
-                           │     └─ WhatsAppSender (Meta API) │
-                           │                                  │
-                           │  Polymorphic dispatch based on   │
-                           │  user.preferredChannel           │
-                           └───────────┬──────────────────────┘
-                                       │
-                                  on failure (3 retries exhausted)
-                                       ▼
-                           ┌──────────────────────────────────┐
-                           │  DEAD LETTER QUEUE               │
-                           │  Ops alert + manual review       │
-                           └──────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│  USER (Browser/Mobile)                               │
+│  Angular: /forgot-password and /reset?token=...      │
+└─────────────────────┬────────────────────────────────┘
+                      │ HTTPS POST
+                      ▼
+┌──────────────────────────────────────────────────────┐
+│  API GATEWAY                                         │
+│  + Rate Limiter (Token Bucket: 3/hour/IP on Redis)   │
+│  + TLS termination                                   │
+└─────────────────────┬────────────────────────────────┘
+                      │
+                      ▼
+┌──────────────────────────────────────────────────────┐
+│  AUTH SERVICE (Spring/.NET)                          │
+│  requestReset: DB lookup → token gen → save → KAFKA  │
+│  confirmReset: atomic UPDATE → password → kill sessions │
+└─────┬──────────────────────────────────┬─────────────┘
+      │                                  │
+      ▼                                  ▼
+┌──────────────┐         ┌────────────────────────────┐
+│  SQL DB      │         │  KAFKA                     │
+│  - users     │         │  Topic: password.reset     │
+│  - tokens    │         └──────────┬─────────────────┘
+│  - sessions  │                    │
+└──────────────┘                    ▼
+                          ┌────────────────────────────┐
+                          │  NOTIFICATION SERVICE      │
+                          │                            │
+                          │  INotificationSender       │
+                          │     ├─ EmailSender (SES)   │
+                          │     ├─ SmsSender (Twilio)  │
+                          │     ├─ PushSender (FCM)    │
+                          │     └─ WhatsAppSender      │
+                          │                            │
+                          │  Polymorphic dispatch      │
+                          └──────────┬─────────────────┘
+                                     │ on failure
+                                     ▼
+                          ┌────────────────────────────┐
+                          │  DEAD LETTER QUEUE         │
+                          │  Ops alert + manual review │
+                          └────────────────────────────┘
 ```
 
-### Trade-offs (Detailed)
+### Trade-offs
 
-| Approach | Pros | Cons | When to use |
-|----------|------|------|-------------|
-| **Sync email send** | Simple, immediate confirmation | API slow (SMTP delays 2-5s), single point of failure | Tiny apps, internal tools |
-| **Async via queue** | Fast response, retryable, scalable, decoupled | Eventual delivery, infra cost, debugging complex | **Default for production** |
-| **JWT-based token (stateless)** | No DB lookup per validation, scalable | Cannot revoke before expiry, replay-able if leaked | Magic links with short expiry |
-| **Random + DB token (stateful)** | Revocable, single-use enforced, audit trail | DB hit per validation, requires schema | **Default for security-sensitive** |
-| **6-digit OTP code** | User-friendly, works without email click | Brute-force-able (need attempt limits), 6 digits = 1M combos | Mobile-first apps |
-| **Long random token in URL** | Cannot be brute-forced (32 bytes = 10^77 combos) | Requires email/SMS link click | **Daraz-style apps** |
+| Approach | Pros | Cons | When |
+|----------|------|------|------|
+| Sync email | Simple, immediate | Slow API, single point of failure | Tiny apps |
+| Async via queue | Fast response, retryable, scalable | Complex, eventual delivery | **Production default** |
+| JWT token | No DB lookup, stateless | Cannot revoke before expiry | Short-expiry magic links |
+| DB-stored token | Revocable, single-use enforced | DB hit per validation | **Security-sensitive default** |
+| 6-digit OTP | User-friendly | Brute-forceable, needs attempt limits | Mobile-first apps |
+| Long URL token | 10^77 combos, unbrute-forceable | Needs click | **Daraz-style** |
 
-### Real Companies Using This
+### Real Companies
 
-- **Stripe**: Async via internal Kafka. Multi-channel (email + SMS). 1-hour expiry. HMAC tokens (no DB lookup, but cannot revoke).
-- **GitHub**: Sync email send (their scale allows it). 3-hour expiry. Explicit anti-enumeration in docs.
-- **Slack**: Magic-link login uses this exact pattern. Random token, SHA-256 hashed in DB, single-use, async via SendGrid.
-- **AWS Cognito**: Hashed 6-digit codes, attempt-limited (5 wrong = lock), async via SES.
-
----
+- **Stripe**: Async Kafka, multi-channel, 1-hour HMAC tokens
+- **GitHub**: Sync send, 3-hour expiry, explicit anti-enumeration
+- **Slack**: Magic-link, random + SHA-256, async SendGrid
+- **AWS Cognito**: Hashed 6-digit, attempt-limited, async SES
 
 ---
 
-## 🏛️ OOP + DESIGN PATTERN LENS (Cross-Questioning Proof)
+---
 
-**Today's OOP/Pattern Focus**: **Polymorphism (Method Overriding)** — Day 4 of OOP Fundamentals
+## 🏛️ OOP + DESIGN PATTERN LENS (Polymorphism Detail)
 
-### Principle/Pattern Definition (In Depth)
+**Today's Focus**: **Polymorphism (Method Overriding)** — Day 4 of OOP Fundamentals
 
-**Polymorphism** = Greek "poly" (many) + "morph" (shape) = "many shapes". In code, it means: **same method call, different behavior depending on the actual object at runtime**.
+### Foundation 1: Polymorphism Ka Pura Concept
 
-3 types of polymorphism in OOP:
+#### Step 1.1: Naam Ka Matlab
 
-1. **Compile-time polymorphism (Method Overloading)** — same method name, different parameters in **same class**. Compiler picks the right one based on argument types.
+**Polymorphism** = Greek **"poly" (many) + "morph" (shape)** = "many shapes".
 
-2. **Runtime polymorphism (Method Overriding)** — child class **redefines** a method declared in parent class/interface. The actual object's class (not the reference type) decides which method runs **at runtime**.
+Programming mein: **same method call, different actual behavior** depending on actual object's type at runtime.
 
-3. **Parametric polymorphism (Generics)** — same code works for any type. `List<String>`, `List<Integer>` use same `List` implementation.
+#### Step 1.2: 3 Types (Aaj Sirf 1)
 
-Aaj **#2 (Method Overriding)** focus hai.
+1. **Compile-time (Overloading)** — same name, different parameters, same class
+2. **Runtime (Overriding)** — child redefines parent's method
+3. **Parametric (Generics)** — same code, multiple types
 
-### How Method Overriding Actually Works (Step by Step)
+**Aaj #2 focus.**
+
+#### Step 1.3: Hotel Chef Analogy
+
+Customer kehta: "Chef sahab, khaana banao." Chef: "OK."
+
+- Pakistani chef → biryani
+- Chinese chef → noodles
+- Italian chef → pasta
+
+**Same request, different delivery.** Caller knows interface, not implementation.
+
+### Foundation 2: Method Overloading Vs Overriding
+
+#### Method Overloading (Compile-Time)
+
+**Same class**, same method name, **different parameter lists**.
 
 ```java
-NotificationSender sender = new EmailNotificationSender();
-sender.send(user, message);
+class Printer {
+    void print(int x) { ... }
+    void print(String x) { ... }
+    void print(int x, int y) { ... }
+}
+
+Printer p = new Printer();
+p.print(5);        // Picks print(int) — compile time
+p.print("hello");  // Picks print(String) — compile time
 ```
 
-Yeh 1 line code mein 3 things happen:
+Compiler dekhta arguments → exact method choose karta. **Saara decision compile time pe**.
 
-```
-1. Compile time:
-   Compiler dekhta hai: "sender" is of type NotificationSender (interface)
-   "send()" method NotificationSender interface mein declared hai? YES
-   OK, code valid hai.
-   But compiler DOESN'T KNOW which actual class's send() will run.
+#### Method Overriding (Runtime)
 
-2. Runtime — JVM ka kaam:
-   Object actually EmailNotificationSender hai (was created with `new`).
-   Every Java object has a hidden pointer to its class's "vtable".
+**Child class** parent's same-signature method **redefines**.
 
-3. Virtual Table (vtable) lookup:
-   Vtable = array of function pointers, one per method.
-   EmailNotificationSender's vtable mein send() ke against
-   EmailNotificationSender.send() ka pointer hai.
-   JVM jumps to that pointer, executes the method.
-```
+```java
+class Animal {
+    public void sound() { print("generic"); }
+}
 
-**Vtable kya hai (depth)**: Har class apna vtable rakhti hai memory mein. Methods ke pointers store karti hai. Subclass jab method override karti hai, uska vtable parent ke jaisa hota hai except overridden method ka pointer apni implementation ki taraf point karta hai.
+class Dog extends Animal {
+    @Override
+    public void sound() { print("Woof!"); }
+}
 
-```
-NotificationSender's vtable:
-  [0] → send (abstract — no pointer)
+class Cat extends Animal {
+    @Override
+    public void sound() { print("Meow!"); }
+}
 
-EmailNotificationSender's vtable:
-  [0] → EmailNotificationSender.send (actual code in memory)
-
-SmsNotificationSender's vtable:
-  [0] → SmsNotificationSender.send (different code in memory)
+Animal myPet = new Dog();
+myPet.sound();  // "Woof!" — RUNTIME decided
 ```
 
-Object creation ke time class pointer set ho jata hai. Method call ke time JVM:
-1. Object se class pointer follow karta hai
-2. Class se vtable follow karta hai
-3. Vtable mein method ka index dekh ke function pointer leta hai
-4. Pointer ko jump karta hai → method execute
+Compile time pe compiler: "myPet is Animal type, sound() exists in Animal — valid."
+Runtime pe JVM: "actual object is Dog, call Dog's sound()."
 
-Ye sab nano-seconds mein hota hai but technically virtual dispatch ka cost hai. JIT compiler sometimes inline kar deta hai if it sees only one implementation ever runs (called "monomorphic call site optimization").
+#### Comparison
 
-### Bhai, Simple Mein Samjho
+| Aspect | Overloading | Overriding |
+|--------|-------------|------------|
+| Same class? | Yes | No — parent + child |
+| Same parameters? | No | Yes — identical signature |
+| Decision when? | Compile time | **Runtime** |
+| Mechanism | Compiler picks | JVM vtable lookup |
+| Inheritance? | No | Yes |
 
-Imagine kar ek hotel mein **chef** hai. Customer kehta hai "Chef sahab, khaana banao." Chef sirf bolta hai "OK". Lekin actual mein:
-- Agar chef ko **Pakistani chef** hire kiya gaya tha → biryani banegi
-- Agar **Chinese chef** hire kiya tha → noodles banenge
-- Agar **Italian chef** tha → pasta banegi
+### Foundation 3: Vtable — Runtime Polymorphism Internal Mechanism
 
-Customer (caller code) ko parwaah nahi kaunsa chef hai. Customer ka request same hai (`makeFood()`). Chef ki actual identity (subclass) decide karti hai actual khaana.
+#### Step 3.1: Confusion Kya Hai?
 
-**Yeh hi polymorphism hai**. Caller interface ko jaanta hai, implementation ko nahi.
-
-### Real-Life Analogy (Pakistani Context — Detailed)
-
-**Careem app analogy (depth)**:
-
-Tum Careem khol ke "Ride book" button click karte ho. App tumhe puchti hai:
-- Careem Go (small car)
-- Careem Plus (sedan)
-- Careem XL (SUV)
-- Careem Bike (motorcycle)
-- Rickshaw
-
-Tum koi bhi select karo, button **same** kaam karta hai — `bookRide()`. App ka code:
-
-```
-selectedVehicle.bookRide();   // selectedVehicle is "Vehicle" type
+```java
+Animal myPet = new Dog();
+myPet.sound();  // prints "Woof!"
 ```
 
-Lekin har vehicle ke piché alag implementation:
-- `CareemGo.bookRide()` → small car driver assign, fare = distance * 25
-- `CareemBike.bookRide()` → bike rider assign, fare = distance * 12, helmet provide
-- `Rickshaw.bookRide()` → rickshaw driver, fare = bargained, no AC
+**Question**: `myPet` ka declared type Animal hai. Compiler ko sirf `Animal.sound()` pata. Phir JVM kaise jaane Dog ki sound chalani hai?
 
-Same button click, different actual behavior, runtime decided based on `selectedVehicle` ki **actual type**.
+**Answer**: **Virtual function table (vtable)**.
 
-Tumhara app code (caller) **kabhi nahi badlta**. Kal Careem ne `CareemElectric` add kiya? Wahi `bookRide()` button kaam karega — naya class, same interface. **Yeh hi polymorphism ka power hai**: extensibility without modification.
+#### Step 3.2: Vtable Kya Hai?
 
----
+Har class ka apna **vtable** hota hai memory mein. **Array of function pointers** — har overrideable method ka pointer.
 
-### Aaj Ke Brainer Mein Yeh Pattern/Principle Kahan Hai?
+```
+Class Animal's vtable:
+  index 0: → Animal.sound() code address
+  index 1: → Animal.eat() code address
 
-Aaj ke Password Reset scenario mein **polymorphism literally har jagah** hai:
+Class Dog's vtable (extends Animal):
+  index 0: → Dog.sound() code address    ← OVERRIDDEN
+  index 1: → Animal.eat() code address    ← inherited
 
-**1. `NotificationSender` interface** — yeh hi sabse obvious example hai. `EmailSender`, `SmsSender`, `PushSender`, `WhatsAppSender` — sab ne `send()` method override kiya hai. Service code sirf interface jaanta hai. WhatsApp kal add karna ho? Naya class likho, DI register karo, **service code untouched**.
+Class Cat's vtable (extends Animal):
+  index 0: → Cat.sound() code address    ← OVERRIDDEN
+  index 1: → Animal.eat() code address    ← inherited
+```
 
-**2. `PasswordEncoder` (Spring) / `IPasswordHasher<T>` (.NET)** — Spring ke paas hain:
-- `BCryptPasswordEncoder`
-- `Argon2PasswordEncoder`
-- `Pbkdf2PasswordEncoder`
-- `SCryptPasswordEncoder`
+Note: **same index** for sound(), different pointers.
 
-Sab ne `encode()` aur `matches()` override kiye. Tum apne service code mein sirf `PasswordEncoder encoder` use karte ho. DI configuration mein BCrypt se Argon2 switch karna ho? Sirf bean configuration badlo:
+#### Step 3.3: Method Call Flow
 
+```java
+Animal myPet = new Dog();
+myPet.sound();
+```
+
+```
+T+0: Object create: new Dog()
+     Dog object in memory + hidden "class pointer" → Dog's vtable
+
+T+1: Variable assignment: Animal myPet = ...
+     myPet → points to Dog object
+
+T+2: myPet.sound()
+     Compile time: compiler checks sound() exists in Animal → valid
+     Runtime — JVM:
+       a. myPet → follow pointer → Dog object
+       b. From object → class pointer → Dog's vtable
+       c. Look up index 0 → Dog.sound() pointer
+       d. Jump to that address → execute
+       e. Prints "Woof!"
+```
+
+Nanoseconds, but **vtable lookup** is the cost of virtual dispatch.
+
+#### Step 3.4: JIT Devirtualization
+
+**JIT** = **J**ust-**I**n-**T**ime compiler. JVM component converting bytecode to native machine code at runtime.
+
+JIT smart: if a call site always sees same implementation, it **devirtualizes** — direct call instead of vtable lookup. "Monomorphic call site optimization."
+
+### Foundation 4: Aaj Ke Code Mein Polymorphism
+
+#### 1. `NotificationSender` Interface
+
+```java
+public interface NotificationSender {
+    void send(User user, NotificationMessage message);
+}
+
+class EmailNotificationSender implements NotificationSender { ... }
+class SmsNotificationSender implements NotificationSender { ... }
+class PushNotificationSender implements NotificationSender { ... }
+```
+
+Service:
+```java
+private final NotificationSender notifier;  // interface
+notifier.send(user, message);  // polymorphic dispatch
+```
+
+WhatsApp add? **Naya class. Done.** Service code untouched.
+
+#### 2. `PasswordEncoder` (Spring Built-In)
+
+Spring: `BCryptPasswordEncoder`, `Argon2PasswordEncoder`, `Pbkdf2PasswordEncoder`, `SCryptPasswordEncoder`. Sab override `encode()` aur `matches()`.
+
+DI config se switch:
 ```java
 @Bean
 public PasswordEncoder passwordEncoder() {
-    return new Argon2PasswordEncoder();  // was BCryptPasswordEncoder
+    return new Argon2PasswordEncoder();  // was BCrypt
 }
 ```
 
-Saare service code **untouched**. Polymorphism ke without, har service mein `BCrypt.hash(...)` directly call hota — har jagah migration karna parta.
+**Saare service code untouched.**
 
-**3. `MessageDigest.getInstance("SHA-256")`** — JVM internally polymorphic dispatch karta hai. `MessageDigest` abstract base class hai, har algorithm (`SHA-256`, `SHA-512`, `MD5`) ki concrete subclass hai. Tum sirf algorithm name pass karte ho, JVM correct implementation return karta hai.
+#### 3. `MessageDigest.getInstance("SHA-256")`
 
-Polymorphism is the **secret sauce** that makes our `PasswordResetService` **Open for extension, Closed for modification** (foreshadowing Day 12 — Open/Closed Principle).
+JVM polymorphic dispatch. Abstract base + concrete subclasses (SHA-256, SHA-512, MD5).
 
 ---
 
-### Code Mein Yeh Principle Kaise Apply Hota Hai?
+### Code: ❌ BAD vs ✅ GOOD
 
-#### ❌ BAD (Polymorphism NOT Used — `if/else` Hell)
+#### ❌ BAD: If/Else Hell
 
 ```java
 @Service
 public class PasswordResetService {
-
     public void sendResetNotification(User user, String link, String channel) {
-        // 😱 Tight coupling, hard to extend
         if (channel.equals("EMAIL")) {
             JavaMailSender mailSender = ...;
-            MimeMessage msg = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(msg);
-            helper.setTo(user.getEmail());
-            helper.setSubject("Reset");
-            helper.setText("Click: " + link, true);
-            mailSender.send(msg);
+            // 20 lines of email code
         }
         else if (channel.equals("SMS")) {
             TwilioRestClient twilio = ...;
-            Message smsMessage = Message.creator(
-                new PhoneNumber(user.getPhone()),
-                new PhoneNumber("+923001234567"),
-                "Reset link: " + link
-            ).create();
+            // 15 lines of SMS code
         }
         else if (channel.equals("PUSH")) {
             FirebaseMessaging fcm = ...;
-            Notification notification = Notification.builder()
-                .setTitle("Password Reset")
-                .setBody("Tap to reset")
-                .build();
-            Message pushMsg = Message.builder()
-                .setNotification(notification)
-                .setToken(user.getFcmToken())
-                .build();
-            fcm.send(pushMsg);
+            // 25 lines of push code
         }
-        // 🤬 WhatsApp add karna hai? Yahin chain mein else-if add karo!
-        // Service file ka size grow karta jayega, kabhi clean nahi hoga.
+        // WhatsApp add karna? Yahi chain extend karo!
     }
 }
 ```
 
-**Problems list**:
-1. **Open/Closed violated** — naya channel = is class ko modify karna (file diff mein dikhega, code review headache).
-2. **Single Responsibility violated** — ek class email + SMS + push sab know karti hai.
-3. **Unit testing impossible** — `JavaMailSender`, `TwilioRestClient`, `FirebaseMessaging` saare hard-coded, mock karna painful.
-4. **Imports bloat** — har channel ka SDK import — class bahut bhari ho jata hai.
-5. **Coupling** — Reset service ka existence Twilio/Firebase/JavaMail pe depend karta hai. Twilio API change kare → reset service compile fail.
+**Problems**: Open/Closed violated, Single Responsibility violated, untestable, imports bloat, tight coupling.
 
-#### ✅ GOOD (Polymorphism Used Properly)
+#### ✅ GOOD: Polymorphism + Strategy
 
 ```java
-// ============ INTERFACE — the contract ============
+// INTERFACE
 public interface NotificationSender {
     void send(User user, NotificationMessage message);
     NotificationChannel getChannel();
 }
 
-public enum NotificationChannel {
-    EMAIL, SMS, PUSH, WHATSAPP
-}
-
-// ============ EMAIL IMPLEMENTATION ============
+// EMAIL IMPLEMENTATION
 @Component
 @RequiredArgsConstructor
 public class EmailNotificationSender implements NotificationSender {
-
     private final JavaMailSender mailSender;
 
-    @Override  // tells compiler "must match interface signature"
+    @Override
     public void send(User user, NotificationMessage message) {
         try {
             MimeMessage mime = mailSender.createMimeMessage();
@@ -1326,11 +2148,10 @@ public class EmailNotificationSender implements NotificationSender {
     }
 }
 
-// ============ SMS IMPLEMENTATION ============
+// SMS IMPLEMENTATION
 @Component
 @RequiredArgsConstructor
 public class SmsNotificationSender implements NotificationSender {
-
     private final TwilioClient twilio;
 
     @Override
@@ -1348,71 +2169,30 @@ public class SmsNotificationSender implements NotificationSender {
     }
 }
 
-// ============ PUSH IMPLEMENTATION ============
-@Component
-@RequiredArgsConstructor
-public class PushNotificationSender implements NotificationSender {
-
-    private final FirebaseMessaging fcm;
-
-    @Override
-    public void send(User user, NotificationMessage message) {
-        Message msg = Message.builder()
-            .setNotification(Notification.builder()
-                .setTitle(message.getSubject())
-                .setBody(message.getPushBody())
-                .build())
-            .setToken(user.getFcmToken())
-            .build();
-        try {
-            fcm.send(msg);
-        } catch (FirebaseMessagingException e) {
-            throw new NotificationException("Push send failed", e);
-        }
-    }
-
-    @Override
-    public NotificationChannel getChannel() {
-        return NotificationChannel.PUSH;
-    }
-}
-
-// ============ SERVICE — consumes via interface, knows no concrete types ============
+// SERVICE
 @Service
 public class PasswordResetService {
-
     private final Map<NotificationChannel, NotificationSender> sendersByChannel;
 
-    // Spring magic: List<NotificationSender> auto-fills with ALL @Component
-    // implementations of NotificationSender. We index by channel for lookup.
+    // Spring magic: List<NotificationSender> auto-fills with ALL implementations
     public PasswordResetService(List<NotificationSender> allSenders) {
         this.sendersByChannel = allSenders.stream()
-            .collect(Collectors.toMap(
-                NotificationSender::getChannel,
-                Function.identity()
-            ));
+            .collect(Collectors.toMap(NotificationSender::getChannel, Function.identity()));
     }
 
     public void sendResetNotification(User user, String link) {
-        // User has a preferred channel (saved in their profile)
         NotificationSender sender = sendersByChannel.get(user.getPreferredChannel());
+        if (sender == null) sender = sendersByChannel.get(NotificationChannel.EMAIL);
 
-        if (sender == null) {
-            // Fallback to email if preference unavailable
-            sender = sendersByChannel.get(NotificationChannel.EMAIL);
-        }
-
-        // ⭐ POLYMORPHIC CALL — runtime decides which send() runs
-        // Service has NO knowledge of Email/SMS/Push internals
+        // ⭐ POLYMORPHIC CALL
         sender.send(user, new PasswordResetMessage(link));
     }
 }
 ```
 
-**Now adding WhatsApp**:
+**Ab WhatsApp add karna**:
 
 ```java
-// Just write ONE new class. Service code unchanged.
 @Component
 @RequiredArgsConstructor
 public class WhatsAppNotificationSender implements NotificationSender {
@@ -1425,264 +2205,105 @@ public class WhatsAppNotificationSender implements NotificationSender {
     }
 
     @Override
-    public NotificationChannel getChannel() {
-        return NotificationChannel.WHATSAPP;
-    }
+    public NotificationChannel getChannel() { return NotificationChannel.WHATSAPP; }
 }
 ```
 
-Spring automatically detects the new `@Component`, injects it into the service's list, map gets a new entry. **Zero changes to existing code, zero deployment risk on existing channels.** This is the textbook **Open/Closed Principle**.
+Spring detects new `@Component`, injects to service's list, map gets new entry. **Zero changes to existing code.** Textbook **Open/Closed Principle**.
 
----
-
-### Java vs .NET Mein Yeh Principle Kaise Implement Hota Hai?
+### Java vs .NET
 
 | Aspect | Java | C#/.NET |
 |--------|------|---------|
-| Override keyword | `@Override` annotation (optional but strongly recommended) | `override` keyword (**mandatory**) |
-| Base method virtual? | Methods are **virtual by default** in Java | Base must be `virtual` or `abstract` explicitly |
-| Hide vs override | Java always overrides (no hiding) | C# `new` keyword to hide (different semantics, dangerous) |
-| Interface methods | Implicitly abstract (or `default` in Java 8+) | Implicit, or `default` interface methods (C# 8+) |
-| Sealed override | `final` keyword on method blocks further override | `sealed override` blocks further override |
-| Polymorphic DI | `List<INotifier>` or `Map<Key, INotifier>` | `IEnumerable<INotifier>` or keyed services (.NET 8+) |
-
-```csharp
-// C# equivalent — full working example
-
-public interface INotificationSender
-{
-    Task SendAsync(User user, NotificationMessage message);
-    NotificationChannel Channel { get; }
-}
-
-public class EmailNotificationSender : INotificationSender
-{
-    private readonly IEmailClient _email;
-    public NotificationChannel Channel => NotificationChannel.Email;
-
-    public EmailNotificationSender(IEmailClient email) => _email = email;
-
-    public async Task SendAsync(User user, NotificationMessage message)
-    {
-        await _email.SendAsync(user.Email, message.Subject, message.HtmlBody);
-    }
-}
-
-public class SmsNotificationSender : INotificationSender
-{
-    private readonly ITwilioClient _twilio;
-    public NotificationChannel Channel => NotificationChannel.Sms;
-
-    public SmsNotificationSender(ITwilioClient twilio) => _twilio = twilio;
-
-    public async Task SendAsync(User user, NotificationMessage message)
-    {
-        await _twilio.SendSmsAsync(user.Phone, message.SmsBody);
-    }
-}
-
-// ============ REGISTRATION (Program.cs in .NET 8) ============
-// Keyed services allow looking up by key (channel)
-builder.Services.AddKeyedScoped<INotificationSender, EmailNotificationSender>(
-    NotificationChannel.Email);
-builder.Services.AddKeyedScoped<INotificationSender, SmsNotificationSender>(
-    NotificationChannel.Sms);
-
-// ============ SERVICE ============
-public class PasswordResetService
-{
-    private readonly IServiceProvider _sp;
-
-    public PasswordResetService(IServiceProvider sp) => _sp = sp;
-
-    public async Task NotifyAsync(User user, string link)
-    {
-        // Resolve correct sender at runtime based on user preference
-        var sender = _sp.GetRequiredKeyedService<INotificationSender>(
-            user.PreferredChannel);
-
-        // Polymorphic dispatch — actual implementation decided at runtime
-        await sender.SendAsync(user, new PasswordResetMessage(link));
-    }
-}
-```
-
-**Important Java vs C# gotcha**: In Java, all methods are virtual by default — child can override anything. In C#, parent method must be marked `virtual` to allow override. C# defaults to "sealed" — methods cannot be overridden unless explicitly allowed. This is a **design philosophy difference**: Java trusts subclasses by default, C# requires explicit opt-in for safety.
+| Override syntax | `@Override` (optional but recommended) | `override` (**mandatory**) |
+| Base virtual? | Default virtual | Must be `virtual`/`abstract` |
+| Hide vs override | Always overrides | `new` keyword can hide |
+| Prevent further override | `final` | `sealed override` |
+| Polymorphic DI | `List<INotifier>` | `IEnumerable<INotifier>` or keyed services |
 
 ---
 
-### 🎯 Cross-Questioning Drill (Interview Defense)
+### 🎯 Cross-Questioning Drill
 
-#### Cross Q1: "Polymorphism aur Method Overloading mein kya difference hai?"
+#### Q1: "Polymorphism aur Method Overloading mein farak?"
 
-**Confident Answer**:
+"Bhai, dono ka naam similar but completely alag concepts:
 
-"Bhai, dono ka naam similar lagta hai but **completely different concepts** hain:
+**Overloading (compile-time)**:
+- Same class, same name, **different parameters**
+- **Compiler decides** by argument types
+- No inheritance
+- `print(int)`, `print(String)` — same class
 
-**Method Overloading (compile-time polymorphism)**:
-- Same class mein same method name
-- **Different parameter list** (different number, types, or order)
-- Compiler decide karta hai which to call, by looking at arguments at compile time
-- No inheritance involved
-- Example:
-```java
-class Printer {
-    void print(int x) { ... }
-    void print(String x) { ... }
-    void print(int x, int y) { ... }
-}
-```
-Call `print(5)` → compiler sees int → picks first method. Decision made at compile time. JVM doesn't think.
+**Overriding (runtime)**:
+- Parent's method redefined in child
+- **Same signature**
+- **JVM decides at runtime** via vtable lookup
+- Inheritance required
 
-**Method Overriding (runtime polymorphism)**:
-- Parent class/interface ki method ko child class redefine karti hai
-- **Same signature** — same name, same parameters, same return type
-- JVM decide karta hai which to call by looking at actual object's class **at runtime**
-- Inheritance/implements required
-- Example:
-```java
-class Animal { void sound() { print('generic'); } }
-class Dog extends Animal { void sound() { print('woof'); } }
-class Cat extends Animal { void sound() { print('meow'); } }
+Compile time pe compiler validates signature exists. Runtime pe JVM looks up actual object's vtable."
 
-Animal a = new Dog();
-a.sound();  // prints 'woof' — runtime decided
-```
+#### Q2: "Strategy pattern use kiya. Alternatives?"
 
-Compile time pe `a` ka type `Animal` hai, lekin runtime pe actual object `Dog` hai, Dog ka `sound()` chalega.
+"3 alternatives:
 
-**Yeh hi 'virtual dispatch' kehte hain** — JVM uses vtable (virtual function table) lookup."
+1. **Switch/if-else**: Open/Closed violated, hard to test, single class knows all channels.
+2. **Functional (lambdas)**: Better but still concentrates logic in one file. Hard to inject deps.
+3. **Strategy + Polymorphism (chosen)**: Each strategy own class, own tests, DI handles wiring. New channel = new file.
 
----
+Enterprise mein clarity > brevity. Functional approach Day 1 attractive but Year 2 mein 50 channels = nightmare."
 
-#### Cross Q2: "Tumne strategy pattern use kiya. Alternative kya tha?"
-
-**Confident Answer**:
-
-"Alternatives the:
-
-**1. `switch` statement / if-else chain**:
-```java
-switch(channel) {
-    case EMAIL: /* email code */; break;
-    case SMS: /* sms code */; break;
-}
-```
-Problems:
-- Every new channel = modify this method (Open/Closed violated)
-- Testing requires mocking all dependencies in one class
-- Single Responsibility violated
-
-**2. Functional approach (Java 8+)**:
-```java
-Map<Channel, BiConsumer<User, Message>> handlers = Map.of(
-    EMAIL, (u, m) -> { /* email logic */ },
-    SMS, (u, m) -> { /* sms logic */ }
-);
-handlers.get(channel).accept(user, message);
-```
-Better than switch but still concentrates all logic in one file. Hard to inject dependencies cleanly. Lambdas can't easily hold their own state.
-
-**3. Strategy + Polymorphism (chosen approach)**:
-- Each strategy = own class = own file = own tests
-- DI container handles wiring
-- Adding new channel = new file, zero modifications
-- Stack traces show actual class name (better debugging)
-
-**Why I chose Strategy**: enterprise codebases mein clarity > brevity. Functional approach Day 1 mein attractive lagta hai but year 2 mein 50 channels ke saath maintenance nightmare ban jata hai."
-
----
-
-#### Cross Q3: "Polymorphism violate kab kar sakte ho jaan-boojh ke?"
-
-**Confident Answer**:
+#### Q3: "Polymorphism violate kab kar sakte ho?"
 
 "3 legitimate reasons:
 
-**1. Performance-critical hot paths**:
-Virtual dispatch ka cost hota hai — typical 1-5 nanoseconds per call due to vtable lookup. High-frequency trading mein 1 billion calls/sec hote hain — 5ns × 1B = 5 seconds overhead per second. Solutions:
-- Mark class `final` in Java / `sealed` in C# → compiler can devirtualize
-- JIT compiler agar dekhta hai sirf ek implementation hai runtime mein, automatic devirtualize karta hai (monomorphic call site optimization)
+1. **Performance-critical hot paths**: vtable cost ~1-5ns/call. HFT mein 1B calls/sec adds up. Mark `final`/`sealed` for devirtualization.
+2. **Single implementation forever**: YAGNI — don't create interface for one impl.
+3. **Marker interfaces**: type tagging without polymorphism (`Serializable`).
 
-**2. Single implementation forever**:
-Agar tumhe pakka pata hai sirf ek implementation kabhi banegi (e.g., `MainConfig`), interface banane se code complexity bina value badhti hai. **YAGNI principle** (You Aren't Gonna Need It) yeh sikhata hai.
+**Rule**: Wait for second implementation before extracting interface."
 
-**3. Marker interfaces / type tags**:
-Sometimes you don't need polymorphic behavior, you just need type checking (`instanceof Serializable`). Interface has no methods, no polymorphism, just metadata.
+#### Q4: "Spring/JPA mein polymorphism manual ya automatic?"
 
-**Common mistake**: Premature abstraction. Junior developer dekhta hai 1 implementation, lekin sochta hai 'maybe future mein doosri ho'. 3 saal baad doosri kabhi nahi banti. Result: useless interface, indirection, harder to navigate code.
+"Spring **heavily** polymorphism pe based:
+1. Bean container — interfaces everywhere
+2. JPA — `EntityManager` interface, Hibernate impl
+3. **Spring AOP proxies** — runtime-generated classes (CGLib) wrap your methods for `@Transactional` etc. Polymorphism + proxy + composition combo.
+4. JDBC templates — `RowMapper` polymorphic callback.
 
-**Rule of thumb**: Wait for **second** implementation to appear. Then extract interface. Two examples reveal the right abstraction; one example is just a class."
+Spring expects you to define interfaces. Framework itself built ON polymorphism."
 
----
+#### Q5: "Production scale kaise?"
 
-#### Cross Q4: "Yeh principle Spring/JPA mein automatically follow hota hai ya manual?"
+"Class-level + service-level:
 
-**Confident Answer**:
+**Service-level**: Daraz Payment Service. `PaymentProvider` interface — JazzCash, EasyPaisa, Stripe. New provider = new microservice + register. Zero orchestrator change.
 
-"Spring **heavily** polymorphism pe based hai — pura framework hi interface contracts ke around bana hai:
+**Numbers**: Netflix notification = 100M+ users, 50+ channels via Strategy + polymorphism.
 
-**1. Bean Container**: Spring ka `BeanFactory` interface hai, `ApplicationContext` extend karta hai, `AnnotationConfigApplicationContext`/`WebApplicationContext` etc. concrete implementations hain. Tum interface use karte ho, runtime pe correct impl mil jati hai.
+**Performance cost**: ~5-10ns per call × 1T calls/day / 1000 servers = 10s/server/day = negligible.
 
-**2. JPA Abstraction**: `EntityManager` interface hai, Hibernate ka `SessionImpl` concrete impl. EclipseLink, OpenJPA dusre impls. Tum apna code Hibernate-specific likhne ki bajaye `EntityManager` use karte ho — vendor switch possible without code change.
-
-**3. Spring AOP — proxy generation**: Spring runtime mein **dynamic proxy classes** generate karta hai. Tumhari `UserService` class hai jisme `@Transactional` method hai. Spring runtime pe `UserService` ko extend karke ek subclass banata hai (using CGLib). Is subclass ke method mein extra code add karta hai (open transaction → call super method → commit). Tumhare clients ko yeh subclass inject hota hai — they think it's `UserService`, but actually proxy hai jo extra behavior add karta hai. **Yeh polymorphism + composition + proxy pattern ka combo hai**.
-
-**4. JDBC Templates**: `JdbcTemplate.query(sql, RowMapper<T>)` — RowMapper interface hai, tum apni implementation pass karte ho. Polymorphic callback.
-
-**Spring polymorphism enforce nahi karta, lekin uska entire design polymorphism PE built hai**. Tum bhi same patterns follow karoge — interface define karo, multiple impls likho, DI se inject."
+**Bad scaling**: deep inheritance chains, 300+ subclass explosion. Solution: composition + multiple smaller interfaces."
 
 ---
 
-#### Cross Q5: "Production mein polymorphism scale kaise karta hai?"
-
-**Confident Answer**:
-
-"Polymorphism class-level concept hai, lekin **service-level pe bhi extend hota hai** distributed systems mein:
-
-**Service-level polymorphism example**:
-Imagine Daraz ka **Payment Service**. JazzCash, EasyPaisa, Stripe, COD, Bank Transfer — sab `PaymentProvider` interface implement karte hain. Naya provider add karna ho (Sadapay) → new microservice deploy karo, service registry mein register karo, payment orchestrator dynamically resolve karta hai. **Zero downtime, zero code change in orchestrator**.
-
-**Real numbers**:
-- Netflix ka notification service ~100M+ users handle karta hai
-- 50+ channels (email, SMS, push, in-app, browser, smart TV notification, etc.)
-- Polymorphism + Strategy = ek single dispatcher 50 channels handle karta hai cleanly
-
-**Performance cost at scale**:
-- Per-call overhead ~5-10 nanoseconds (vtable lookup)
-- 1 trillion calls/day = 10 trillion ns overhead = 10,000 seconds/day total
-- Spread across 1000 servers = 10 seconds/server/day → negligible
-- JIT compiler optimization aur further reduce karta hai
-
-**Catch — polymorphism scales badly when**:
-- Deep inheritance chains (Class → SubClass → SubSubClass → ...) → maintenance nightmare. Solution: favor composition over deep inheritance.
-- Too many implementations (300+ subclasses) → understanding which to use becomes hard. Solution: subdivide into multiple interfaces.
-
-**Bottom line**: well-designed polymorphism scales beautifully. Anti-pattern is forcing polymorphism where it doesn't belong."
-
----
-
-### 🧩 Pattern Combination (How Today's Pattern Pairs With Others)
+### 🧩 Pattern Combinations
 
 **Pairs Well With**:
-
-- **Strategy Pattern (Day 62)** — Strategy literally polymorphism use karta hai. Strategy = polymorphism + "intent of swapping algorithms".
-- **Factory Method (Day 32)** — Factory returns polymorphic type. `NotifierFactory.create(channel)` returns `NotificationSender`, hiding the concrete class.
-- **Template Method (Day 66)** — Base class skeleton fix karta hai, subclass specific steps override karti hai. Polymorphism enables variation in fixed structure.
-- **Open/Closed Principle (Day 12)** — Polymorphism **primary mechanism** hai OCP achieve karne ka. Extension via subclassing, no modification of parent.
-- **Dependency Inversion (Day 15)** — "Depend on abstractions, not concretions" = depend on polymorphic interfaces, not concrete classes.
+- Strategy (Day 62) — strategy = polymorphism + intent
+- Factory Method (Day 32) — factory returns polymorphic type
+- Template Method (Day 66) — fixed skeleton, varying steps
+- **Open/Closed (Day 12)** — polymorphism is the mechanism
+- Dependency Inversion (Day 15) — depend on polymorphic interfaces
 
 **Tension With**:
-
-- **YAGNI (Day 18)** — Don't create interface for single implementation. Polymorphism has cognitive cost (one more file to navigate).
-- **KISS (Day 17)** — Sometimes a direct `switch` is clearer than 5 classes for 5 channels (if channels never change).
-- **Performance-critical code** — Virtual dispatch prevents some JIT optimizations. Hot loops sometimes need `final`/`sealed`.
+- YAGNI (Day 18) — premature interface = bad
+- KISS (Day 17) — sometimes switch clearer
+- Performance code — virtual dispatch prevents some JIT optimizations
 
 ---
 
-### 🎓 Real Production Code Where This Matters
-
-**Spring's `DelegatingPasswordEncoder` — masterclass in polymorphism**:
+### 🎓 Real Production: Spring's DelegatingPasswordEncoder
 
 ```java
 public interface PasswordEncoder {
@@ -1690,11 +2311,6 @@ public interface PasswordEncoder {
     boolean matches(CharSequence rawPassword, String encodedPassword);
 }
 
-// Concrete implementations:
-// BCryptPasswordEncoder, Argon2PasswordEncoder, Pbkdf2PasswordEncoder,
-// SCryptPasswordEncoder, NoOpPasswordEncoder (testing only)
-
-// Spring Security ka registry:
 @Bean
 public PasswordEncoder passwordEncoder() {
     return new DelegatingPasswordEncoder("bcrypt", Map.of(
@@ -1705,628 +2321,303 @@ public PasswordEncoder passwordEncoder() {
 }
 ```
 
-**Magic of `DelegatingPasswordEncoder`**:
-
-Stored password format: `{algorithmId}encodedValue`
-Examples:
+Stored format: `{algorithmId}encodedValue`
 - `{bcrypt}$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy`
 - `{argon2}$argon2id$v=19$m=4096,t=3,p=1$...`
 
-When `matches()` called:
-1. Extract prefix `{bcrypt}` from stored value
-2. Look up the encoder for that algorithm in the map (polymorphism)
-3. Delegate to that encoder for verification
+**Magic**: `matches()` extracts prefix, looks up encoder in map, delegates (polymorphism).
 
-**Why this matters**: Tumhari app 2020 mein BCrypt use kar rahi thi. 2025 mein industry recommends Argon2. Tum migrate karna chahte ho **without forcing users to reset passwords**. With `DelegatingPasswordEncoder`:
-- New passwords hashed with Argon2 (default updated)
-- Old BCrypt hashes still verifiable (`{bcrypt}` prefix recognized)
-- On successful login with BCrypt, you can re-hash with Argon2 and update
+**Why matters**: 2020 mein BCrypt, 2025 mein Argon2. **Migrate without forcing user resets**. Old hashes still verifiable, new ones Argon2. On successful login, silently re-hash with Argon2 and update.
 
-**Polymorphism + Strategy + Factory pattern all in one**, enabling **seamless migration at scale**. Yeh hi senior engineering hai.
+**Polymorphism + Strategy + Factory all in one**. Seamless migration. Senior engineering.
 
 ---
 
-### 💡 Memory Hook for This Principle/Pattern
+### 💡 Memory Hook
 
 **POLYMORPHISM = "BARTAN BADLO, KHAANA WOHI"**
 
-Bhai, polymorphism aisi cheez hai: **bartan** (concrete class) badal jaye, **khaana** (interface contract) wohi rahe.
+Bartan (concrete class) badle, khaana (interface contract) wohi. Pateele/handi/degh — sab biryani pakate hain.
 
-- Pateele mein biryani, handi mein biryani, degh mein biryani — bartan alag, function (biryani pakana) same.
+**"EK CALL, KAYI CHEHRE"**
 
-Ya phir: **"EK CALL, KAYI CHEHRE"** — same method call, different faces showing up at runtime.
-
-Yaad rakhne ka tareeqa:
-- **Overloading** = "Sab apne pyaalon mein chai" (same chai, alag pyaale — compile-time, same class)
-- **Overriding** = "Beta baap ki recipe mein twist" (parent method ko redefine, runtime decide)
-
-**Mental shortcut for interview**:
-- "Compile time" = "Compiler ne already decide kar liya" = overloading
-- "Runtime" = "Runtime pe object dekhke decide hoga" = overriding
+- Overloading = "Same chai, alag pyaale" (compile-time, same class)
+- Overriding = "Beta baap ki recipe mein twist" (runtime, parent-child)
 
 ---
 
-### ⚠️ Common Mistakes Jo Aaj Bachne Hain
+### ⚠️ Common Mistakes
 
-#### ❌ Mistake 1: `@Override` annotation skip karna in Java
+#### ❌ Mistake 1: `@Override` skip karna in Java
 
-**Why it's wrong**:
-Agar tum method signature galat likhte ho (typo, wrong parameter type, wrong case), compiler **chup rahega** — silently new method ban jayegi parent ke alongside, override nahi hoga. Production mein parent ka method chalega, tumhari child wali kabhi nahi.
+Typo (capital S in `Send`) without `@Override` → silent bug. Parent's empty method runs. Hours of debugging.
+
+**Fix**: Always `@Override`. Compiler catches signature mismatch.
+
+#### ❌ Mistake 2: Constructor mein overridable methods call karna
 
 ```java
-// BAD — typo, no @Override → silent bug
-public class EmailNotifier implements NotificationSender {
-    public void Send(User user, Message msg) {  // capital S — DIFFERENT method!
-        // Email sending code
-    }
+class Parent {
+    public Parent() { initialize(); }
+    public void initialize() { ... }
 }
-// Result: NotificationSender interface ka send() (lowercase s) unimplemented hai!
-// Compiler ne error nahi diya kyunki interface mein default method ho sakta hai.
-// Runtime pe interface ka default send() chalega — empty body — email NEVER sent!
-// Debug karne mein hafte lag jate hain.
-```
-
-**Correct approach**:
-```java
-public class EmailNotifier implements NotificationSender {
-    @Override  // compiler catches signature mismatch
-    public void send(User user, Message msg) {
-        // ...
-    }
-}
-```
-
-Compiler error: "Method does not override method from its superclass." Bug caught at compile time, never reaches production.
-
-**Rule**: ALWAYS use `@Override`. C# mein `override` keyword mandatory hai, so this mistake is impossible. Java mein discipline required.
-
----
-
-#### ❌ Mistake 2: Calling overridable methods from constructor
-
-**Why it's wrong**:
-Constructor mein `this.someMethod()` call karte ho jo subclass mein override hai. Subclass ka constructor abhi run nahi hua, subclass ki fields uninitialized hain. Override version runs but on incomplete object → NullPointerException or weird behavior.
-
-**Concrete example**:
-```java
-// BAD
-public class Parent {
-    public Parent() {
-        initialize();  // calls overridable method
-    }
-    public void initialize() {
-        System.out.println("Parent init");
-    }
-}
-
-public class Child extends Parent {
-    private String name = "default";  // initialized AFTER parent constructor
-
+class Child extends Parent {
+    private String name = "default";
     @Override
     public void initialize() {
-        System.out.println(name.toUpperCase());  // NPE!
-        // 'name' is null when parent constructor runs because
-        // child field initialization hasn't happened yet
+        System.out.println(name.toUpperCase());  // NPE! name null
     }
 }
-
-new Child();  // CRASH with NullPointerException
+new Child();  // CRASH
 ```
 
-**Order of operations**:
-1. `new Child()` triggered
-2. Child's parent (Parent) constructor runs first
-3. Inside Parent constructor: calls `this.initialize()` — polymorphism kicks in, Child's `initialize()` runs
-4. Child's `initialize()` accesses `name` → but `name = "default"` hasn't executed yet → name is still null (default)
-5. `null.toUpperCase()` → NPE
+Parent constructor → calls initialize() → JVM uses Dog's vtable → Dog's initialize runs → accesses uninitialized name.
 
-**Correct approach**:
-- Constructor mein only `private` or `final` methods call karo (cannot be overridden, behavior guaranteed)
-- Or use a separate `init()` method called after construction
-- Or use builder/factory pattern
+**Fix**: Constructor mein only `private`/`final` methods call karo.
+
+#### ❌ Mistake 3: Override equals() but forget hashCode()
+
+Java contract: equal objects MUST have same hashCode. HashMap/HashSet break otherwise.
 
 ```java
-// GOOD
-public class Parent {
-    public Parent() {
-        // No virtual calls
-    }
-    public final void initialize() {  // final = cannot override
-        System.out.println("Parent init");
-    }
-}
-```
-
----
-
-#### ❌ Mistake 3: Override `equals()` but forget `hashCode()`
-
-**Why it's wrong**:
-Java's contract: "if two objects are equal (`equals()` returns true), they MUST have same hashCode".
-
-HashMap, HashSet internally use hashCode to bucket objects. Equal objects with different hashCodes → end up in different buckets → set thinks they're different → duplicate entries. Map lookup fails.
-
-```java
-// BAD
-public class User {
-    private String email;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User)) return false;
-        return email.equals(((User) o).email);
-    }
-    // hashCode() NOT overridden! Default uses object identity (memory address)
-}
-
 User u1 = new User("ahmed@gmail.com");
 User u2 = new User("ahmed@gmail.com");
-
 u1.equals(u2);  // true
-u1.hashCode() == u2.hashCode();  // FALSE (different memory addresses)
-
+u1.hashCode() == u2.hashCode();  // FALSE (memory addresses)
 Set<User> users = new HashSet<>();
 users.add(u1);
-users.contains(u2);  // FALSE! Even though equals says they're equal!
-// HashSet looks in u2's hash bucket, doesn't find u1 (it's in different bucket)
+users.contains(u2);  // FALSE!!
 ```
 
-**Correct approach**:
-```java
-@Override
-public int hashCode() {
-    return Objects.hash(email);
-}
-```
-
-Both methods together. Or use:
-- Lombok `@EqualsAndHashCode`
-- IDE auto-generate
-- Java records (auto-generated equals/hashCode)
-- Apache Commons `EqualsBuilder`/`HashCodeBuilder`
-
-**Why this is polymorphism-related**: `equals()` and `hashCode()` are methods declared in `Object` (base class of everything). All classes inherit them and can override. Breaking the contract violates Liskov Substitution (Day 13) — your subclass should behave correctly wherever parent type is expected.
+**Fix**: Both together. Lombok `@EqualsAndHashCode` or Java records.
 
 ---
 
-## 🧠 The Complete Solution: How All 5 Stacks Interlock
-
-**The Flow** (Top to Bottom — Every Layer's Role):
+## 🧠 Complete Solution Interlocking
 
 ```
 1. USER ACTION (Angular)
-   └─▶ Click "Forgot Password"
-       └─▶ Reactive Form submit, loading spinner
-       └─▶ Same UI message on success OR error (anti-enumeration)
+   └─▶ Click "Forgot Password" → form submit → loading spinner
+       └─▶ Same UI message success OR error (anti-enumeration)
 
 2. NETWORK (HTTPS)
-   └─▶ TLS encryption protects email in transit
-       └─▶ Rate limiter at API gateway (3/hour/IP)
+   └─▶ TLS encryption protects token in transit
+       └─▶ Rate limiter at gateway (3/hour/IP)
 
-3. API REQUEST (Spring Boot / .NET)
-   └─▶ POST /api/auth/forgot-password
-       └─▶ @Transactional wrapper begins DB transaction
+3. API REQUEST (Spring/.NET)
+   └─▶ POST → @Transactional begins DB transaction
 
-4. BUSINESS LOGIC (Java / C#)
-   └─▶ SecureRandom 32-byte token generated
+4. BUSINESS LOGIC (Java/C#)
+   └─▶ SecureRandom 32 bytes (CSPRNG)
        └─▶ SHA-256 hash created
-       └─▶ Polymorphic notifier.send(user, msg) dispatched
+       └─▶ Polymorphic notifier.send() dispatched
 
 5. DATABASE (SQL)
-   └─▶ INSERT password_reset_tokens (hash, expires_at)
-       └─▶ Unique index prevents collisions
-       └─▶ Composite index makes user-token queries fast
+   └─▶ INSERT tokens (hash, expires_at)
+       └─▶ Unique index prevents hash collisions
+       └─▶ Composite index for fast user queries
 
 6. ASYNC EVENT (System Design)
-   └─▶ Publish to Kafka topic "password.reset"
+   └─▶ Publish to Kafka
        └─▶ Notification service consumes
-       └─▶ EmailSender OR SmsSender (polymorphic dispatch)
-       └─▶ Failure → DLQ for ops review
+       └─▶ Email OR SMS sender (polymorphism)
+       └─▶ Failure → DLQ for ops
 
-7. USER CLICKS LINK (15-min window)
-   └─▶ GET /reset?token=xyz → Angular form
-       └─▶ Token extracted from URL
-       └─▶ Password strength meter (debounced RxJS)
+7. USER CLICKS LINK (within 15-min window)
+   └─▶ Angular form, token from URL
+       └─▶ Password strength (debounced RxJS)
 
 8. CONFIRM RESET
-   └─▶ POST /api/auth/reset {token, newPassword}
-       └─▶ Atomic UPDATE tokens SET used=1 WHERE used=0 AND not expired
-       └─▶ @@ROWCOUNT check ensures single-use
-       └─▶ BCrypt hash new password (10-12 cost factor)
-       └─▶ Delete all sessions (force logout everywhere)
+   └─▶ POST → atomic UPDATE tokens SET used=1 WHERE used=0
+       └─▶ @@ROWCOUNT ensures single-use
+       └─▶ BCrypt hash new password
+       └─▶ DELETE all sessions
 
-9. SUCCESS RESPONSE
-   └─▶ 200 OK → Angular redirects to login
-       └─▶ Old JWTs/sessions invalid → must log in fresh
+9. SUCCESS
+   └─▶ 200 OK → redirect to login
+       └─▶ Old JWTs/sessions invalid
 ```
 
-**What Breaks If You Skip ANY Layer**:
+**Skip Any Layer → Consequence**:
 
-| Skip This | Consequence |
-|-----------|-------------|
-| Angular generic response | User enumeration via UI (attackers harvest emails) |
-| Backend rate limit | DDoS via "Forgot password" spam → mailbox flooding |
-| Token hashing | DB breach = all active tokens leaked = mass takeover |
-| Atomic SQL update | Race condition → token used twice → account compromise |
-| Async queue | SMTP slowdown → API timeout → 504 errors → bad UX |
-| Session invalidation | Hacker with stolen old password keeps access after reset |
-| TLS encryption | Reset link visible to network attacker (WiFi sniffer) |
-| Password hashing (BCrypt) | DB leak = plaintext passwords visible → reused on Facebook, banking |
+| Skip | Consequence |
+|------|-------------|
+| Angular generic response | UI enumeration |
+| Rate limit | DDoS via spam |
+| Token hashing | DB breach = all tokens leaked |
+| Atomic UPDATE | Race → double consumption |
+| Async queue | SMTP slowdown → API timeouts |
+| Session invalidation | Old hacker session survives |
+| TLS | Network sniffing |
+| BCrypt | Plaintext passwords leaked |
 
 ---
 
-## 🧭 MENTAL MAP — How to Memorize This
+## 🧭 Mental Map
 
 ```
-                    [PASSWORD RESET BRAINER]
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-   [FRONTEND]            [BACKEND]              [DATABASE]
-        │                     │                     │
-    Angular            Spring / .NET              SQL
-        │                     │                     │
-   ReactiveForms       SecureRandom token      token_hash CHAR(64)
-   Same response       SHA-256 hash             UNIQUE index
-   Token from URL      @Transactional           Atomic UPDATE
-   Strength meter      Polymorphic Notifier     used=1 WHERE used=0
-   debounceTime        @Version optimistic      ROWVERSION concurrency
-        │                     │                     │
-        └─────────────────────┼─────────────────────┘
-                              │
-                     [SYSTEM DESIGN]
-                              │
-              Strategy Pattern + Event-Driven
-              ┌──────────┬──────────┬──────────┐
-              │  Email   │   SMS    │  Push    │
-              │  Sender  │  Sender  │  Sender  │
-              └──────────┴──────────┴──────────┘
-                  (all implement INotifier)
-                          │
-                    Polymorphic dispatch
-                    runtime decides which
+                [PASSWORD RESET]
+                       │
+       ┌───────────────┼───────────────┐
+       │               │               │
+   [FRONTEND]      [BACKEND]       [DATABASE]
+       │               │               │
+   ReactiveForms   SecureRandom    token_hash CHAR(64)
+   Same response   SHA-256 hash    UNIQUE INDEX
+   Token from URL  @Transactional  Atomic UPDATE
+   Strength meter  Polymorphic     used=1 WHERE used=0
+                   @Version        ROWVERSION
+       │               │               │
+       └───────────────┼───────────────┘
+                       │
+               [SYSTEM DESIGN]
+                       │
+        Strategy Pattern + Event-Driven
+        ┌────────┬────────┬────────┐
+        │ Email  │  SMS   │  Push  │
+        └────────┴────────┴────────┘
+              all implement INotifier
+              polymorphic dispatch
 ```
 
-**Mental Story (Roman Urdu — Detailed)**:
+**Mental Story**:
 
-Bhai, password reset ko **shaadi ke invitation card system** jaisa socho:
+Password reset = **shaadi ke invitation card system**:
+- **Angular** = Card design
+- **Backend** = Card printer
+- **Token gen** = Unique serial number
+- **SQL** = Guest registry
+- **System Design** = Delivery (DHL/TCS/khud) — **sender alag, deliver same**
 
-- **Angular** = Card ka design (kaisa dikhega user ko, validation, strength meter)
-- **Backend (Spring/.NET)** = Card printer (token banata hai, expiry print karta hai)
-- **Token generation (Java/C#)** = Unique serial number generator (SecureRandom guarantees no two cards have same number)
-- **SQL** = Guest registry (kis ko bheja, kab expire hoga, RSVP done ya nahi — all tracked)
-- **System Design** = Delivery selection — DHL (Email), TCS (SMS), khud jaa ke dena (Push notification). **Sender alag, kaam wohi — guest tak invitation pohnchana**.
+**Polymorphism** = chahe DHL ya TCS, method same `deliver(invitation, guest)`. Sender khud decide karega kaise.
 
-**Polymorphism** = chahe DHL bheje ya TCS, **method same**: `deliver(invitation, guest)`. Tum bas bolo "deliver", sender khud decide karega kaise.
+**Acronym: TRACE**
+- **T** — Token (SecureRandom, 32 bytes, hashed)
+- **R** — Rate limit (3/hour)
+- **A** — Atomic single-use (UPDATE WHERE used=0)
+- **C** — Consistent response (no enumeration)
+- **E** — Expiry + session invalidation
 
-Agar koi step missing — shaadi mein:
-- No card design (Angular) → guest confused
-- No printer (Backend) → no cards exist
-- No serial number (token) → duplicates, fraud
-- No registry (DB) → forget who's invited
-- No delivery (notification) → guest never knows
-
-**Acronym for Password Reset Security: "TRACE"**
-
-- **T** — Token (SecureRandom, 32 bytes, stored as hash)
-- **R** — Rate limit (3 attempts/hour, prevents brute force)
-- **A** — Atomic single-use (SQL UPDATE WHERE used=0)
-- **C** — Consistent response (no enumeration, identical UI)
-- **E** — Expiry + session invalidation (15-min + logout all devices)
-
-Yaad karne ke liye: "Hacker ki **TRACE** mat chhodo" — trace = footprint, koi clue mat de.
+"Hacker ki **TRACE** mat chhodo."
 
 ---
 
-## 🎤 INTERVIEW DRILL SECTION
+## 🎤 INTERVIEW DRILL
 
-### Main Interview Question
+### Main Question
 
-**Q**: "Design karo Daraz ke liye complete password reset flow. Security considerations bhi explain karo aur batao notification multi-channel kaise pluggable banaoge?"
+**Q**: "Daraz ke liye password reset flow design karo. Security + multi-channel notification pluggable kaise?"
 
-**Expected Answer (60-90 seconds)**:
+**Answer Structure (60-90 sec)**:
 
-**Opening** (10 sec):
-"Iss scenario ko handle karne ke liye, hum 5 layers ko coordinate karenge with security at every step — frontend pe enumeration prevention, backend pe secure token generation, DB pe atomic single-use, async notification dispatch, aur polymorphic sender for channel flexibility."
+**Opening**: "5 layers coordinate karenge — frontend anti-enumeration, backend secure tokens, DB atomic single-use, async dispatch, polymorphic sender."
 
-**Body** (60 sec):
+**Body**:
+1. **Angular**: Reactive Form, identical success response, debounced strength meter.
+2. **Spring/.NET**: Rate-limited endpoint (3/hr/IP), SecureRandom 32 bytes, SHA-256 hash, async via Kafka.
+3. **Java/C#**: Polymorphic `NotificationSender`, DI resolves by user preference, new channel = new class (OCP).
+4. **SQL**: Unique index on hash, composite (user_id, used, expires_at), atomic UPDATE pattern, ROWVERSION.
+5. **Architecture**: Strategy Pattern + event-driven Kafka, DLQ for failures.
 
-1. **Frontend** (Angular):
-   - Reactive Form for email input
-   - **Identical success response** chahe email exist kare ya na — taake user enumeration leak na ho
-   - Reset page token ko URL query param se uthaye
-   - Password strength real-time check with `debounceTime(250)` for performance
-   - Generic error messages on confirm (don't leak token state)
+**Closing**: "Polymorphic dispatch ensures kal WhatsApp add karna ho — zero existing code change."
 
-2. **Backend API** (Spring/.NET):
-   - Rate-limited endpoint (3 req/hour/IP via token bucket on Redis)
-   - `SecureRandom` se 32 bytes (256-bit) token generate
-   - Raw token sirf email mein, **SHA-256 hash DB mein**
-   - `@Transactional` enforce atomicity
-   - Async notification dispatch via Kafka event
+### Must-Know Concepts
 
-3. **Business Logic** (Java/C#):
-   - **Polymorphic `NotificationSender` interface** — Email, SMS, Push, WhatsApp implementations
-   - DI container resolves correct sender based on user preference
-   - Naya channel = bas naya class + register = zero existing code change (Open/Closed Principle)
+1. **CSPRNG vs LCG**: SecureRandom uses OS entropy; Random uses predictable formula
+2. **SHA-256 vs BCrypt**: fast for high-entropy tokens; slow for low-entropy passwords
+3. **Optimistic vs Pessimistic locking**: version check vs row lock
+4. **Vtable**: ~1-5ns per virtual call, JIT can devirtualize
+5. **TOCTOU**: Time Of Check, Time Of Use — fix with atomic UPDATE
+6. **Token bucket**: capacity + refill rate, self-recovering
+7. **WAL**: log first, data later — durability mechanism
+8. **Spring AOP proxies**: runtime-generated wrappers for `@Transactional`
 
-4. **Database** (SQL):
-   - `password_reset_tokens` table with `UNIQUE INDEX` on hash, composite index on `(user_id, used, expires_at)`
-   - Token consumption **atomic**: `UPDATE WHERE used=0 AND expires_at > NOW()` — `@@ROWCOUNT=1` = safe
-   - `ROWVERSION`/`@Version` for optimistic locking double-defense
-   - On password update: also `DELETE FROM sessions WHERE user_id = X`
+### Counter-Questions
 
-5. **Architecture**:
-   - Strategy Pattern (polymorphism in action) + Event-driven via Kafka
-   - API publishes `PasswordResetRequested` event
-   - Notification Service consumes asynchronously
-   - DLQ for failed sends, ops monitoring
+#### Q1 (Trade-off): JWT vs DB-stored reset token?
 
-**Closing** (10 sec):
-"By combining these layers with polymorphic notification dispatch, hum guarantee karte hain ke yeh flow secure, scalable, aur infinitely extensible hai — kal WhatsApp add karna ho, zero existing code change chahiye."
+"JWT: no DB hit, scalable. BUT cannot revoke, replay-able.
+DB-stored: revocable, single-use enforced. DB hit ~5ms.
 
-### Under-the-Hood Concepts You MUST Know
+**Choice for reset**: DB-stored. Security > convenience. Reset throughput low — 5ms irrelevant. Slack uses same approach."
 
-1. **`SecureRandom` vs `Random`**: `Random` uses Linear Congruential Generator (predictable math). `SecureRandom` uses OS entropy (`/dev/urandom`) — cryptographically unpredictable.
+#### Q2 (Scale): 10M users, 100K resets/day, SMTP 3s — architecture?
 
-2. **SHA-256 vs BCrypt — when to use which**: SHA-256 fast (1 microsecond), suitable for high-entropy inputs like random tokens. BCrypt slow on purpose (100-200ms), suitable for low-entropy inputs like human passwords (slowness defeats brute force).
+"100K/day = 1.2/sec avg, 12/sec peak.
 
-3. **Optimistic vs Pessimistic Locking**: Optimistic (`@Version`) = no lock during read, conflict detected at commit (better for low-contention). Pessimistic (`SELECT FOR UPDATE`) = lock during read (safer for high-contention but blocks other readers).
+**Sync (BAD)**: 12 concurrent × 3s = SES limit barely fits.
 
-4. **Virtual dispatch (vtable)**: Polymorphism's runtime cost — vtable lookup adds ~1-5ns per call. JIT compiler can devirtualize if monomorphic (only one implementation observed).
+**Async (CORRECT)**: Save + publish Kafka → 50ms response. 20 workers parallel = 6.7 sends/sec sustained. 99th percentile <100ms. DLQ for failures.
 
-5. **TOCTOU (Time Of Check, Time Of Use) bug**: Classic concurrency vulnerability where you check a condition, then act on it, but state changes between. Fixed with atomic check-and-act (single SQL statement with WHERE).
+10x scale: same architecture. 100x: regional sharding."
 
-6. **Token bucket rate limiting**: Bucket holds N tokens, refills at R/sec, each request consumes 1. Empty bucket = reject. Implemented with Redis atomic INCR + EXPIRE.
+#### Q3 (Failure): Server crash mid-reset, user retries?
 
-7. **CSPRNG (Cryptographically Secure Pseudo-Random Number Generator)**: Algorithms that produce output indistinguishable from true randomness even after observing millions of outputs.
+"4 scenarios:
+1. Crash before any DB write → retry succeeds. Idempotent.
+2. Crash after token UPDATE, before password UPDATE → token consumed, password unchanged → retry fails. **Fix**: both in same transaction.
+3. Crash after both UPDATE, before response → DB consistent, user confused → idempotent retry detects 'already done'.
+4. Crash after response, before client received → DB fine, user refresh → login works.
 
-### 3 Counter-Questions Interviewer Will Ask (With Detailed Answers)
+ACID + same transaction + idempotency = crash safety."
 
-#### Counter Q1 (Trade-off focused):
+### Senior Differentiator
 
-**Q**: "JWT-based reset token (stateless) ya DB-stored random token (stateful) — kya choose karoge aur kyun?"
+**Q**: "Sessions invalidate kaise after password reset?"
 
-**Your Answer**:
+"Multi-pronged:
 
-"Dono ke trade-offs hain, aur **choice scenario pe depend karta hai**:
+1. **Stateful sessions (DB)**: DELETE WHERE user_id = ? Simple, instant.
 
-**JWT-based reset token (stateless)**:
-JWT = JSON Web Token = signed token containing user info. Tum token mein userId + expiry encode karte ho, HMAC-SHA256 se sign karte ho with server secret. Verify karne ke liye DB lookup nahi chahiye — bas signature verify aur expiry check.
+2. **JWT — 3 solutions**:
+   - **Refresh tokens**: short-expiry access (15 min) + refresh token in DB. Delete refresh tokens on password change. Worst case: hacker 15 more min.
+   - **Token versioning**: user.tokenVersion in JWT claim. Increment on password change → all old JWTs invalid. Cache version in Redis.
+   - **Redis blocklist**: add jti to Redis set on revoke. TTL = remaining lifetime. Validation checks blocklist.
 
-✅ Pros:
-- No DB write/read per token
-- Stateless = horizontally scalable
-- Simple architecture
+3. **Real-time push**: WebSocket/SSE notify clients to re-authenticate.
 
-❌ Cons:
-- **Cannot revoke before expiry** — agar user dobara reset request kare aur purana token bhi valid rahe, hacker dono use kar sakta hai
-- **Replay attack vulnerable** — token leaked? Use kar lo jab tak expiry na ho. Single-use enforce karna na-mumkin without state.
-- **Token size large** — 200+ bytes vs 43-byte random. Email mein lambi URL.
+4. **Audit logging**: GDPR/PCI-DSS/SOC2 compliance.
 
-**DB-stored random token (stateful)**:
-SecureRandom token, SHA-256 hash, DB mein store. Verify = DB lookup.
+**For Daraz**: stateful sessions for web + refresh tokens for mobile + Redis blocklist + WebSocket for connected admin.
 
-✅ Pros:
-- **Single-use atomic enforcement** via SQL UPDATE
-- **Revocable** — kal banake aaj invalidate kar sakte ho
-- **Audit trail** — kab create hua, kab use hua, sab DB mein
-- Smaller token size
+Junior thinks 'kill the session'. Senior thinks 'across 100 servers, 10 regions, web+mobile+IoT, with compliance.'"
 
-❌ Cons:
-- DB hit per validation (~1-5ms with index)
-- Requires schema, migrations
+### Red Flags (Don't Say!)
 
-**My choice for password reset**: **DB-stored random token, hands down**.
-
-Why? Password reset is **security-critical, single-use** operation. Convenience ke chakkar mein security compromise nahi karta. JWT ka 'no DB hit' optimization 5ms save karta hai per request, lekin password reset throughput low hai (few per second even at Daraz scale) — yeh optimization irrelevant hai.
-
-Slack ka magic-link login bhi same DB-stored approach use karta hai for the exact same reason. JWT is great for session tokens (high throughput, short-lived) but wrong tool for reset tokens."
+- ❌ "Plaintext token storage" → DB leak = takeover
+- ❌ "Email not found error" → enumeration
+- ❌ "Never expire token" → screenshot exploitable
+- ❌ "Math.random() / Random()" → predictable
+- ❌ "Validate then mark used in separate steps" → TOCTOU
+- ❌ "Sessions are separate concern" → incomplete security
+- ❌ "Frontend show different messages for UX" → DevTools enumeration
 
 ---
 
-#### Counter Q2 (Scale focused):
+## 📊 What You Should Explain After Today
 
-**Q**: "10 million users, 1% per day password reset karte hain = 100K requests/day. SMTP slow hai 2-3 seconds per send. Architecture kya hogi?"
-
-**Your Answer**:
-
-"Numbers analyze karte hain pehle:
-
-- 100K requests/day = ~1.2 req/sec average
-- Peak (e.g., morning rush) = 10x average = ~12 req/sec
-- SMTP latency 3 sec/email
-
-**Synchronous architecture (BAD)**:
-12 concurrent requests × 3 sec = need 12 SMTP connections constantly. SES limits 14/sec by default — barely fits, no headroom. If SMTP slows to 5 sec, queue builds up, API requests pile up, **502/504 timeouts**. User sees errors. Awful.
-
-**Async architecture (CORRECT)**:
-
-```
-API request:
-  1. Save token + publish Kafka event → <50ms response to user
-  2. User sees "link sent" instantly
-
-Kafka consumer (notification service):
-  3. Pool of 20 worker threads
-  4. Each picks event from queue, sends SMTP
-  5. 20 workers × 3 sec = 6.7 sends/sec sustained
-  6. Burst of 100 events = queued, processed in 15 seconds
-  7. User typically doesn't notice 15-sec delay in email
-```
-
-**Capacity planning**:
-- Average load: 1.2 sends/sec — 2 workers sufficient
-- Peak load: 12 sends/sec — 20 workers handle 10x peak comfortably
-- 10x growth (1M reset/day) = ~12 req/sec average = same 20 workers
-- 100x growth = horizontal scale Kafka consumers + multiple SMTP providers
-
-**Failure handling**:
-- SMTP fails → retry with exponential backoff (1s, 5s, 25s)
-- 3 retries exhausted → message to DLQ
-- DLQ monitored by ops, alerts trigger investigation
-- User won't suffer — they can request reset again
-
-**99th percentile API latency**: <100ms (just token DB write + Kafka publish). User experience: snappy, professional.
-
-10x scale comfortable. 100x scale needs regional sharding — each region has own notification service + local SMTP relay."
+1. ✅ CSPRNG kya hai, SecureRandom vs Random?
+2. ✅ Hash function ki 3 properties, tokens kaise bachate hain?
+3. ✅ BCrypt vs SHA-256 — kab konsa?
+4. ✅ Salt — same password different hash kaise?
+5. ✅ User enumeration attack + 3-layer prevention
+6. ✅ TOCTOU bug + atomic UPDATE solution
+7. ✅ Optimistic vs Pessimistic locking, @Version internals
+8. ✅ WAL — crash durability mechanism
+9. ✅ B-tree + leftmost-prefix rule
+10. ✅ Polymorphism vs overloading, vtable mechanism
+11. ✅ Strategy Pattern + Open/Closed via polymorphism
+12. ✅ Spring AOP proxies — @Transactional internals
+13. ✅ JWT vs DB-stored — trade-offs
+14. ✅ Session invalidation strategies — 4 approaches
 
 ---
 
-#### Counter Q3 (Failure mode focused):
+## 🔗 Tomorrow's Hint
 
-**Q**: "User ne reset link click kiya, password type kiya, submit click kiya — server crash. User dobara try karta hai. Kya hoga?"
+**Day 5 — Product Listing + Composition over Inheritance**
 
-**Your Answer**:
-
-"Bhai, depends on **kab** server crash hua. 4 scenarios analyze karte hain:
-
-**Scenario 1: Crash before any DB write**
-- Token still unused in DB, password unchanged
-- User retries → succeeds normally
-- **Idempotent. No issue.**
-
-**Scenario 2: Crash AFTER `UPDATE tokens SET used=1` but BEFORE `UPDATE users SET password_hash=...`**
-- Token marked used, password unchanged
-- User retries → 'token invalid' error
-- **Bad UX** — user requests new reset link, waits, tries again
-- **Solution**: wrap both UPDATEs in **same SQL transaction**. Either both commit or both rollback. SQL Server WAL ensures durability + atomicity (ACID 'A' and 'D').
-
-**Scenario 3: Crash AFTER both UPDATEs but BEFORE response sent**
-- Both done in DB, but user sees 'failed' (no response received)
-- User retries → 'token invalid' error
-- **But password actually updated!** User confused, doesn't try login with new password
-- **Solution**: idempotency — retry with same token should detect "already done" and return success
-- Implementation: after marking token used, also save `password_changed_via_token` link. On retry, check this link exists → return success.
-
-**Scenario 4: Crash after sending response but before client receives**
-- DB consistent, password changed, sessions killed
-- Client never got 200
-- User refreshes, sees login page (sessions killed, redirected)
-- Tries login with new password → works!
-- **No issue. The system is self-correcting.**
-
-**Best practices**:
-1. **Same transaction**: both token UPDATE and password UPDATE atomic
-2. **WAL durability**: SQL Server's Write-Ahead Log persists changes before acknowledging commit
-3. **Idempotent retries**: same request twice = same result
-4. **Client-side timeout + retry**: with idempotency key (we'll learn this in Day 39!)
-
-Crash recovery is built into modern DBs (PostgreSQL, SQL Server). Application just needs to **trust ACID** and **design for retries**."
-
-### Bonus: "Senior Engineer Differentiator" Question
-
-**Q**: "Password reset ke baad active sessions kaise invalidate karoge across multiple servers/devices?"
-
-**Junior Answer**: "Database mein sessions table hai, sab delete kar denge user_id ke liye. JWT case mein... uhh... kuch nahi kar sakte? JWT expire hone ka wait karna parega?"
-
-**Senior Answer**:
-
-"Multi-pronged approach, depending on session strategy:
-
-**Approach 1: Stateful sessions (DB-stored)**
-- Simple: `DELETE FROM sessions WHERE user_id = ?`
-- Next request from old session → 401 Unauthorized
-- Used by: traditional web apps, banking applications
-- Pro: instant invalidation
-- Con: DB hit per request to validate session
-
-**Approach 2: Stateless JWT — solutions**
-
-JWT can't be directly revoked. Three techniques:
-
-**2a. Short access token + refresh token pattern**:
-- Access token = JWT, expires in 15 min
-- Refresh token = random string in DB, expires in 7 days
-- On password change: delete all refresh tokens from DB
-- Worst case: hacker has 15 more minutes (until access token expires)
-- Most apps acceptable trade-off
-- Used by: Auth0, most SaaS apps
-
-**2b. Token version in JWT claims**:
-- User entity has `tokenVersion` integer field
-- Every issued JWT includes `tokenVersion` claim
-- Validation: `jwt.tokenVersion === user.tokenVersion` ? valid : invalid
-- On password change: `user.tokenVersion++` → all old JWTs invalid immediately
-- Requires DB lookup per JWT validation (defeats stateless purpose somewhat)
-- Solution: cache user.tokenVersion in Redis with TTL
-
-**2c. Redis blocklist**:
-- Add JWT's `jti` (unique ID claim) to Redis set when revoked
-- TTL = JWT's remaining lifetime
-- Validation checks blocklist (~1ms Redis hit)
-- Pro: instant revocation, minimal storage
-- Con: extra dependency on Redis
-- Used by: Slack, Discord
-
-**Approach 3: Real-time push to clients**
-- Server pushes "re-authenticate" message via WebSocket/Server-Sent Events
-- Frontend immediately redirects to login
-- Backup to other approaches — handles edge case of clients with cached UI
-
-**Approach 4: Audit logging**
-- Log every session termination event
-- Required for compliance (GDPR, PCI-DSS, SOC2)
-- Forensics — if account compromise reported, audit log shows exactly when reset happened, what sessions were killed
-
-**My recommendation for Daraz**:
-- Stateful sessions for web (cookies + DB-backed session store)
-- Refresh token + token versioning for mobile API (best of both worlds)
-- Redis blocklist for hot revocations
-- WebSocket push for connected admin users
-
-**Why this matters at senior level**: junior thinks 'kill the session'. Senior thinks 'how does this scale across 100 servers, 10 regions, mobile + web + IoT devices, with compliance and audit requirements?' Yeh hi differentiator hai."
-
-### Red Flag Signals (Don't Say These!)
-
-❌ **"Email mein plaintext token bhej do, DB mein bhi plaintext save kar do"**
-**Why wrong**: DB breach instantly leaks all active reset tokens, complete account takeover within 15-min expiry window.
-
-❌ **"Agar email registered nahi to 'Email not found' error dikhao"**
-**Why wrong**: User enumeration attack. Attacker harvests valid emails for credential stuffing on other sites.
-
-❌ **"Token expire hi nahi karega, user jab chahe use kare"**
-**Why wrong**: Email screenshot/forward, 6 months baad bhi exploitable. Industry standard 15min-1hour for reset tokens.
-
-❌ **"Math.random() / Random() se token bana lo"**
-**Why wrong**: Predictable PRNG. Attacker who observes few tokens can predict future ones. ALWAYS `SecureRandom` / `RandomNumberGenerator`.
-
-❌ **"Token validate karne ke baad alag transaction mein use mark karenge"**
-**Why wrong**: TOCTOU race condition, double-use possible. Atomic single-statement UPDATE essential.
-
-❌ **"Sessions kya hoti hain reset ke baad, woh alag concern hai"**
-**Why wrong**: Senior engineers think **holistically**. Password reset without session invalidation = incomplete security — hacker stays logged in.
-
-❌ **"Frontend pe alag message dikhao for better UX"**
-**Why wrong**: DevTools inspection enables enumeration even if backend is hardened. UX team ko convince karna parta hai security wins.
-
----
-
-## 📊 What You Should Be Able to Explain After Today
-
-1. ✅ **CSPRNG** kya hai, `SecureRandom` vs `Random` ka difference, aur tokens ke liye kyun ek hi acceptable hai?
-2. ✅ **Hash function** (SHA-256) ka one-way property kaise tokens ko DB breach se bachata hai?
-3. ✅ **BCrypt vs SHA-256** — passwords ke liye slow hash kyun chahiye but tokens ke liye fast hash kafi hai?
-4. ✅ **User enumeration attack** — kaise hoti hai timing + response + status code se? Aur kaise prevent karte hain frontend + backend + network teen jagah pe?
-5. ✅ **TOCTOU bug** kya hai aur **atomic UPDATE** pattern kaise eliminate karta hai?
-6. ✅ **Optimistic vs Pessimistic locking** — `@Version` kaise kaam karta hai internally?
-7. ✅ **Polymorphism (method overriding)** kya hai vs overloading, aur vtable runtime pe kaise dispatch karta hai?
-8. ✅ **Strategy Pattern** real-world `NotificationSender` mein kaise apply hota hai aur kaise Open/Closed achieve karta hai?
-9. ✅ **JWT vs DB-stored tokens** ka trade-off — kab konsa use karna chahiye?
-10. ✅ **Session invalidation strategies** — stateful (DB), JWT (refresh token, token version, Redis blocklist) all 4 approaches?
-
----
-
-## 🔗 Tomorrow's Connection Hint
-
-Tomorrow we'll cover: **Day 5 — Basic Product Listing + Composition over Inheritance**
-
-Aaj humne **polymorphism (inheritance/interface-based)** dekha — kaise child class parent ke method ko override karke alag behavior deti hai. Kal hum **composition over inheritance** principle dekhenge — yeh principle kehta hai "jab bhi possible ho, inheritance ki bajaye composition use karo".
-
-Kal ka scenario: Daraz pe product listing page. Categories, filters, sort options — yeh sab hum **compose** karke build karenge instead of deep inheritance hierarchy (`Product → ElectronicProduct → MobilePhone → Smartphone`). SQL pe **pagination strategies** (offset-based vs cursor-based) aur **index optimization** for product search.
-
-Aaj polymorphism ka power dekha — kal usi ka **abuse** se kaise bachna hai, woh seekhenge. Inheritance + polymorphism powerful hain but easily misused — deep inheritance trees turn into "diamond problem" nightmares. Composition simpler, more flexible, more testable. **"Has-a" beats "Is-a" 90% of the time** — yeh principle pakka karenge.
+Aaj polymorphism (inheritance-based) dekha. Kal **composition over inheritance** — kab inheritance avoid karke composition use karein. Scenario: Daraz product listing with filters/sort. SQL pagination (offset vs cursor) + index optimization.
 
 ---
 
@@ -2345,4 +2636,4 @@ OOP Foundation: Day 4/30 (Polymorphism — Method Overriding) ✅
 Overall Journey: 4/365 days (1.1% complete)
 ```
 
-**Streak**: 🔥 4 days strong, bhai! Consistency hi senior banayegi. Aaj bhi do baar padhna — pehli baar concepts, dosri baar interview perspective.
+**Streak**: 🔥 4 days strong, bhai! Aaj 2-3 baar padhna — pehle concepts, phir code, phir interview drill.
