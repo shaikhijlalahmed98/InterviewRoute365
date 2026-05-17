@@ -15,6 +15,7 @@ Daily learning units covering **5 stacks** + **OOP/Design Patterns** + **System 
 │   ├── _CHAT_RESPONSE_TEMPLATE.md   ← short chat reply format
 │   ├── _DEPTH_STANDARD.md           ← quality bar for every lesson
 │   ├── _LESSON_TEMPLATE.md          ← full lesson skeleton
+│   ├── _STACK_INDEX.md              ← per-day per-stack coverage matrix
 │   └── day-XXX-topic-slug.md        ← e.g. day-004-password-reset.md
 │
 ├── notes/                   ← personal reflections, "aha moments"
