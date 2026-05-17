@@ -20,13 +20,15 @@
 
 ## 📅 Daily Log
 
-| Day | Date | Topic | OOP Focus | Status | File |
-|-----|------|-------|-----------|--------|------|
-| 1 | 2026-05-13 | User Registration + Email Verification | Encapsulation | ✅ Done | [day-001](./lessons/day-001-user-registration.md) |
-| 2 | 2026-05-14 | User Login with JWT | Abstraction | ✅ Done | [day-002](./lessons/day-002-user-login-jwt.md) |
-| 3 | 2026-05-15 | User Profile Update | Inheritance | ✅ Done | [day-003](./lessons/day-003-user-profile-update.md) |
-| 4 | 2026-05-16 | Password Reset Flow | Polymorphism (Overriding) | ✅ Done | [day-004](./lessons/day-004-password-reset.md) |
-| 5 | 2026-05-17 | Basic Product Listing | Composition over Inheritance | ⏳ Pending | — |
+| Day | Date | Topic | OOP Focus | Lesson | Revision | Quiz | Score |
+|-----|------|-------|-----------|--------|----------|------|-------|
+| 1 | 2026-05-13 | User Registration | Encapsulation | [📖](./lessons/day-001-user-registration.md) | [🔑](./revision/day-001-user-registration.md) | [📝](./quizzes/day-001-user-registration.md) | — |
+| 2 | 2026-05-14 | User Login with JWT | Abstraction | [📖](./lessons/day-002-user-login-jwt.md) | [🔑](./revision/day-002-user-login-jwt.md) | [📝](./quizzes/day-002-user-login-jwt.md) | — |
+| 3 | 2026-05-15 | User Profile Update | Inheritance | [📖](./lessons/day-003-user-profile-update.md) | [🔑](./revision/day-003-user-profile-update.md) | [📝](./quizzes/day-003-user-profile-update.md) | — |
+| 4 | 2026-05-16 | Password Reset Flow | Polymorphism (Overriding) | [📖](./lessons/day-004-password-reset.md) | [🔑](./revision/day-004-password-reset.md) | [📝](./quizzes/day-004-password-reset.md) | — |
+| 5 | 2026-05-17 | Basic Product Listing | Composition over Inheritance | ⏳ | ⏳ | ⏳ | — |
+
+**Legend**: 📖 = lesson | 🔑 = revision keys | 📝 = quiz | Score column = your quiz score (filled when evaluated)
 
 ---
 

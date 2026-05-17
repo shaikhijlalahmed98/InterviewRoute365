@@ -20,6 +20,8 @@ Daily learning units covering **5 stacks** + **OOP/Design Patterns** + **System 
 │
 ├── notes/                   ← personal reflections, "aha moments"
 ├── labs/                    ← actual code projects per topic
+├── revision/                ← quick-read keys (5-10 min per day, pre-interview)
+├── quizzes/                 ← 50 MCQs per day, mentor evaluates
 ├── interview-prep/          ← FAANG/Saudi mock Qs, behavioral STAR stories
 ├── cheatsheets/             ← last-minute revision (memory hooks, comparisons)
 └── portfolio/               ← showcase-ready writeups
