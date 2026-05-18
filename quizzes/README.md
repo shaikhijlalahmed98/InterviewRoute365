@@ -18,10 +18,21 @@ quizzes/
 
 ## 📐 Each Quiz File Contains
 
-1. **30-50 MCQs** across all stacks (Java, .NET, SQL, Angular, System Design, OOP)
-2. **`**Your Answer**: ___`** slot per question (you replace `___` with your letter)
-3. **Hidden answer key** at the bottom (collapsed `<details>` block)
-4. **Evaluation section** (auto-added by mentor when you fill answers)
+5 sections totaling 50 MCQs (see [_QUIZ_FORMAT.md](./_QUIZ_FORMAT.md) for detailed standard):
+
+| Section | Count | Type |
+|---------|-------|------|
+| A. **Code Output Prediction** | 10 | "Yeh code chala — output kya?" |
+| B. **Bug Spotting** | 8 | "Is code mein kya galat hai?" |
+| C. **Dry-Run Tracing** | 10 | Step-by-step execution, predict final state |
+| D. **Scenario Decisions** | 10 | Real production situation, choose action |
+| E. **Concept Mastery** | 12 | Direct conceptual MCQs |
+
+Each question marked ⭐ Easy / ⭐⭐ Medium / ⭐⭐⭐ Hard.
+
+**Hidden answer key** at bottom (collapsed `<details>` block) with per-question explanations.
+
+**Evaluation section** auto-appended by mentor when you fill answers.
 
 ---
 
