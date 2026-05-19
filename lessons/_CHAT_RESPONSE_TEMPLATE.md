@@ -43,14 +43,42 @@ If any quizzes were evaluated today, mention briefly in chat:
 ```
 
 ### 🚀 GitHub Pe Kya Push Kiya
-- **File**: `lessons/day-XXX-topic-slug.md` (e.g. `day-005-product-listing.md`)
-- **Size**: XX KB | **Commit**: `<sha>`
+- **File**: `lessons/<level-folder>/<YYYY-MM-DD>-day<N>-<topic-slug>.md`
+- **Size**: XX KB | **Word count**: ~XXXX | **Commit**: `<sha>`
 - **Link**: [GitHub pe lesson kholo](<url>)
 
-**Naming rule**:
-- `day-XXX` = 3-digit zero-padded day number (sorts correctly to day-999)
-- `-topic-slug` = kebab-case short topic name (no level, no date)
-- Example: `day-005-product-listing.md`, `day-051-saga-pattern.md`
+**Path Convention (LOCKED — confirmed with user on Day 6, do not change without explicit user approval)**:
+
+```
+lessons/
+  _LESSON_TEMPLATE.md, _DEPTH_STANDARD.md, _CHAT_RESPONSE_TEMPLATE.md, _STACK_INDEX.md
+  01-beginner/        ← Day 1-20
+  02-intermediate/    ← Day 21-50
+  03-advanced/        ← Day 51-90
+  04-expert/          ← Day 91-140
+  05-master/          ← Day 141-200
+  06-architect/       ← Day 201-270
+  07-principal/       ← Day 271-365
+```
+
+**File naming**: `YYYY-MM-DD-day<N>-<kebab-topic>.md`
+- `YYYY-MM-DD` = the actual date the lesson is taught (start: Day 1 = 2026-05-13)
+- `day<N>` = unpadded day number (e.g. `day1`, `day51`, `day200`) — NOT zero-padded
+- `<kebab-topic>` = lowercase kebab-case short topic slug, no level, no date repeated
+
+**Examples**:
+- `lessons/01-beginner/2026-05-13-day1-user-registration.md`
+- `lessons/02-intermediate/2026-06-02-day21-rbac.md`
+- `lessons/03-advanced/2026-07-02-day51-saga-pattern.md`
+
+**Why this convention**:
+- Level folder = quick visual scan by difficulty stage
+- Date prefix = chronological sort within folder + tells me when I covered it
+- Day number = curriculum position
+- Topic slug = human-scannable filename
+
+**Commit message format**: `Day <N>/365 <LevelEmoji> <LevelName>: <Topic Name>`
+Example: `Day 7/365 🟢 Beginner: Add to Cart Functionality`
 
 ### 📧 Email
 - **Status**: Gmail draft ID `<id>`
