@@ -1,15 +1,15 @@
 # 📊 Progress Tracker
 
 **Started**: 2026-05-13
-**Current Day**: Day 4 of 365 (1.1% complete)
-**Streak**: 🔥 4 days
+**Current Day**: Day 7 of 365 (1.9% complete)
+**Streak**: 🔥 7 days
 
 ---
 
 ## 📈 Level Progress
 
 ```
-🟢 Beginner     ████░░░░░░░░░░░░░░░░  Day 4/20   ← CURRENT
+🟢 Beginner     ███████░░░░░░░░░░░░░  Day 7/20   ← CURRENT
 🟡 Intermediate ░░░░░░░░░░░░░░░░░░░░  Day 0/30
 🟠 Advanced     ░░░░░░░░░░░░░░░░░░░░  Day 0/40
 🔴 Expert       ░░░░░░░░░░░░░░░░░░░░  Day 0/50
@@ -22,11 +22,13 @@
 
 | Day | Date | Topic | OOP Focus | Lesson | Revision | Quiz | Score |
 |-----|------|-------|-----------|--------|----------|------|-------|
-| 1 | 2026-05-13 | User Registration | Encapsulation | [📖](./lessons/day-001-user-registration.md) | [🔑](./revision/day-001-user-registration.md) | [📝](./quizzes/day-001-user-registration.md) | — |
-| 2 | 2026-05-14 | User Login with JWT | Abstraction | [📖](./lessons/day-002-user-login-jwt.md) | [🔑](./revision/day-002-user-login-jwt.md) | [📝](./quizzes/day-002-user-login-jwt.md) | — |
-| 3 | 2026-05-15 | User Profile Update | Inheritance | [📖](./lessons/day-003-user-profile-update.md) | [🔑](./revision/day-003-user-profile-update.md) | [📝](./quizzes/day-003-user-profile-update.md) | — |
-| 4 | 2026-05-16 | Password Reset Flow | Polymorphism (Overriding) | [📖](./lessons/day-004-password-reset.md) | [🔑](./revision/day-004-password-reset.md) | [📝](./quizzes/day-004-password-reset.md) | — |
-| 5 | 2026-05-17 | Basic Product Listing | Composition over Inheritance | ⏳ | ⏳ | ⏳ | — |
+| 1 | 2026-05-13 | User Registration | Encapsulation | [📖](./lessons/01-beginner/2026-05-13-day1-user-registration.md) | [🔑](./revision/day-001-user-registration.md) | [📝](./quizzes/day-001-user-registration.md) | — |
+| 2 | 2026-05-14 | User Login with JWT | Abstraction | [📖](./lessons/01-beginner/2026-05-14-day2-user-login-jwt.md) | [🔑](./revision/day-002-user-login-jwt.md) | [📝](./quizzes/day-002-user-login-jwt.md) | — |
+| 3 | 2026-05-15 | User Profile Update | Inheritance | [📖](./lessons/01-beginner/2026-05-15-day3-user-profile-update.md) | [🔑](./revision/day-003-user-profile-update.md) | [📝](./quizzes/day-003-user-profile-update.md) | — |
+| 4 | 2026-05-16 | Password Reset Flow | Polymorphism (Overriding) | [📖](./lessons/01-beginner/2026-05-16-day4-password-reset.md) | [🔑](./revision/day-004-password-reset.md) | [📝](./quizzes/day-004-password-reset.md) | — |
+| 5 | 2026-05-17 | Basic Product Listing | Composition over Inheritance | [📖](./lessons/01-beginner/2026-05-17-day5-product-listing.md) | ⏳ | ⏳ | — |
+| 6 | 2026-05-18 | Product Search with Pagination | Coupling (loose vs tight) | [📖](./lessons/01-beginner/2026-05-18-day6-product-search-pagination.md) | ⏳ | ⏳ | — |
+| 7 | 2026-05-19 | Add to Cart Functionality | Cohesion | [📖](./lessons/01-beginner/2026-05-19-day7-add-to-cart.md) | ⏳ | ⏳ | — |
 
 **Legend**: 📖 = lesson | 🔑 = revision keys | 📝 = quiz | Score column = your quiz score (filled when evaluated)
 
@@ -36,7 +38,7 @@
 
 - [x] **Day 1**: First lesson published
 - [x] **Day 3**: First week 50% (beginner)
-- [ ] **Day 7**: First week complete
+- [x] **Day 7**: First week complete
 - [ ] **Day 20**: 🟢 Beginner level complete
 - [ ] **Day 30**: 1 month streak
 - [ ] **Day 50**: 🟡 Intermediate complete
@@ -56,9 +58,9 @@
 - [x] Abstraction (Day 2)
 - [x] Inheritance (Day 3)
 - [x] Polymorphism — Method Overriding (Day 4)
-- [ ] Composition over Inheritance (Day 5)
-- [ ] Coupling (Day 6)
-- [ ] Cohesion (Day 7)
+- [x] Composition over Inheritance (Day 5)
+- [x] Coupling (Day 6)
+- [x] Cohesion (Day 7)
 - [ ] Interface vs Abstract Class (Day 8)
 - [ ] Method Overloading vs Overriding (Day 9)
 - [ ] Static vs Instance (Day 10)
