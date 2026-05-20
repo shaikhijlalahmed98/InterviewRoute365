@@ -1,15 +1,15 @@
 # 📊 Progress Tracker
 
 **Started**: 2026-05-13
-**Current Day**: Day 7 of 365 (1.9% complete)
-**Streak**: 🔥 7 days
+**Current Day**: Day 8 of 365 (2.2% complete)
+**Streak**: 🔥 8 days
 
 ---
 
 ## 📈 Level Progress
 
 ```
-🟢 Beginner     ███████░░░░░░░░░░░░░  Day 7/20   ← CURRENT
+🟢 Beginner     ████████░░░░░░░░░░░░  Day 8/20   ← CURRENT
 🟡 Intermediate ░░░░░░░░░░░░░░░░░░░░  Day 0/30
 🟠 Advanced     ░░░░░░░░░░░░░░░░░░░░  Day 0/40
 🔴 Expert       ░░░░░░░░░░░░░░░░░░░░  Day 0/50
@@ -29,6 +29,7 @@
 | 5 | 2026-05-17 | Basic Product Listing | Composition over Inheritance | [📖](./lessons/01-beginner/2026-05-17-day5-product-listing.md) | ⏳ | ⏳ | — |
 | 6 | 2026-05-18 | Product Search with Pagination | Coupling (loose vs tight) | [📖](./lessons/01-beginner/2026-05-18-day6-product-search-pagination.md) | ⏳ | ⏳ | — |
 | 7 | 2026-05-19 | Add to Cart Functionality | Cohesion | [📖](./lessons/01-beginner/2026-05-19-day7-add-to-cart.md) | ⏳ | ⏳ | — |
+| 8 | 2026-05-20 | View Cart with Totals | Interface vs Abstract Class | [📖](./lessons/01-beginner/2026-05-20-day8-view-cart-totals.md) | ⏳ | ⏳ | — |
 
 **Legend**: 📖 = lesson | 🔑 = revision keys | 📝 = quiz | Score column = your quiz score (filled when evaluated)
 
@@ -61,7 +62,7 @@
 - [x] Composition over Inheritance (Day 5)
 - [x] Coupling (Day 6)
 - [x] Cohesion (Day 7)
-- [ ] Interface vs Abstract Class (Day 8)
+- [x] Interface vs Abstract Class (Day 8)
 - [ ] Method Overloading vs Overriding (Day 9)
 - [ ] Static vs Instance (Day 10)
 - [ ] SOLID — S (Day 11)
