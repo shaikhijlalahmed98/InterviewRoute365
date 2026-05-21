@@ -1,15 +1,15 @@
 # 📊 Progress Tracker
 
 **Started**: 2026-05-13
-**Current Day**: Day 8 of 365 (2.2% complete)
-**Streak**: 🔥 8 days
+**Current Day**: Day 9 of 365 (2.5% complete)
+**Streak**: 🔥 9 days
 
 ---
 
 ## 📈 Level Progress
 
 ```
-🟢 Beginner     ████████░░░░░░░░░░░░  Day 8/20   ← CURRENT
+🟢 Beginner     █████████░░░░░░░░░░░  Day 9/20   ← CURRENT
 🟡 Intermediate ░░░░░░░░░░░░░░░░░░░░  Day 0/30
 🟠 Advanced     ░░░░░░░░░░░░░░░░░░░░  Day 0/40
 🔴 Expert       ░░░░░░░░░░░░░░░░░░░░  Day 0/50
@@ -30,6 +30,7 @@
 | 6 | 2026-05-18 | Product Search with Pagination | Coupling (loose vs tight) | [📖](./lessons/01-beginner/2026-05-18-day6-product-search-pagination.md) | ⏳ | ⏳ | — |
 | 7 | 2026-05-19 | Add to Cart Functionality | Cohesion | [📖](./lessons/01-beginner/2026-05-19-day7-add-to-cart.md) | ⏳ | ⏳ | — |
 | 8 | 2026-05-20 | View Cart with Totals | Interface vs Abstract Class | [📖](./lessons/01-beginner/2026-05-20-day8-view-cart-totals.md) | ⏳ | ⏳ | — |
+| 9 | 2026-05-21 | Place a Simple Order | Method Overloading vs Overriding | [📖](./lessons/01-beginner/2026-05-21-day9-place-simple-order.md) | ⏳ | ⏳ | — |
 
 **Legend**: 📖 = lesson | 🔑 = revision keys | 📝 = quiz | Score column = your quiz score (filled when evaluated)
 
@@ -63,7 +64,7 @@
 - [x] Coupling (Day 6)
 - [x] Cohesion (Day 7)
 - [x] Interface vs Abstract Class (Day 8)
-- [ ] Method Overloading vs Overriding (Day 9)
+- [x] Method Overloading vs Overriding (Day 9)
 - [ ] Static vs Instance (Day 10)
 - [ ] SOLID — S (Day 11)
 - [ ] SOLID — O (Day 12)
