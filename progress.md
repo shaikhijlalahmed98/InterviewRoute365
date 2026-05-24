@@ -1,15 +1,15 @@
 # 📊 Progress Tracker
 
 **Started**: 2026-05-13
-**Current Day**: Day 11 of 365 (3.0% complete)
-**Streak**: 🔥 11 days
+**Current Day**: Day 12 of 365 (3.3% complete)
+**Streak**: 🔥 12 days
 
 ---
 
 ## 📈 Level Progress
 
 ```
-🟢 Beginner     ███████████░░░░░░░░░  Day 11/20   ← CURRENT
+🟢 Beginner     ████████████░░░░░░░░  Day 12/20   ← CURRENT
 🟡 Intermediate ░░░░░░░░░░░░░░░░░░░░  Day 0/30
 🟠 Advanced     ░░░░░░░░░░░░░░░░░░░░  Day 0/40
 🔴 Expert       ░░░░░░░░░░░░░░░░░░░░  Day 0/50
@@ -33,6 +33,7 @@
 | 9 | 2026-05-21 | Place a Simple Order | Method Overloading vs Overriding | [📖](./lessons/01-beginner/2026-05-21-day9-place-simple-order.md) | ⏳ | ⏳ | — |
 | 10 | 2026-05-22 | View Order History | Static vs Instance Members | [📖](./lessons/01-beginner/2026-05-22-day10-view-order-history.md) | ⏳ | ⏳ | — |
 | 11 | 2026-05-23 | Update User Address | SOLID — Single Responsibility (S) | [📖](./lessons/01-beginner/2026-05-23-day11-update-user-address.md) | ⏳ | ⏳ | — |
+| 12 | 2026-05-24 | Upload Profile Picture | SOLID — Open/Closed (O) | [📖](./lessons/01-beginner/2026-05-24-day12-upload-profile-picture.md) | [🔑](./revision/day-012-upload-profile-picture.md) | [📝](./quizzes/day-012-upload-profile-picture.md) | — |
 
 **Legend**: 📖 = lesson | 🔑 = revision keys | 📝 = quiz | Score column = your quiz score (filled when evaluated)
 
@@ -69,7 +70,7 @@
 - [x] Method Overloading vs Overriding (Day 9)
 - [x] Static vs Instance (Day 10)
 - [x] SOLID — S (Day 11)
-- [ ] SOLID — O (Day 12)
+- [x] SOLID — O (Day 12)
 - [ ] SOLID — L (Day 13)
 - [ ] SOLID — I (Day 14)
 - [ ] SOLID — D (Day 15)
