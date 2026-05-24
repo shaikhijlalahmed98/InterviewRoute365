@@ -80,6 +80,29 @@ Pandit puchta: "Tum kis version pe baat kar rahe ho?" Version mismatch = reject.
 
 ---
 
+## Day 12 — Upload Profile Picture
+
+### **SNAP** (Profile Picture Upload — photo khinchne wali SNAP!)
+- **S**ignature + Size validate (magic bytes, NOT Content-Type/extension — spoofable)
+- **N**o local disk → object storage (S3/Blob); DB stores URL/key only
+- **A**sync transform: resize + EXIF strip (privacy/GPS) off the request thread
+- **P**ublish via CDN with cache-busted versioned URL (`?v=N`)
+
+### **OOP**: Open/Closed = "EXTEND HAAN, MODIFY NAA" + "USB-C PORT"
+Naya device lagao (extend), phone mat kholo (modify). Port = interface; device = implementation.
+New storage provider / transform = nayi class, `ProfilePictureService` untouched.
+
+### **Magic bytes** = "File ki asli pehchaan, rename-proof"
+JPEG=`FF D8 FF`, PNG=`89 50 4E 47`. Extension/Content-Type jhoot bol sakte hain.
+
+### **Object storage** = "Godown + tag number"
+File bade godown (S3) mein tag laga ke rakho; diary (DB) mein sirf tag number.
+
+### **Orphan cleanup** = "Pehle likho, phir mitaao"
+DB commit FIRST, phir purani file delete. Ulta kiya + commit fail = broken image forever.
+
+---
+
 ## Recurring Power-Words
 
 ### **CSPRNG** = "Cryptographically Secure Pseudo Random Number Generator"
@@ -113,5 +136,6 @@ Tum `@Service`/`@Component` annotation lagao, framework `new` keyword tumhare ba
 | 2 | VIBES | Login flow steps |
 | 3 | PCAVR | Concurrent update protection |
 | 4 | TRACE | Password reset security |
+| 12 | SNAP | Profile picture upload (Signature, No-disk, Async, Publish-CDN) |
 
-**Total memorized**: 4 acronyms (will grow daily).
+**Total memorized**: 5 acronyms (will grow daily).
