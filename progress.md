@@ -1,15 +1,15 @@
 # 📊 Progress Tracker
 
 **Started**: 2026-05-13
-**Current Day**: Day 12 of 365 (3.3% complete)
-**Streak**: 🔥 12 days
+**Current Day**: Day 13 of 365 (3.6% complete)
+**Streak**: 🔥 13 days
 
 ---
 
 ## 📈 Level Progress
 
 ```
-🟢 Beginner     ████████████░░░░░░░░  Day 12/20   ← CURRENT
+🟢 Beginner     █████████████░░░░░░░  Day 13/20   ← CURRENT
 🟡 Intermediate ░░░░░░░░░░░░░░░░░░░░  Day 0/30
 🟠 Advanced     ░░░░░░░░░░░░░░░░░░░░  Day 0/40
 🔴 Expert       ░░░░░░░░░░░░░░░░░░░░  Day 0/50
@@ -34,6 +34,7 @@
 | 10 | 2026-05-22 | View Order History | Static vs Instance Members | [📖](./lessons/01-beginner/2026-05-22-day10-view-order-history.md) | ⏳ | ⏳ | — |
 | 11 | 2026-05-23 | Update User Address | SOLID — Single Responsibility (S) | [📖](./lessons/01-beginner/2026-05-23-day11-update-user-address.md) | ⏳ | ⏳ | — |
 | 12 | 2026-05-24 | Upload Profile Picture | SOLID — Open/Closed (O) | [📖](./lessons/01-beginner/2026-05-24-day12-upload-profile-picture.md) | [🔑](./revision/day-012-upload-profile-picture.md) | [📝](./quizzes/day-012-upload-profile-picture.md) | — |
+| 13 | 2026-05-25 | Form Validation Full-Stack | SOLID — Liskov Substitution (L) | [📖](./lessons/01-beginner/2026-05-25-day13-form-validation.md) | [🔑](./revision/day-013-form-validation.md) | [📝](./quizzes/day-013-form-validation.md) | — |
 
 **Legend**: 📖 = lesson | 🔑 = revision keys | 📝 = quiz | Score column = your quiz score (filled when evaluated)
 
@@ -71,7 +72,7 @@
 - [x] Static vs Instance (Day 10)
 - [x] SOLID — S (Day 11)
 - [x] SOLID — O (Day 12)
-- [ ] SOLID — L (Day 13)
+- [x] SOLID — L (Day 13)
 - [ ] SOLID — I (Day 14)
 - [ ] SOLID — D (Day 15)
 
