@@ -1,15 +1,15 @@
 # 📊 Progress Tracker
 
 **Started**: 2026-05-13
-**Current Day**: Day 13 of 365 (3.6% complete)
-**Streak**: 🔥 13 days
+**Current Day**: Day 15 of 365 (4.1% complete)
+**Streak**: 🔥 15 days
 
 ---
 
 ## 📈 Level Progress
 
 ```
-🟢 Beginner     █████████████░░░░░░░  Day 13/20   ← CURRENT
+🟢 Beginner     ███████████████░░░░░  Day 15/20   ← CURRENT
 🟡 Intermediate ░░░░░░░░░░░░░░░░░░░░  Day 0/30
 🟠 Advanced     ░░░░░░░░░░░░░░░░░░░░  Day 0/40
 🔴 Expert       ░░░░░░░░░░░░░░░░░░░░  Day 0/50
@@ -35,6 +35,8 @@
 | 11 | 2026-05-23 | Update User Address | SOLID — Single Responsibility (S) | [📖](./lessons/01-beginner/2026-05-23-day11-update-user-address.md) | ⏳ | ⏳ | — |
 | 12 | 2026-05-24 | Upload Profile Picture | SOLID — Open/Closed (O) | [📖](./lessons/01-beginner/2026-05-24-day12-upload-profile-picture.md) | [🔑](./revision/day-012-upload-profile-picture.md) | [📝](./quizzes/day-012-upload-profile-picture.md) | — |
 | 13 | 2026-05-25 | Form Validation Full-Stack | SOLID — Liskov Substitution (L) | [📖](./lessons/01-beginner/2026-05-25-day13-form-validation.md) | [🔑](./revision/day-013-form-validation.md) | [📝](./quizzes/day-013-form-validation.md) | — |
+| 14 | 2026-05-26 | Email Verification Flow | SOLID — Interface Segregation (I) | [📖](./lessons/01-beginner/2026-05-26-day14-email-verification-flow.md) | [🔑](./revision/day-014-email-verification-flow.md) | [📝](./quizzes/day-014-email-verification-flow.md) | — |
+| 15 | 2026-05-27 | Phone OTP Verification | SOLID — Dependency Inversion (D) | [📖](./lessons/01-beginner/2026-05-27-day15-phone-otp-verification.md) | [🔑](./revision/day-015-phone-otp-verification.md) | [📝](./quizzes/day-015-phone-otp-verification.md) | — |
 
 **Legend**: 📖 = lesson | 🔑 = revision keys | 📝 = quiz | Score column = your quiz score (filled when evaluated)
 
@@ -73,8 +75,8 @@
 - [x] SOLID — S (Day 11)
 - [x] SOLID — O (Day 12)
 - [x] SOLID — L (Day 13)
-- [ ] SOLID — I (Day 14)
-- [ ] SOLID — D (Day 15)
+- [x] SOLID — I (Day 14)
+- [x] SOLID — D (Day 15)
 
 ### Design Patterns (Day 31-90)
 - [ ] Creational (Day 31-40)

@@ -103,6 +103,78 @@ DB commit FIRST, phir purani file delete. Ulta kiya + commit fail = broken image
 
 ---
 
+## Day 13 — Form Validation Full-Stack
+
+### **CASE-D** (Defense-in-Depth Validation)
+- **C**lient validation = UX only (trust=0)
+- **A**PI = security boundary (must re-validate)
+- **S**ervice = business rules layer
+- **E**nforce in DB = integrity guarantee
+- **D**efense-in-depth across all layers
+
+### **OOP**: Liskov Substitution = "NAYA KHILARI, WOHI RULES"
+Subtype base ki jagah substitutable. Cricket team mein naya bowler aaye, wickets ki rules wahi rahein.
+Validation engine living example: har validator same contract (`null`/`error`, never throw) → polymorphic loop safe.
+
+### **TOCTOU race in signup** = "Pehle dekho, phir banao" (galat)
+Check-then-insert mein race window — 2 requests dono "available" dekh ke dono insert kar dein.
+Fix: DB UNIQUE constraint — single source of truth.
+
+---
+
+## Day 14 — Email Verification Flow
+
+### **VERIFY** (Email Verification Security)
+- **V**alidate token (SecureRandom 32-byte, SHA-256 hashed in DB)
+- **E**xpiry enforced (24 hours, 410 Gone after)
+- **R**ace-condition safe (atomic UPDATE WHERE is_used=0)
+- **I**dempotent (already-verified = 200 OK, not error)
+- **F**ire async email (Outbox pattern, not blocking)
+- **Y**ield clear UI feedback (loading/success/expired/invalid)
+
+### **OOP**: Interface Segregation = "BHARI INTERFACE MAT BHEJO" / "CHOTA INTERFACE, BARA SUKOON"
+Bara fat `INotificationService` (sendEmail+sendSms+sendPush+sendWhatsApp) tor ke chote interfaces banao: `IEmailSender`, `ISmsSender`, `IPushNotifier`.
+Analogy: shaadi vendors — har vendor ka apna interface, fat "IWeddingVendor" mat banao.
+
+### **Outbox Pattern** = "DABBA-WALA email delivery"
+Tiffin ka dabba (outbox row) tumhare ghar (DB transaction) mein safe rakho. Dabba-wala (background worker) le ja ke deliver karega — agar SMTP down ho, dobara try karega.
+
+### **Anti-enumeration** = "Ghar ka chowkidar"
+Bahar wala koi bhi puchne aaye — chowkidar same jawab deta hai. Existing/non-existing email pe same response = attacker email list nahi bana sakta.
+
+### **Constant-time compare** = "Har baar 6 chars check, chahe pehla mismatch ho"
+`.equals()` shortcuts on mismatch — timing leak. `MessageDigest.isEqual()` always full-length = no info leak.
+
+---
+
+## Day 15 — Phone OTP Verification
+
+### **OTP-SECURE** (Phone OTP Defense)
+- **O**TP hashed in DB (SHA-256, not plain)
+- **T**hrottled requests (3/hour per phone via Redis INCR)
+- **P**roviders chained (Twilio → Veevo → Jazz fallback)
+- **S**ingle-use (DELETE on successful verify)
+- **E**xpiry enforced (5 min)
+- **C**onstant-time compare (FixedTimeEquals / isEqual)
+- **U**pserted atomically (MERGE / ON CONFLICT)
+- **R**edis rate-limited (atomic INCR single-thread)
+- **E**rrors clear in UI (countdown timer, resend cooldown)
+
+### **OOP**: Dependency Inversion = "INTERFACE PE BHAROSA, IMPLEMENTATION PE NAHI" / "SOCKET PATTERN"
+Electric kettle wall socket pe depend karti hai, na ke specific power source (WAPDA/solar/K-Electric).
+`OtpService` `ISmsSender` pe depend kare, na ke concrete `TwilioClient`. Provider swap = zero business code change.
+
+### **Circuit Breaker** = "3 baar fail = 60s rukna" (ATM card block jaisa)
+3 consecutive failures in 10s → circuit OPEN → 60s fail-fast → HALF-OPEN test → CLOSED ya wapas OPEN.
+
+### **Token Bucket** = "Pani ki tanki + tap"
+Tanki mein N tokens, har second R tokens add hote hain. Request aaye = 1 token consume. Tanki khali = reject. Burst allowed + sustained rate enforced.
+
+### **Hexagonal Architecture** = "Core ke chaaron taraf adapter"
+Business logic central hexagon mein. DB, SMS, queue — sab adapters jo port (interface) implement karte hain. Tech swap = adapter badlo, core untouched.
+
+---
+
 ## Recurring Power-Words
 
 ### **CSPRNG** = "Cryptographically Secure Pseudo Random Number Generator"
@@ -137,5 +209,8 @@ Tum `@Service`/`@Component` annotation lagao, framework `new` keyword tumhare ba
 | 3 | PCAVR | Concurrent update protection |
 | 4 | TRACE | Password reset security |
 | 12 | SNAP | Profile picture upload (Signature, No-disk, Async, Publish-CDN) |
+| 13 | CASE-D | Defense-in-depth validation (Client, API, Service, Enforce, Defense) |
+| 14 | VERIFY | Email verification security (Validate, Expiry, Race-safe, Idempotent, Fire async, Yield UI) |
+| 15 | OTP-SECURE | Phone OTP defense (OTP hashed, Throttled, Providers chained, Single-use, Expiry, Constant-time, Upsert atomic, Redis-limited, Errors clear) |
 
-**Total memorized**: 5 acronyms (will grow daily).
+**Total memorized**: 8 acronyms (will grow daily).
