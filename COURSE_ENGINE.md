@@ -47,23 +47,22 @@
 
 ---
 
-## 4. RULE 0 — The Airlock (V1 ki maut ka ilaaj)
+## 4. RULE 0 — The Airlock (2026-07-05 se NARAM — learner ka faisla)
 
-`AGLA DIN` pe mentor **sab se pehle** pichla day file kholta hai:
+**Daily lessons: jawab dena compulsory NAHI.** Mentor track karta hai (diya/nahi diya — STATE mein), jo diya woh grade hota hai aur ledger update hota hai — lekin **agla din kabhi block nahi hota.** Koi taana nahi, bas note.
 
-- Agar `## ✍️ Mere Jawab` block khali hai, ya self-score/retro line nahi bhari → **naya din generate NAHI hoga.** Mentor sirf yeh kehta hai:
-  > *"Bhai, pehle Day N ke jawab bharo — main check karke hi agla din dunga. (10 minute ka kaam hai, abhi karo.)"*
-  aur ruk jata hai. Koi riayat nahi — insaan async ho sakta hai, mentor kabhi nahi.
-- Agar bhara hua hai → grade karo (Section 5, Step 2), **phir** aaj ka din banao.
+**Asli gates sirf DO:**
+1. **Weekly Comprehensive Quiz (Sunday, 25-Q):** naye hafte ka Monday tab tak generate NAHI hoga jab tak pichle hafte ka comprehensive quiz bhara + grade na ho. Hafte mein EK dafa ehtesaab — yeh hi V1 ki maut ka ilaaj hai, roz ki rukawat ke baghair.
+2. **Level Gates (§9):** GATE-N PASS ke baghair agla level nahi — pehle jaisa.
 
-Yehi rule Sunday exam (`exam` answers) aur Saturday lab (acceptance checklist) pe bhi lagta hai.
+Saturday lab checklist tracked hai, gated nahi.
 
 ---
 
 ## 5. Session Protocol — `AGLA DIN` ke exact steps
 
 1. **Parho:** STATE.md + REVIEW-LEDGER.md + pichla day file.
-2. **Grade karo:** har jawab check karo. Pichle day file ke neeche `## 🧑‍🏫 Mentor Evaluation` append karo: section-wise score (code-output / bug-spot / dry-run / scenario / concept), har ghalat jawab ki wazahat Roman Urdu mein — *trap ka naam lo* (yeh option kyun lubhata tha). Ghalat jawab → `retention/MISTAKE-BANK.md` mein entry.
+2. **Grade karo (jo diya gaya ho):** diye hue jawab check karo. Pichle day file ke neeche `## 🧑‍🏫 Mentor Evaluation` append karo: section-wise score, har ghalat jawab ki wazahat Roman Urdu mein — *trap ka naam lo*. Ghalat jawab → `retention/MISTAKE-BANK.md`. **Jawab khali hon to:** sirf STATE mein "D-N drill skipped" note — koi block nahi (§4). Sunday comprehensive quiz pending ho to WAHAN Airlock lagta hai.
 3. **Ledger update:** har atom ka verdict — sahi: Box+1, `Due = aaj + naya interval`; ghalat: `Box = max(1, Box−2)`, `Due = kal`, `Lapses+1`, kal ke warm-up mein pakka slot.
 4. **STATE.md update:** day counter, streak, 14-din ki score table, Chhutti Pass count, energy trend, flags.
 5. **Adaptive pacing check:** 3-din ka average < 60%? → kal CONSOLIDATION day (zero naye atoms, weak cluster ki dobara padhai nayi misaalon se). Sunday retro energy ≤ 2 do hafton se? → agle hafte lessons −20% chhote.
@@ -74,25 +73,36 @@ Yehi rule Sunday exam (`exam` answers) aur Saturday lab (acceptance checklist) p
 
 ---
 
-## 6. Weekly Cadence (haftay ka naqsha)
+## 6. Weekly Cadence (haftay ka naqsha) — V1 PATTERN BAHAAL (2026-07-05, learner: "ek problem ke through sab concepts... fulfillment hoti thi")
 
-**Ek hafta = EK production scenario** (capstone se nikla hua) — din uski parten kholtay hain. V1 ki ghalati (har din 5 stacks) khatam.
+**Har weekday = EK asli problem × PAANCH stack lenses.** Problem weekly theme (curriculum) + TICH-KOLEY backlog se nikalta hai. Din ke types (CONCEPT/JAVA/DOTNET...) KHATAM — ab har din poora hai.
 
-| Din | Type | Budget | Kya hota hai |
-|---|---|---|---|
-| Mon | **CONCEPT** | 45 min | Warm-up (3 due atoms) → hafte ka scenario + concept: KYUN + TAREEKH (kya dard tha jisne yeh cheez ijaad karwai) → 10-Q quiz |
-| Tue | **JAVA-DEEP** | 45 min | Wohi scenario, Java/Spring ki gehrai + under-the-hood → 10-Q quiz |
-| Wed | **DOTNET-DEEP** | 45 min | Wohi scenario .NET mein + **Java↔.NET comparison table** + 2 contrast cards (Java code dikha ke poocho: C# twin kya karega?) → 10-Q quiz |
-| Thu | **DATA** | 45 min | SQL Server / persistence lens (L4 mein Angular lens, theme ke mutabiq flex) → 10-Q quiz |
-| Fri | **DESIGN + DS&A** | 45 min | Design lens (scale/failure kahani) + **Failure Museum** (5 min: ek asli banking-IT tabahi — Knight Capital 2012, TSB 2018, RBS 2012, Bangladesh Bank 2016, Herstatt 1974...) + **1 timed DS&A problem** (English narration script ke saath) + 5-Q quiz + **Feynman hook**: learner apne alfaaz mein ek atom ki ELI5 likhta hai |
-| Sat | **LAB** | 2.5–3 hr | Capstone increment: brief + acceptance checklist (5–8 boxes) + **planted bug bounty** (har lab skeleton mein exactly 1 chhupa hua realistic bug — dhoondhna checklist ka hissa) + **mirror kata** (hafte ki sab se aham cheez doosri language mein, 30 min) + zaroorat ho to ADR |
-| Sun | **REVIEW + MOCK** | 2 hr | **Weekly Exam 25-Q** (10 is hafte ke + 10 ledger ke due + 5 "purana sona" Box 6–7 se) → **Mock slot 45 min** (rotation: A = DS&A screen 2 problems timed English think-aloud; B = system design; C = behavioral STAR + recording; D = mixed mini-loop) → retro (3 lines STATE.md mein: kya pakka hua, kya kacha, energy 1–5) |
+**Daily lesson ka dhancha (story-app + md record — V1 ka pattern, interesting + memorative banaya hua):**
+1. **Cold open** — scenario/scene, TICH-KOLEY cast (Danish, etc.)
+2. **Warm-up** — 3 due ledger atoms, naye sawal (jawab optional, tracked)
+3. **Stack 1: Java/Spring** → **Stack 2: .NET/C#** → **Stack 3: SQL Server** → **Stack 4: Angular** (jahan relevant) → **Stack 5: System Design** — sab EK problem pe; har section DEPTH-STANDARD blocks ke saath (T+0, ❌/✅, real companies, concrete numbers, inline jargon)
+4. **Interlock** — paanchon lenses ek doosre mein kaise phanste hain (request ka end-to-end safar)
+5. **Mental Map + memory hooks** (mnemonic/acronym)
+6. **🎤 INTERVIEW DRILL** (roz ke quiz ki JAGAH) — Zarr-style mini-panel, **concept + code + design, TWISTED (learner ki farmaish 2026-07-05: "cross-questions bhi, tricks bhi"):**
+   - (a) **Main question** + English delivery script (60–90s, bol ke rehearse)
+   - (b) **Code round — 2 trap-sawal** (output/bug-spot, jaan ke twist: cache ambush, hidden boxing, off-by-one, deferred execution...) — answer key mein *trick ka naam* lazmi
+   - (c) **Concept round — 2 sawal + cross-question CHAIN** (har jawab pe agla war: "accha, lekin phir X kyun hota hai?") — model answers `<details>` mein
+   - (d) **Design round — 1 scenario twist** ("ab yeh 10x scale pe le jao / yeh component fail ho jaye to?")
+   - (e) **Senior differentiator** (woh 1 baat jo tumhe panel mein alag kare) + **red flags** (jo kabhi nahi kehna)
+   - **Jawab dena optional** (practice ke liye zor do) — diye to grade + ledger update; na diye to sirf STATE mein "skipped" note, block KABHI nahi
+7. **Atoms (3–5)** + **Tomorrow's connection hint**
+
+| Din | Kaam | Budget |
+|---|---|---|
+| Mon–Fri | Problem-lesson (upar ka dhancha). Fri mein + **Failure Museum** (asli banking tabahi) + 1 timed DS&A problem (English think-aloud) | 45–60 min |
+| Sat | **LAB** — capstone increment + acceptance checklist + planted bug + mirror kata + ADR (pehle jaisa) | 2.5–3 hr |
+| Sun | **Weekly COMPREHENSIVE Quiz 25-Q (COMPULSORY — §4 ka gate #1):** 10 is hafte ke + 10 ledger due + 5 "purana sona"; 5-section format (code-output/bug-spot/dry-run/scenario/concept) → **Mock slot 45 min** (rotation A/B/C/D) → retro (3 lines STATE mein) | 2 hr |
 
 **Lesson format (2026-07-05 se, learner ke 3 feedback iterations ke baad):** har din DO files — (1) **`day-NNN-app.html`** = asal experience: story-first (cold open scene, TICH-KOLEY cast, baab/chapters), Zarr design system (ink-navy + gold), quiz textareas + md-format export button, localStorage progress; (2) **md file** = record + quick reference (atoms, quiz Qs, Mere Jawab block, answer key) + app ka pointer.
 
 **Depth (V1-level, DEPTH-STANDARD ke SAB blocks lazmi):** T+0 mechanism breakdown • ❌/✅ comparison • asli companies (verifiable) • concrete numbers • inline jargon boxes • memory hooks • cross-questions with model answers. Weekday app-story target **~1,800–2,500 words** (parhna ~18 min + quiz ~20 = 45-min budget). **Volume cap (60KB ka asli sabaq):** ek din = EK concept ki gehrai, panch concepts ka dher NAHI. Quiz exactly 10 Qs (Fri: 5), warm-up 3.
 
-**Quiz format:** V1 ka 5-section format (code-output, bug-spot, dry-run, scenario, concept — `standards/QUIZ-FORMAT.md`) scale-down: 2+2+2+2+2. Answer key **hamesha** `<details>` mein, jawab likhne ke block ke NEECHE. Har sawal pe atom ID HTML comment mein (`<!-- A-017-2 -->`).
+**Sunday comprehensive quiz format:** V1 ka 5-section format (code-output, bug-spot, dry-run, scenario, concept — `standards/QUIZ-FORMAT.md`), 5+5+5+5+5 = 25. Answer key **hamesha** `<details>` mein, jawab likhne ke block ke NEECHE. Har sawal pe atom ID HTML comment mein (`<!-- A-017-2 -->`). Daily drill ke answer keys pe bhi yehi rules (details + atom IDs + trick ka naam).
 
 ---
 

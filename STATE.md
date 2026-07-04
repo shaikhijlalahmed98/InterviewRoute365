@@ -6,7 +6,7 @@
 
 | Cheez | Qeemat |
 |---|---|
-| **Current Day** | 1 (generate hua 2026-07-05 — jawab pending, Airlock lagu) |
+| **Current Day** | 1 (generate hua 2026-07-05 — drill jawab OPTIONAL; hafte ka gate = Sunday comprehensive quiz) |
 | **Level** | 🪨 Bunyaad (1 of 7) |
 | **Streak** | 1 🔥 (Day 0 done) |
 | **Chhutti Passes (is mahine)** | 0 / 4 |
@@ -41,6 +41,8 @@
 ## Story Bank: 0 / 12 • DS&A solved: 0 • Design mocks: 0
 
 ## Flags / Mentor Notes
+
+- **2026-07-05 (4) — BARA REDESIGN (learner ke 2 messages):** (1) **V1 ka one-problem-×-5-stacks pattern bahaal** (engine §6) — "ek problem ke through sab concepts... fulfillment hoti thi"; din ke types (CONCEPT/JAVA/DOTNET...) khatam, Day 2 se har din poora. (2) **Airlock naram** (engine §4): daily drill optional-tracked; gates sirf Sunday comprehensive 25-Q + level gates. (3) Roz quiz ki jagah **INTERVIEW DRILL** — concept + code + design, TWISTED: trap-sawal (trick ka naam), cross-question chains, senior differentiator, red flags. Day 1 purane format mein ja chuka tha — uske drill-jawab bhi optional; Week 1 ka comprehensive quiz Day 7 (Sunday) pe.
 
 - V1 archive: `archive/v1/` — 15 din ka content mehfooz hai; kabhi kabhi teaching specimen banega (misaal: V2 Day 19 mein V1 ke GET-token flaw ka post-mortem).
 - **2026-07-04:** Day 0 generate hua (pehla `AGLA DIN`). Agla `AGLA DIN`: diagnostic grade karo → ghalat jawab ledger ke pehle atoms banao (Born D0) → capstone naam yahan pin karo → Day 1 (CONCEPT: "Compiler se CPU tak", curriculum W1) generate karo. Day 1 ka type calendar se nahi — curriculum Day 1 ko Monday-type pin karta hai.

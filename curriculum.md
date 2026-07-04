@@ -1,6 +1,8 @@
 # 📚 Curriculum V2 — 365 Din ka Naqsha
 
-> Padhne ka tareeqa: `COURSE_ENGINE.md` usool batata hai, yeh file **kya kab** batati hai. Day numbers completion pe barhte hain (calendar pe nahi); din ka TYPE asal weekday se tay hota hai. Har level ka darwaza **Mastery Gate** kholta hai, calendar nahi.
+> Padhne ka tareeqa: `COURSE_ENGINE.md` usool batata hai, yeh file **kya kab** batati hai. Day numbers completion pe barhte hain (calendar pe nahi). Har level ka darwaza **Mastery Gate** kholta hai, calendar nahi.
+>
+> **Format note (2026-07-05, learner ka faisla):** Har weekday = **EK problem × 5 stacks** (V1 pattern — engine §6). Neeche ke week/day breakdowns ab **concept-checklists** hain — mentor unhe problems ke andar bunta hai, alag-alag "type" wale dinon mein nahi. Daily drill optional (tracked); **Sunday comprehensive quiz compulsory** (hafte ka gate).
 
 ## Saal ka Arc — 7 Levels
 
