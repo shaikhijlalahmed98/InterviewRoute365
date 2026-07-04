@@ -106,43 +106,41 @@ Interview ke raste ghar aate hue tum sochte ho: *"Naukri to yeh log denge ya nah
 > Har number ke aage jawab likho. Nahi aata to "nahi pata" — khali line se behtar hai.
 
 ```
-R1-1:
-R1-2:
-R1-3:
-R1-4:
-R1-5:
-R1-6:
-R2-7:
-R2-8:
-R2-9:
-R2-10:
-R2-11:
-R2-12:
-R3-13:
-R3-14:
-R3-15:
-R3-16:
-R3-17:
-R3-18:
-R4-19:
-R4-20:
-R4-21:
-R4-22:
-R4-23:
-R4-24:
-R5-25:
-R5-26:
-R5-27:
-R5-28:
-R5-29:
-R5-30:
+R1-1: TRUE TRUE
+R1-2: nahi pata
+R1-3: Q K TRANSACTION SIRF US METHOD PE LAGTI HE
+R1-4: nahi pata
+R1-5: nahi pata
+R1-6: UNCHECKED
+R2-7: nahi pata
+R2-8: nahi pata
+R2-9: nahi pata
+R2-10: nahi pata
+R2-11: nahi pata
+R2-12: nahi pata
+R3-13: nahi pata
+R3-14: nahi pata
+R3-15: nahi pata
+R3-16: nahi pata
+R3-17: nahi pata
+R3-18: nahi pata
+R4-19: nahi pata
+R4-20: nahi pata
+R4-21: nahi pata
+R4-22: nahi pata
+R4-23: nahi pata
+R4-24: nahi pata
+R5-25: nahi pata
+R5-26: nahi pata
+R5-27: nahi pata
+R5-28: nahi pata
+R5-29: nahi pata
+R5-30: nahi pata
 ```
 
-**Bank ka naam:**
+**Bank ka naam:** TICH-KOLEY 
 
-**Time laga:** ___ min • **Energy (1–5):** ___ • **Closed book raha? (haan/nahi):** ___
-
----
+**Time laga:** 8 min • **Energy (1–5):** 4 • **Closed book raha? (haan/nahi):** haan
 
 <details>
 <summary>🔑 Answer Key — SIRF interview dene ke BAAD kholo</summary>
