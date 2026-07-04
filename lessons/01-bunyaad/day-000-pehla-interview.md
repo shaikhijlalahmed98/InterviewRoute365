@@ -182,4 +182,29 @@ R5-30: nahi pata
 
 *Word count: ~1,300 (Day 0 special) • System ke mechanics (Airlock, ledger, keywords) ke liye: README.md — 2 minute ka parhna, jab dil kare.*
 
+---
+
+## 🧑‍🏫 Mentor Evaluation — Zarr Hiring Committee Report (graded D0, 2026-07-05)
+
+> **Verdict: NO HIRE — aaj.** Day 365 pe candidate ko dobara bulaya jayega. Committee ka andaza hai ke tab kahani bilkul aur hogi.
+
+| Round | Score | Committee ka note |
+|---|---|---|
+| R1 — Java (Bilal bhai) | **1/6** | "Transactions ki khabar hai (Q6 sahi), internals ki nahi. Q1 pe cache trap mein poora utar gaya." |
+| R2 — .NET (Sana) | 0/6 | "Java se aaye ho na — yehi rounds asli imtihaan the. Abhi .NET ki duniya andheri hai." |
+| R3 — Data (Rehan sahab) | 0/6 | "Beta ne bluff NAHI kiya. 15 saal mein pehli dafa kisi ne 6 dafa saaf 'nahi pata' kaha. Yeh note hua hai." |
+| R4 — Web (Maha) | 0/6 | "Security ka safar abhi shuru hi nahi hua — localStorage wala jawab na aana mujhe khala raha." |
+| R5 — CTO | 0/6 | "Machine ka naqsha zehen mein nahi hai. Lekin aankhon mein bhook hai — woh syllabus se nahi aati." |
+| **Total** | **1/30 (3%)** | **Baseline darj. Yahan se har hafta sirf upar.** |
+
+**Attempted jawabon ki wazahat (trap ke naam ke saath):**
+
+- **Q1 ❌ — tumne likha `TRUE TRUE`, sahi hai `true false`.** Trap ka naam: **"chhota number cache"**. Java `Integer` ke liye −128 se 127 tak ke objects pehle se bana ke cache rakhta hai — `127` dono variables ko WOHI ek object milta hai, is liye `==` (jo reference compare karta hai) `true` deta hai. `128` cache se bahar hai — do NAYE objects bante hain, `==` `false`. Sabaq: objects pe `==` kabhi nahi, `.equals()` hamesha. (Yeh sawal tumse asli interview mein zaroor hoga — ab kabhi nahi phisloge.)
+- **Q3 ❌ (aadha idea tha) — tumne likha "transaction sirf us method pe lagti hai."** Nahi — masla method ka nahi, **raste ka** hai. Trap ka naam: **"proxy ghost"**. Spring `@Transactional` ka jaadu ek **proxy** (tumhari class ke gird security guard jaisa lifafa) ke zariye chalta hai — transaction wohi guard kholta hai. Jab tum `this.method()` se andar hi andar call karte ho, guard ke paas se guzarte hi nahi — is liye transaction shuru hi nahi hoti. Bahar se (kisi doosri bean se) call aaye to guard milta hai, transaction lagti hai. Level 3 mein is pe poora hafta hai (W14).
+- **Q6 ✓ — "UNCHECKED" bilkul sahi.** Spring default sirf RuntimeException/Error pe rollback karta hai; checked pe `rollbackFor` batana parta hai. Committee impressed thi.
+
+**Committee ki asal finding:** 8 minute, closed book, **zero bluff** — 27 dafa saaf "nahi pata" likhna woh harkat hai jo asli interviews mein senior candidates ko pehchanti hai. Bluff karne wala har round mein pakra jata hai; "I don't know, but here's how I'd find out" wala hire hota hai. Tumhare paas aakhri waali line abhi nahi hai — 365 din mein aa jayegi.
+
+**29 review cards ban gaye** (`retention/REVIEW-LEDGER.md`) — har "nahi pata" ab tumhara zaati syllabus hai aur sahi waqt pe wapas aata rahega jab tak Box 7 mein retire na ho jaye. Do attempted ghaltiyan MISTAKE-BANK mein bhi darj hain — gate exams inhi mein se uthenge.
+
 **Interview de diya? Ab:** `git add -A && git commit -m "day-000 done"` — phir `AGLA DIN` likhna. Main hiring-committee report dunga (round-wise), aur Day 1 shuru hoga: **"Compiler se CPU tak."**

@@ -4,4 +4,5 @@
 
 | # | Day | Atom | Sawal (mukhtasar) | Meri ghalti | Sahi + kyun | Trap ka naam | Status |
 |---|-----|------|-------------------|-------------|-------------|--------------|--------|
-| — | — | — | — | — | — | — | — |
+| 1 | D0 | A-000-01 | `Integer` 127/128 pe `==` ka output | "TRUE TRUE" | `true false` — −128..127 cached objects, `==` reference compare; 128 pe naye objects | Chhota number cache | active |
+| 2 | D0 | A-000-03 | Same-class call pe `@Transactional` kyun nahi laga | "transaction sirf us method pe lagti hai" | Spring proxy sirf BAHAR se aane wali call intercept karta hai; `this.method()` proxy bypass | Proxy ghost | active |

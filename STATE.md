@@ -6,13 +6,13 @@
 
 | Cheez | Qeemat |
 |---|---|
-| **Current Day** | 0 (file ban gayi 2026-07-04 — jawab pending, Airlock lagu) |
+| **Current Day** | 1 (generate hua 2026-07-05 — jawab pending, Airlock lagu) |
 | **Level** | 🪨 Bunyaad (1 of 7) |
-| **Streak** | 0 |
+| **Streak** | 1 🔥 (Day 0 done) |
 | **Chhutti Passes (is mahine)** | 0 / 4 |
-| **Weekday rotation state** | — (Day 1 = CONCEPT) |
-| **Capstone ka naam** | ❓ (Day 0 pe learner rakhega) |
-| **Baseline Diagnostic** | 📝 generated (`lessons/01-bunyaad/day-000-pehla-interview.md` + interactive app `day-000-interview-app.html`) — "Zarr loop" 5 rounds / 30-Q, jawab pending |
+| **Weekday rotation state** | Day 1 = CONCEPT (curriculum-pinned) → Day 2 = JAVA-DEEP |
+| **Capstone ka naam** | 🏦 **TICH-KOLEY** (Day 0 pe rakha) |
+| **Baseline Diagnostic** | ✅ graded D0: **1/30 (3%)** — 1 sahi (Q6), 2 attempted-ghalat (MISTAKE-BANK), 27 "nahi pata" → **29 atoms seeded** (Due D1). Zarr loop Day 365 pe cold retake hoga. |
 
 ## Gates
 
@@ -30,13 +30,13 @@
 
 | Day | Type | Quiz/Exam | Energy | Note |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| 0 | ZARR-LOOP (baseline) | 1/30 (3%) | 4 | 8 min, closed book, zero bluff — imaandari full marks |
 
 ## Interview Rating (haftawar)
 
 | Week | Retention | DS&A | Design | Behavioral | English | Composite |
 |---|---|---|---|---|---|---|
-| — | — | — | — | — | — | Baseline Day 0 pe banega |
+| W0 (baseline) | 3% | 1/10 | — | — | — | **Floor darj — yahan se sirf upar** |
 
 ## Story Bank: 0 / 12 • DS&A solved: 0 • Design mocks: 0
 
