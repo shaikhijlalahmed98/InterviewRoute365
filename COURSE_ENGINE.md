@@ -88,7 +88,9 @@ Yehi rule Sunday exam (`exam` answers) aur Saturday lab (acceptance checklist) p
 | Sat | **LAB** | 2.5–3 hr | Capstone increment: brief + acceptance checklist (5–8 boxes) + **planted bug bounty** (har lab skeleton mein exactly 1 chhupa hua realistic bug — dhoondhna checklist ka hissa) + **mirror kata** (hafte ki sab se aham cheez doosri language mein, 30 min) + zaroorat ho to ADR |
 | Sun | **REVIEW + MOCK** | 2 hr | **Weekly Exam 25-Q** (10 is hafte ke + 10 ledger ke due + 5 "purana sona" Box 6–7 se) → **Mock slot 45 min** (rotation: A = DS&A screen 2 problems timed English think-aloud; B = system design; C = behavioral STAR + recording; D = mixed mini-loop) → retro (3 lines STATE.md mein: kya pakka hua, kya kacha, energy 1–5) |
 
-**Size caps (anti-60KB rule, mentor pe farz):** weekday lesson ≤ **900 words** prose + ≤ **80 lines** code + exactly **10 quiz Qs** (Fri: 5). Nahi samaata? Do din banao ya Saturday bhejo. Har file ke neeche word count likho.
+**Lesson format (2026-07-05 se, learner ke 3 feedback iterations ke baad):** har din DO files — (1) **`day-NNN-app.html`** = asal experience: story-first (cold open scene, TICH-KOLEY cast, baab/chapters), Zarr design system (ink-navy + gold), quiz textareas + md-format export button, localStorage progress; (2) **md file** = record + quick reference (atoms, quiz Qs, Mere Jawab block, answer key) + app ka pointer.
+
+**Depth (V1-level, DEPTH-STANDARD ke SAB blocks lazmi):** T+0 mechanism breakdown • ❌/✅ comparison • asli companies (verifiable) • concrete numbers • inline jargon boxes • memory hooks • cross-questions with model answers. Weekday app-story target **~1,800–2,500 words** (parhna ~18 min + quiz ~20 = 45-min budget). **Volume cap (60KB ka asli sabaq):** ek din = EK concept ki gehrai, panch concepts ka dher NAHI. Quiz exactly 10 Qs (Fri: 5), warm-up 3.
 
 **Quiz format:** V1 ka 5-section format (code-output, bug-spot, dry-run, scenario, concept — `standards/QUIZ-FORMAT.md`) scale-down: 2+2+2+2+2. Answer key **hamesha** `<details>` mein, jawab likhne ke block ke NEECHE. Har sawal pe atom ID HTML comment mein (`<!-- A-017-2 -->`).
 
@@ -176,7 +178,7 @@ Yehi rule Sunday exam (`exam` answers) aur Saturday lab (acceptance checklist) p
 - **Recognition nahi, RECALL:** har sawal pehle, jawab `<details>` mein neeche. Pre-checked ✅ checklists mana hain.
 - Word-count cap ka ailaan file ke aakhir mein.
 
-**Push se pehle self-check:** Urdu register sahi? (Hindi alfaaz to nahi? Kitabi/robotic lafz to nahi — bol-chaal jaisi hai?) • Har naya term inline defined? • Atoms numbered? • Quiz 5-section + atom IDs + `<details>` key? • English delivery script hai? • Size cap ke andar? • Currency rules ki khilaf-warzi to nahi? • Commit command aakhri line pe?
+**Push se pehle self-check:** Urdu register sahi? (Hindi alfaaz to nahi? Kitabi/robotic lafz to nahi — bol-chaal jaisi hai?) • Har naya term inline defined? • DEPTH-STANDARD ke sab blocks (T+0, ❌/✅, real companies, hooks, cross-Qs)? • Story hai ya bullet-dump? • App + md dono bane? • Ek concept ki gehrai (volume cap)? • Atoms numbered? • Quiz 5-section + atom IDs + key? • English delivery script? • Currency rules? • Commit command aakhri line pe?
 
 ---
 

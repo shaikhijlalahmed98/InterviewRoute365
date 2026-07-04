@@ -1,0 +1,409 @@
+<title>Day 1 — Compiler se CPU tak</title>
+<style>
+  :root {
+    --bg: #101623; --bg-deep: #0B101B; --card: #171F31; --card-2: #1D2740;
+    --line: #26304A; --text: #F3EFE4; --muted: #8E99B3;
+    --gold: #F2C94C; --gold-dim: #B99534; --teal: #4BC8B8; --rose: #E86A8A; --violet: #9B8CFF; --green: #6FCF7C;
+    --focus: #7FB4FF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { color-scheme: dark; scroll-behavior: smooth; }
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, #1A2338 0%, var(--bg) 55%, var(--bg-deep) 100%);
+    color: var(--text); font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.8; min-height: 100vh;
+  }
+  .bar { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--line); z-index: 10; }
+  .bar i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); }
+  .wrap { max-width: 660px; margin: 0 auto; padding: 48px 22px 90px; }
+
+  .kicker { font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--gold); text-align: center; }
+  .kicker small { display: block; letter-spacing: .16em; color: var(--muted); font-size: 10px; margin-top: 6px; }
+  h1 { font-family: Georgia, "Palatino Linotype", serif; font-size: clamp(30px, 7vw, 44px); font-weight: 600; text-align: center; text-wrap: balance; margin: 22px 0 8px; }
+  .meta { text-align: center; color: var(--muted); font-size: 13.5px; margin-bottom: 40px; }
+  .meta b { color: var(--gold); }
+
+  h2 { font-family: Georgia, serif; font-size: 25px; margin: 56px 0 8px; text-wrap: balance; }
+  h2 .no { color: var(--gold); font-size: 13px; letter-spacing: .28em; display: block; margin-bottom: 8px; font-family: system-ui; }
+  h3 { font-size: 17px; margin: 26px 0 4px; color: var(--gold); }
+  p { margin: 14px 0; max-width: 64ch; }
+  p b, li b { color: var(--gold); font-weight: 600; }
+  em { color: var(--muted); }
+  ul, ol { margin: 12px 0 12px 22px; } li { margin: 7px 0; }
+
+  .scene {
+    background: var(--bg-deep); border: 1px solid var(--line); border-left: 3px solid var(--rose);
+    border-radius: 12px; padding: 20px 22px; margin: 24px 0;
+    font-family: ui-monospace, Consolas, "Cascadia Mono", monospace; font-size: 13.5px; line-height: 1.9; color: #D9E2F5;
+    overflow-x: auto;
+  }
+  .scene .t { color: var(--rose); }
+  .say { background: var(--card); border: 1px solid var(--line); border-radius: 14px 14px 14px 3px; padding: 14px 18px; margin: 18px 0; font-size: 15px; }
+  .say .who { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; color: var(--teal); }
+  .say.danish .who { color: --violet; color: var(--violet); }
+
+  .jargon {
+    background: var(--card-2); border: 1px dashed var(--line); border-radius: 10px;
+    padding: 12px 16px; margin: 16px 0; font-size: 14px;
+  }
+  .jargon .w { color: var(--teal); font-weight: 700; }
+
+  pre.flow, .tplus {
+    background: var(--bg-deep); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 20px; margin: 22px 0; overflow-x: auto;
+    font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.9; color: #D9E2F5;
+  }
+  pre.flow .hl, .tplus .hl { color: var(--gold); }
+  pre.flow .dim, .tplus .dim { color: #5A6580; }
+  .tplus .tt { color: var(--teal); font-weight: 700; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: .92em; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; color: #D9E2F5; }
+
+  .bad, .good { border-radius: 12px; padding: 16px 18px; margin: 14px 0; border: 1px solid var(--line); }
+  .bad { background: #241722; border-left: 3px solid var(--rose); }
+  .good { background: #14231F; border-left: 3px solid var(--green); }
+  .bad .h { color: var(--rose); font-weight: 700; font-size: 13px; letter-spacing: .1em; }
+  .good .h { color: var(--green); font-weight: 700; font-size: 13px; letter-spacing: .1em; }
+  .bad pre, .good pre { background: none; border: 0; padding: 8px 0 0; margin: 0; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 1.7; color: #D9E2F5; overflow-x: auto; }
+
+  .tablebox { overflow-x: auto; margin: 20px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; }
+  th { background: var(--card-2); color: var(--gold); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  td { background: var(--card); }
+
+  .atom { background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 10px; padding: 13px 16px; margin: 12px 0; font-size: 14.5px; }
+  .atom .id { color: var(--gold); font-size: 11px; letter-spacing: .12em; font-family: ui-monospace, Consolas, monospace; }
+  .hook { background: var(--card-2); border: 1px solid var(--gold-dim); border-radius: 12px; padding: 16px 20px; margin: 20px 0; font-size: 14.5px; }
+  .hook .h { color: var(--gold); font-weight: 700; letter-spacing: .1em; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
+
+  .drill { background: var(--card-2); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin: 24px 0; }
+  .drill .label { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--teal); margin-bottom: 10px; }
+  .drill blockquote { font-size: 15.5px; font-style: italic; border-left: 2px solid var(--teal); padding-left: 14px; }
+
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin: 16px 0; }
+  .q .tag { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .q .qt { margin: 8px 0 4px; font-size: 15.5px; }
+  .q textarea { width: 100%; min-height: 64px; resize: vertical; margin-top: 10px; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; color: var(--text); font: inherit; font-size: 14.5px; padding: 10px 13px; }
+  .q textarea::placeholder { color: #5A6580; }
+  details { margin: 16px 0; }
+  details summary { cursor: pointer; color: var(--gold); font-size: 14px; }
+  details[open] { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+
+  .btn { display: inline-block; border: 0; cursor: pointer; font: inherit; background: var(--gold); color: #17130A; font-weight: 700; padding: 13px 26px; border-radius: 10px; }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:focus-visible, textarea:focus-visible, .pill:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 20px; }
+  .pill { border: 1px solid var(--line); background: var(--bg-deep); color: var(--muted); border-radius: 99px; padding: 8px 16px; cursor: pointer; font: inherit; font-size: 14px; }
+  .pill.sel { background: var(--gold); border-color: var(--gold); color: #17130A; font-weight: 700; }
+  .export { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-top: 16px; overflow: auto; max-height: 280px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; white-space: pre; color: #D9E2F5; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 18px; font-size: 14px; z-index: 20; opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .toast.show { opacity: 1; }
+  .divider { text-align: center; color: var(--gold-dim); letter-spacing: .5em; margin: 46px 0; }
+  .steps { margin: 18px 0 0 18px; color: var(--muted); font-size: 14px; }
+  .steps li { margin: 7px 0; }
+  .steps code { color: var(--gold); }
+</style>
+
+<div class="bar"><i id="prog"></i></div>
+<div class="wrap">
+
+<div class="kicker">TICH-KOLEY<small>Day 1 / 365 • 🪨 Bunyaad • Week 1: Code se Machine tak</small></div>
+<h1>Compiler se CPU tak</h1>
+<p class="meta">Kahani ~18 min • Quiz ~20 min • English script ~5 min • <b>Total ~45 min</b></p>
+
+<!-- COLD OPEN -->
+<div class="scene">
+<span class="t">━━ FLASH-FORWARD: TICH-KOLEY LAUNCH NIGHT ━━</span><br>
+23:47 — Tum deploy button dabate ho. Pipeline green. LIVE.<br>
+23:52 — Pehla asli customer: Fatima, Hyderabad se, account kholne aayi.<br>
+23:52:01 — Uski screen pe spinner ghoom raha hai...<br>
+23:52:03 — <span class="t">2.1 SECOND.</span> Tumhara dil dhak se girta hai.<br>
+23:53 — Agli 50 requests: 40ms. Bijli. Jaise kuch hua hi na tha.<br>
+00:04 — Tum screen ghoor rahe ho: <span class="t">"2 second kahan se aaye… aur KHUD kaise theek ho gaye?"</span>
+</div>
+
+<p>Yeh raat aayegi. Aur jab aayegi, tum ghabraoge nahi — kyunke aaj tum is 2-second ke bhoot ka <b>poora shajra</b> samajh loge: naam, pata, dadke ka naam. Yeh Zarr ke CTO wale Q30 ka chhota bhai hai, aur is hafte hum dono ka post-mortem pehle se karenge. Lekin pehle — chai, aur kal ke zakham.</p>
+
+<!-- WARM-UP -->
+<h2><span class="no">WARM-UP • 5 MIN</span>Kal ke 3 zakham, naya libaas</h2>
+
+<div class="q"><span class="tag">W1 • kal CTO round mein chhoota</span>
+<p class="qt">C# method ke andar: <code>int count = 5; var acc = new Account();</code> — <code>count</code>, <code>acc</code> (reference), aur Account object — kaun kahan rehta hai?</p>
+<textarea data-k="W1" placeholder="Apna jawab…"></textarea></div>
+
+<div class="q"><span class="tag">W2 • kal CTO ka aakhri sawal</span>
+<p class="qt">TICH-KOLEY ke junior dev <b>Danish</b> ne failed-login attempts <code>static Dictionary</code> mein jama kiye — remove kabhi nahi. 6 hafte baad kya hoga, aur <b>pehla symptom</b> kya dikhega?</p>
+<textarea data-k="W2" placeholder="Apna jawab…"></textarea></div>
+
+<div class="q"><span class="tag">W3 • kal ka TRUE TRUE 😉</span>
+<p class="qt">Bilal bhai ka sawal ulat gaya: <code>Integer x = 100, y = 100;</code> pe <code>x == y</code>? Aur <code>Integer p = 1000, q = 1000;</code> pe <code>p == q</code>? Wajah ek jumle mein.</p>
+<textarea data-k="W3" placeholder="Is dafa nahi phisloge…"></textarea></div>
+
+<details><summary>🔑 Warm-up key (jawab likhne ke baad)</summary>
+<p>W1: <code>count</code> → stack, <code>acc</code> ka reference → stack, Account object → heap.<br>
+W2: static kabhi GC nahi hota → memory barhti gayi → <b>pehla symptom slowness</b> (GC bar bar full sweep kar ke haanp raha hai) → phir OOM crash.<br>
+W3: <code>100 == 100</code> → <code>true</code> (cache −128..127 se WOHI object); <code>1000 == 1000</code> → <code>false</code> (do naye objects, <code>==</code> reference compare karta hai).</p>
+</details>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- CHAPTER 1 -->
+<h2><span class="no">BAAB 1 • TAREEKH</span>"Write Once, Debug Everywhere"</h2>
+
+<p>Karachi, 1994. Ek software house ne accounting system C++ mein likha. Shandaar product. Client khush. Phir client kehta hai: <em>"Branch mein Windows hai, head office mein Unix, bank wale Solaris pe hain."</em></p>
+
+<p>Aur yahan zindagi badal jati hai. C++ ka compiler seedha <b>machine code</b> banata hai — yani us EK CPU family aur us EK operating system ki apni zubaan. Intel ke liye bana <code>.exe</code> SPARC processor pe utna hi bekar hai jitna Karachi ka rickshaw London mein. To ab: <b>teen platforms × har release</b> — teeno pe dobara compile, teeno pe alag bugs, teeno ke installers, teeno ki testing. Us daur ke engineers ka aadha waqt features banane mein nahi, <b>porting</b> mein jalta tha. Mazaq mashhoor tha: <em>"Write once, debug everywhere."</em></p>
+
+<h3>1995 — Sun ka jugaad: beech mein ek zubaan daal do</h3>
+
+<p>Sun Microsystems ki team (James Gosling ki qiyadat mein — project ka pehla naam "Oak" tha, ek darakht ke naam pe) ne masla ulta kar ke dekha: <em>agar har machine ki zubaan alag hai, to hum kisi EK machine ke liye compile hi kyun karein?</em></p>
+
+<p>Unka hal do hisson ka tha:</p>
+<ul>
+<li><b>Bytecode</b> — ek <em>farzi</em>, standard machine ki zubaan. Koi asli CPU isay nahi samajhta — lekin yeh har jagah EK jaisi hai.</li>
+<li><b>JVM (Java Virtual Machine)</b> — har platform pe ek tarjuman jo bytecode ko USI machine ki asli zubaan mein badalta hai. Windows ka apna JVM, Linux ka apna, Solaris ka apna.</li>
+</ul>
+
+<div class="jargon"><span class="w">"Virtual Machine" ka matlab yahan kya hai?</span> Software mein banayi gayi ek <em>naqli machine</em> — jiske apne instructions (bytecode), apna memory model, apna sab kuch hai. Tumhara program is naqli machine ke liye compile hota hai, aur asli machine pe woh naqli machine (JVM) chalti hai. Isi liye program ko kabhi pata hi nahi chalta woh Windows pe hai ya Linux pe.</div>
+
+<p>Misaal apne ghar ki: tumhara <b>mobile charger</b>. Dubai ke wall socket alag, London ke alag, Karachi ke alag — lekin tum charger nahi badalte, sirf <b>adapter</b> lagate ho. Bytecode = tumhara plug (duniya bhar mein EK). JVM = har mulk ka adapter. Naara tha: <em>"Write once, run anywhere"</em> — aur is dafa yeh sach nikla.</p>
+
+<h3>2000 — Muqadme se paida hui zubaan</h3>
+
+<p>Microsoft ko Java itni pasand aayi ke unhone usay <em>apne tareeqe</em> se mor diya — <b>Visual J++</b>: Java jaisi, magar Windows-only features ghusa kar (taake "run anywhere" wala hissa mar jaye aur log Windows pe atke rahen). Sun ne <b>October 1997 mein muqadma thok diya</b> — aur jeeta. Microsoft ke paas do raste the: Java chhoro, ya apna Java banao.</p>
+
+<p>Unhone <b>Anders Hejlsberg</b> ko hire kiya — wohi legend jisne Turbo Pascal likha tha aur Delphi design ki thi. 2000 mein usne duniya ko diya: <b>C#</b> (zubaan), <b>IL</b> — Intermediate Language (bytecode ka .NET twin), aur <b>CLR</b> — Common Language Runtime (JVM ka .NET twin). Wohi idea, apna ghar. <em>(Aur mazedaar baat: wohi Hejlsberg 2012 mein TypeScript bhi banata hai. Ek banda, teen zubaanein jo tum roz chalate ho.)</em></p>
+
+<div class="say danish"><div class="who">Danish (junior, TICH-KOLEY)</div>
+"Sir matlab Java aur C# cousins hain? Ek hi dard se paida hue?"</div>
+<div class="say"><div class="who">Tum (founder)</div>
+"Cousins nahi — ek muqadme ke do fareeq. Isi liye dono itne milte-julte hain. Aur isi liye hum DONO seekh rahe hain — jo banda dono ke andar ka farq bata sake, woh panel mein alag hi baithta hai."</div>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- CHAPTER 2 -->
+<h2><span class="no">BAAB 2 • PIPELINE</span>Tumhari ek line ka safar — T+0 se CPU tak</h2>
+
+<p>Ab woh jumla jo saal bhar tumhare saath chalega: <b>tumhara code DO dafa compile hota hai.</b> Ek dafa build pe, ek dafa runtime pe. Pehle naqsha, phir slow-motion replay:</p>
+
+<pre class="flow">
+Tumhara code           <span class="dim">Customer.java  /  Customer.cs</span>
+     │
+     │  <span class="hl">BUILD pe:</span>  javac  /  csc (Roslyn)        <span class="dim">← pehli compilation</span>
+     ▼
+Bytecode / IL          <span class="dim">.class  /  .dll</span>
+     │                 <span class="hl">← CPU se AZAAD — portable cheez YEHI hai</span>
+     │
+     │  <span class="hl">RUNTIME pe:</span>  JVM  /  CLR
+     ▼
+Interpreter ──(garam?)──▶ JIT tier-1 ──▶ tier-2   <span class="dim">← doosri compilation</span>
+     ▼
+Machine code ──▶ CPU
+</pre>
+
+<p>Ab slow motion. Tum terminal pe likhte ho <code>java TichKoley</code> — enter ke baad andar kya hota hai:</p>
+
+<div class="tplus">
+<span class="tt">T+0ms</span>    OS ek naya process banata hai, us mein JVM load hoti hai (C++ mein likha hua ek program — haan, JVM khud C++ hai!)<br>
+<span class="tt">T+30ms</span>   <span class="hl">Class loading:</span> JVM <code>TichKoley.class</code> dhoondhti hai, parhti hai, aur uski zaroori classes bhi (String, Object, hazaron aur…)<br>
+<span class="tt">T+80ms</span>   <span class="hl">Bytecode verification:</span> JVM har class ko SCAN karti hai — "yeh bytecode jaali to nahi? memory ke bahar to nahi jhankta?" <span class="dim">(security guard — isi liye Java applets browser mein chal sakte the)</span><br>
+<span class="tt">T+150ms</span>  <code>main()</code> shuru — magar compile NAHI hua abhi. <span class="hl">Interpreter</span> bytecode ko line-parh-line chala raha hai. Har method call pe JVM ek <span class="hl">counter</span> barha rahi hai: "yeh method kitni dafa chali?"<br>
+<span class="tt">T+2s</span>     Fatima ki request aayi. Uske raste ki 200+ methods SAB interpret ho rahi hain. <span class="dim">← YEH hai tumhara 2.1 second</span><br>
+<span class="tt">T+10s</span>    Counters ne kuch methods ko <span class="hl">HOT</span> mark kar diya (JVM default: ~10,000 calls). JIT tier-1 (C1) unhe machine code mein compile karta hai — halki optimization, tez compile.<br>
+<span class="tt">T+60s</span>    Sab se garam methods ko tier-2 (C2) FULL optimize karta hai — runtime profiling data ke saath. Ab woh 300x tez hain.<br>
+<span class="tt">T+5min</span>   Dhaba full garam. Har request 40ms. <span class="dim">Jaise kuch hua hi na tha.</span>
+</div>
+
+<div class="jargon"><span class="w">Interpreter kya hota hai?</span> Ek program jo doosre program ko <em>bina compile kiye</em>, ek-ek instruction parh ke chalata hai. Jaise ek translator jo speech ko jumla-ba-jumla translate kare — foran shuru ho jata hai (koi tayyari nahi), magar har jumle pe ruk ruk ke chalta hai. Compile karna = poori speech pehle se translate kar ke rakhna.</div>
+
+<p><b>Isi liye</b> "Java app Windows pe compile hui, Linux pe dobara compile karo" jumla ghalat hai: <code>.class</code>/jar bytecode hai — portable. Linux pe naya machine code us machine ka apna JVM (JIT) runtime pe banata hai. Charger wohi, adapter naya.</p>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- CHAPTER 3 -->
+<h2><span class="no">BAAB 3 • JIT</span>Dhabe ka naya cook</h2>
+
+<p>JIT ko ek dafa dil se samajh lo, kyunke performance ke aadhe interview sawal isi pe khatam hote hain.</p>
+
+<p>Naya dhaba, naya cook. Pehla din: har order pe cook <b>recipe book kholta hai</b>, line-parh-line banata hai. Yeh <b>interpreter</b> hai — sust, magar foran kaam shuru. Dopahar tak cook notice karta hai: <em>"Chicken karahi har doosra banda mangta hai."</em> Woh us recipe ko <b>ratta maar leta hai</b>, apne shortcuts banata hai, masala pehle se pees leta hai. Ab karahi ka order aate hi haath khud chalte hain. Yeh <b>JIT compilation</b> hai. Aur jo cheez cook ko kitab kabhi nahi de sakti thi — <em>"aaj lunch mein 80% orders bina mirch ke aa rahe hain"</em> — woh sirf KHARE HO KE dekhne se pata chalti hai. Isi liye JIT kabhi kabhi AOT se bhi tez code banata hai: uske paas <b>runtime ki asal profiling</b> hai.</p>
+
+<p>JIT sirf translate nahi karta — <b>optimize</b> karta hai. Teen misaalein (naam yaad rakho, definitions abhi ke liye ek-ek jumla):</p>
+<ul>
+<li><b>Inlining</b> — chhoti method ka code call karne wali jagah pe hi chipka do (method-call ka kiraya bacha).</li>
+<li><b>Dead code elimination</b> — jo branch profiling mein kabhi nahi chali, usay nikaal do.</li>
+<li><b>Devirtualization</b> — "yeh interface call HAMESHA isi ek class pe ja rahi hai" → seedha call bana do.</li>
+</ul>
+
+<p>Concrete numbers (ek typical Java method): 1st call <b>~900µs</b> (interpret), tier-1 ke baad <b>~50µs</b>, tier-2 ke baad <b>~3µs</b>. <b>300 guna.</b> Yeh jaadu nahi, naapa hua farq hai — aur Q2 mein tum isay khud pehchanoge.</p>
+
+<h3>❌ Danish ka benchmark vs ✅ asli benchmark</h3>
+
+<div class="bad"><span class="h">❌ DANISH KA TAREEQA</span>
+<pre>
+# deploy hote hi:
+for i in 1..10:  curl /api/onboard   # avg = 1.8s
+# report: "API SLOW HAI SIR"
+</pre>
+<p style="font-size:14px">Kyun ghalat: yeh JIT warm-up ko naap raha hai, API ko nahi. Pehli 10 requests recipe-book daur ki hain — steady-state ka is se koi talluq nahi. <em>(Trap ka naam: "pehla taasur hi sach hai")</em></p></div>
+
+<div class="good"><span class="h">✅ ASLI TAREEQA</span>
+<pre>
+# pehle dhaba garam karo:
+for i in 1..10000:  curl /api/onboard    # warm-up, result phenko
+# AB naapo — p50 / p95 / p99:
+p50 = 38ms, p95 = 61ms, p99 = 84ms       # yeh hai sach
+</pre>
+<p style="font-size:14px">Kyun sahi: JIT settle ho chuka, ab jo number hai woh PRODUCTION ka number hai. Aur avg nahi — <b>percentiles</b> (p99 = 100 mein se sab se sust request — banking mein yehi customer complaint banta hai).</p></div>
+
+<h3>Asli duniya mein yeh masla kaun jheelta hai?</h3>
+<ul>
+<li><b>AWS Lambda SnapStart (2022)</b> — Java functions ke cold start ka ilaaj: ek GARAM JVM ka snapshot le kar rakh lete hain, har invocation us snapshot se shuru hoti hai. Cold start 6s → ~200ms. Poora feature is liye bana kyunke JVM warm-up serverless ka qatil tha.</li>
+<li><b>Alibaba Dragonwell (unka apna JDK)</b> — "JWarmup" feature: pichle production run ki JIT profiling save kar ke agle deploy pe pehle se compile. Singles' Day (11.11) ki traffic pe cold JVM afford hi nahi kar sakte.</li>
+<li><b>Netflix</b> — naya instance load balancer mein tab join hota hai jab warm-up traffic us pe chala kar JIT/caches garam ho chuke hon. Isi liye unke deploys pe users ko spike nahi dikhta.</li>
+</ul>
+
+<h3>Aur buffet wala rasta: AOT</h3>
+
+<p><b>AOT (Ahead-Of-Time compilation)</b> — GraalVM native-image (Java) / NativeAOT (.NET): build pe hi POORA machine code bana lo. Cook ki jagah buffet — sab pehle se tayyar. Startup <b>milliseconds</b> ka, warm-up ka wujood nahi. Qeemat? Buffet customized nahi hota: <b>runtime profiling ki hoshiyari nahi</b> (woh 300x optimizations jo dekhe bina nahi ho saktin), aur reflection jaisi dynamic cheezon pe pabandiyan. Serverless walon ki jaan isi mein hai; lambi chalne wali banking services aksar JIT hi rakhti hain — unke paas warm hone ka waqt hota hai. <em>(Poori bahes Level 5 mein.)</em></p>
+
+<h3>Java ↔ .NET — ek nazar mein</h3>
+<div class="tablebox">
+<table>
+<tr><th>Cheez</th><th>Java</th><th>.NET</th></tr>
+<tr><td>Build compiler</td><td>javac</td><td>csc (Roslyn)</td></tr>
+<tr><td>Beech ki zubaan</td><td>bytecode (.class/.jar)</td><td>IL (.dll)</td></tr>
+<tr><td>Runtime/tarjuman</td><td>JVM</td><td>CLR</td></tr>
+<tr><td>Tiered JIT</td><td>C1 → C2</td><td>tier-0 → tier-1 (+ ReadyToRun)</td></tr>
+<tr><td>AOT option</td><td>GraalVM native-image</td><td>NativeAOT</td></tr>
+</table>
+</div>
+
+<div class="hook"><div class="h">🧠 Yaad rakhne ke 3 hooks</div>
+<b>Charger + adapter</b> = bytecode har jagah ek, JVM/CLR har platform ka apna • <b>Naya cook</b> = JIT: pehle recipe book (interpret), phir ratta (compile), REHTE hue seekhta hai • <b>Buffet</b> = AOT: sab pehle se tayyar, magar customize nahi hota.</div>
+
+<h3>🎯 Cross-questions (interviewer aage se yeh poochta hai)</h3>
+<div class="q"><p class="qt"><b>"If JIT is so smart, why doesn't everyone just use AOT for instant startup?"</b></p>
+<details><summary>Model answer</summary><p>AOT startup jeet-ta hai, magar <b>peak performance</b> aksar JIT jeet-ta hai — kyunke JIT ke paas runtime profiling hai (inlining/devirtualization asal traffic dekh ke). Long-running services ke liye warm-up ek dafa ki qeemat hai; serverless ke liye har invocation ki. Is liye Lambda → AOT/SnapStart, 24/7 banking service → JIT.</p></details></div>
+<div class="q"><p class="qt"><b>"Is interpretation ever an ADVANTAGE over compiling everything upfront?"</b></p>
+<details><summary>Model answer</summary><p>Haan — foran start (koi compile wait nahi), memory bachti hai (99% methods kabhi hot nahi hoti, unka machine code banana faltu kharcha hai), aur JIT ko profiling jama karne ka waqt milta hai. Tiered model dono duniyaon ka best hai.</p></details></div>
+<div class="q"><p class="qt"><b>"You said bytecode is verified at load time — why does that matter for a bank?"</b></p>
+<details><summary>Model answer</summary><p>Verification guarantee deta hai ke load hone wala bytecode memory-safe hai — koi haath se banaya hua jaali class file JVM ke andar pointers corrupt nahi kar sakta. Bank mein third-party jars chalte hain; yeh pehli defence line hai.</p></details></div>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- ATOMS -->
+<h2><span class="no">AAJ KE ATOMS</span>5 cheezein jo ledger mein ja rahi hain</h2>
+<div class="atom"><span class="id">A-001-1</span> — Java/C# DO dafa compile hote hain: build pe source→bytecode/IL, runtime pe JIT bytecode→machine code.</div>
+<div class="atom"><span class="id">A-001-2</span> — Bytecode/IL CPU-neutral hai — wohi <code>.class</code>/<code>.dll</code> har jagah chalti hai jahan JVM/CLR ho (charger + adapter).</div>
+<div class="atom"><span class="id">A-001-3</span> — JIT tiered hai: pehle interpret (+counters), phir HOT methods C1→C2 compile — pehli requests slow (warm-up), baad mein 300x tak tez.</div>
+<div class="atom"><span class="id">A-001-4</span> — 1995 Java = porting ke azaab ka ilaaj; 1997 Sun vs Microsoft (J++) → 2000 Hejlsberg ka C#/IL/CLR.</div>
+<div class="atom"><span class="id">A-001-5</span> — AOT = build pe hi machine code: instant start, qeemat = runtime profiling nahi + dynamic features pe pabandi.</div>
+
+<!-- ENGLISH SCRIPT -->
+<div class="drill">
+<div class="label">🎤 English Delivery Script — bol ke DO dafa (60–90 sec)</div>
+<blockquote>"When I run a Java program, compilation happens twice. First, at build time, javac compiles my source into bytecode — a CPU-independent format. That's what makes Java portable: the same class file runs anywhere a JVM exists. At runtime, the JVM loads and verifies those classes, then starts by interpreting the bytecode while profiling it. Methods that run frequently — hot paths — get compiled to native machine code by the JIT compiler, in tiers, using runtime data for optimizations like inlining. That's why the first requests after a deployment are slow, and things speed up as the JIT warms up — which is exactly why serious teams send warm-up traffic before joining the load balancer. .NET works the same way: C# compiles to IL, and the CLR does tiered JIT. For instant startup, both platforms offer ahead-of-time compilation — trading away runtime profiling."</blockquote>
+<p><em>Screen-level classic: "Walk me through what happens when you run a Java program." Awaaz ke saath, khare ho kar. Recording behtar.</em></p>
+</div>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- QUIZ -->
+<h2><span class="no">QUIZ • 10 SAWAL</span>Ab dikhao</h2>
+
+<div class="q"><span class="tag">Code-output • Q1</span>
+<p class="qt"><code>javac Salaam.java</code> ke baad folder mein kya nayi file banti hai — aur kya CPU usay SEEDHA chala sakta hai?</p>
+<textarea data-k="Q1"></textarea></div>
+
+<div class="q"><span class="tag">Code-output • Q2</span>
+<p class="qt">Ek hi method ki timing: 1st call 900µs, 100th call 850µs, 20,000th call 3µs. Yeh pattern kis ka saboot hai, aur beech mein kya hua?</p>
+<textarea data-k="Q2"></textarea></div>
+
+<div class="q"><span class="tag">Bug-spot • Q3</span>
+<p class="qt">Danish ne deploy ke FORAN baad 10 requests bhej ke report likh di: "API slow hai, avg 1.8s." Naapne ke tareeqe mein kya ghalti hai?</p>
+<textarea data-k="Q3"></textarea></div>
+
+<div class="q"><span class="tag">Bug-spot • Q4</span>
+<p class="qt">Team lead: "Java app Windows pe compile hui thi, Linux ke liye dobara compile karo." Kya ghalat hai — aur Linux pe naya machine code KAUN banata hai?</p>
+<textarea data-k="Q4"></textarea></div>
+
+<div class="q"><span class="tag">Dry-run • Q5</span>
+<p class="qt"><code>.cs</code> file se CPU tak — 4 qadam tarteeb se, har qadam pe tool ka naam.</p>
+<textarea data-k="Q5"></textarea></div>
+
+<div class="q"><span class="tag">Dry-run • Q6</span>
+<p class="qt">JVM ek method interpret kar raha hai; 10,000+ calls ho chuki hain. Tiered compilation ab kya karegi — DO steps?</p>
+<textarea data-k="Q6"></textarea></div>
+
+<div class="q"><span class="tag">Scenario • Q7</span>
+<p class="qt">TICH-KOLEY launch: pehla customer 2.1s, baaqi 40ms. CTO poochta hai: "Kyun? Aur agle launch se pehle kya karoge?" — wajah + DO ilaaj.</p>
+<textarea data-k="Q7"></textarea></div>
+
+<div class="q"><span class="tag">Scenario • Q8</span>
+<p class="qt">Fraud-check function AWS Lambda pe — har cold start 3s. AOT (ya SnapStart) kaise madad karta hai, kya qeemat?</p>
+<textarea data-k="Q8"></textarea></div>
+
+<div class="q"><span class="tag">Concept • Q9</span>
+<p class="qt">Bytecode aur machine code ka farq ek jumle mein — kaun kisko chalata hai?</p>
+<textarea data-k="Q9"></textarea></div>
+
+<div class="q"><span class="tag">Concept • Q10</span>
+<p class="qt">C# paida hi kyun hua? 1997 ke muqadme ki kahani ek jumle mein.</p>
+<textarea data-k="Q10"></textarea></div>
+
+<p style="margin-top:26px"><b>Energy (1–5):</b></p>
+<div class="pills" id="energyPills"></div>
+
+<div style="margin-top:6px">
+  <button class="btn" onclick="copyAnswers()">📋 Jawab copy karo</button>
+</div>
+<ol class="steps">
+  <li>Copy dabao — block clipboard pe.</li>
+  <li><code>day-001-concept-compiler-se-cpu.md</code> mein <code>## ✍️ Mere Jawab</code> ke neeche paste karo.</li>
+  <li><code>git add -A &amp;&amp; git commit -m "day-001 done"</code> — kal <b>AGLA DIN</b>.</li>
+</ol>
+<div class="export" id="exportBox"></div>
+
+<p style="margin-top:40px"><em>Kal Bilal bhai wapas aata hai: <b>Day 2 — Java memory ki sachai</b>. Stack frames andar se, heap, "pass-by-value… of references" hamesha ke liye hal, aur Integer cache ka poora post-mortem. Kal tumhara TRUE TRUE wala hisaab barabar hota hai. 😉</em></p>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  var KEYS = ["W1","W2","W3","Q1","Q2","Q3","Q4","Q5","Q6","Q7","Q8","Q9","Q10"];
+  var S = { ans: {}, energy: "", startedAt: null, minutes: 0 };
+  try { var sv = JSON.parse(localStorage.getItem("tk-day1") || "null"); if (sv) S = sv; } catch (e) {}
+  if (!S.startedAt) { S.startedAt = new Date().getTime(); }
+  function save() { try { localStorage.setItem("tk-day1", JSON.stringify(S)); } catch (e) {} }
+  function toast(m) { var t = document.getElementById("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove("show"); }, 1800); }
+
+  document.querySelectorAll("textarea[data-k]").forEach(function (ta) {
+    ta.value = S.ans[ta.dataset.k] || "";
+    ta.addEventListener("input", function () { S.ans[ta.dataset.k] = ta.value; save(); renderExport(); setProg(); });
+  });
+  var ep = document.getElementById("energyPills");
+  for (var i = 1; i <= 5; i++) (function (n) {
+    var b = document.createElement("button");
+    b.className = "pill" + (S.energy == n ? " sel" : ""); b.textContent = n + (n === 5 ? " 🔥" : "");
+    b.onclick = function () { S.energy = n; save(); ep.querySelectorAll(".pill").forEach(function (p) { p.classList.remove("sel"); }); b.classList.add("sel"); renderExport(); };
+    ep.appendChild(b);
+  })(i);
+
+  function setProg() {
+    var done = KEYS.filter(function (k) { return (S.ans[k] || "").trim() !== ""; }).length;
+    document.getElementById("prog").style.width = (done / KEYS.length * 100) + "%";
+  }
+  function buildBlock() {
+    if (!S.minutes) { S.minutes = Math.max(1, Math.round((new Date().getTime() - S.startedAt) / 60000)); }
+    var lines = KEYS.map(function (k) { return k + ": " + ((S.ans[k] || "").trim() || "nahi pata"); });
+    return "```\n" + lines.join("\n") + "\n```\n\n**Time laga:** " + S.minutes + " min • **Energy (1–5):** " + (S.energy || "___");
+  }
+  function renderExport() { document.getElementById("exportBox").textContent = buildBlock(); }
+  function copyAnswers() {
+    var t = buildBlock();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function () { toast("Copy ✅ — md file mein paste karo"); }, function () { toast("Neeche box se khud copy kar lo"); });
+    } else { toast("Neeche box se khud copy kar lo"); }
+  }
+  renderExport(); setProg();
+</script>

@@ -1,5 +1,7 @@
 # Day 1 — CONCEPT: Compiler se CPU tak
 
+> 🎬 **ASAL LESSON YAHAN HAI: [`day-001-app.html`](./day-001-app.html) — browser mein kholo.** Poori kahani (launch night, 1994 porting azaab, T+0 breakdown, dhabe ka cook, Danish ka benchmark ❌/✅, AWS SnapStart/Alibaba/Netflix, cross-questions) wahan hai — quiz bhi wahin do, jawab yahan paste karo. Yeh md file = record + quick reference.
+>
 > **Level:** 🪨 Bunyaad • **Week 1:** "Code se Machine tak" • **Waqt:** ~45 min
 > **Hafte ka scenario:** Ek din TICH-KOLEY ka onboarding service live hoga. Aur main tumhe abhi bata deta hoon us din kya hoga: pehle woh **slow** hoga, phir kisi raat **OutOfMemory** se mar jayega. Yeh har backend dev ki zindagi ka scene hai. Is hafte hum us post-mortem ki poori science pehle se seekh lete hain — Zarr ke CTO ka aakhri sawal (Q30) yaad hai? Uska mukammal jawab isi hafte banta hai. Aaj Part 1: **tumhara code chalta kaise hai.**
 

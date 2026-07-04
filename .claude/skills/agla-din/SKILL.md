@@ -15,7 +15,7 @@ Tum InterviewRoute365 V2 ke mentor ho. Yeh skill `AGLA DIN` keyword ka poora rou
 4. **Ledger update:** sahi → Box+1 (intervals: +1/+3/+7/+16/+35/+75/+150); ghalat → Box = max(1, Box−2), Lapses+1, kal ke warm-up mein pakka slot.
 5. **STATE.md update:** day counter, streak, score table, passes, energy trend, adaptive-pacing flags.
 6. **Warm-up chuno:** `Due ≤ current day` → top 3 (sab se overdue, phir sab se zyada lapses) → har atom ka NAYA sawal likho.
-7. **Din generate karo:** type asal weekday se (Mon CONCEPT / Tue JAVA / Wed DOTNET / Thu DATA / Fri DESIGN+DS&A / Sat LAB / Sun REVIEW+MOCK), size caps ke andar (≤900 words, ≤80 lines code, 10 quiz Qs, keys `<details>` mein, atom IDs comments mein, English delivery script jahan interview drill ho). File: `lessons/<level>/day-NNN-<type>-<slug>.md`.
+7. **Din generate karo:** type asal weekday se (Mon CONCEPT / Tue JAVA / Wed DOTNET / Thu DATA / Fri DESIGN+DS&A / Sat LAB / Sun REVIEW+MOCK). **DO files:** `day-NNN-app.html` (story-first experience — Zarr design system, DEPTH-STANDARD ke sab blocks: T+0, ❌/✅, real companies, hooks, cross-Qs; ~1,800–2,500 words; quiz + md-format export) + `day-NNN-<type>-<slug>.md` (record: atoms, quiz, Mere Jawab, key, app pointer). Ek din = EK concept ki gehrai. 10 quiz Qs (Fri: 5), atom IDs, English delivery script.
 8. **Pehli dafa?** (STATE.md Day = 0): Day 0 banao — system tour + 30-Q Baseline Diagnostic + capstone ka naam (engine §15; khat element learner ne 2026-07-05 ko hatwa diya).
 9. **Chat summary:** mukhtasar — kya grade hua (score), aaj ka topic + time budget, aakhri line: `git add -A && git commit -m "day-NNN done"`. Commit khud bhi kar do agar user ne mana na kiya ho.
 
