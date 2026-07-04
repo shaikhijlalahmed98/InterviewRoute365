@@ -1,16 +1,16 @@
 # Day 0 — Nizaam ka Tour + Baseline Diagnostic
 
-> **Level:** 🪨 Neev • **Waqt:** ~50–60 min (tour 10 + diagnostic 30 + naam & khat 10)
-> **Aaj koi lesson nahi.** Aaj hum do kaam karte hain: (1) tumhe nizaam ki chabi dete hain, (2) tumhara asli naqsha banate hain — kahan mazboot ho, kahan kacha hai. Ghalat jawab yahan **inaam** hai: har ghalti saal bhar ke liye tumhara personal review card ban jayegi.
+> **Level:** 🪨 Bunyaad • **Waqt:** ~50–60 min (tour 10 + diagnostic 30 + naam & khat 10)
+> **Aaj koi lesson nahi.** Aaj hum do kaam karte hain: (1) tumhe system ki chabi dete hain, (2) tumhara asli naqsha banate hain — kahan mazboot ho, kahan kacha hai. Ghalat jawab yahan **inaam** hai: har ghalti saal bhar ke liye tumhara personal review card ban jayegi.
 
 ---
 
-## 1️⃣ Nizaam ka Tour (10 min — sirf parho)
+## 1️⃣ System ka Tour (10 min — sirf parho)
 
 **Yeh system kaise chalta hai:**
 
 - **`AGLA DIN`** likho → main pehle tumhara pichla kaam check karta hoon, phir naya din deta hoon. **RULE 0 — Airlock:** jab tak pichle din ke jawab nahi bhare, naya din NAHI milega. V1 isi liye mara tha — quiz kabhi check nahi hue. Ab structurally namumkin hai.
-- **REVIEW-LEDGER:** har lesson ke aakhir mein 3–5 "atoms" (testable dawway) bante hain. Har atom Leitner box mein jata hai — sahi jawab pe interval barhta hai (+1 → +3 → +7 → +16 → +35...), ghalat pe wapas girta hai. Roz ka warm-up ledger se aata hai. **Bhoolna is nizaam mein allowed hi nahi.**
+- **REVIEW-LEDGER:** har lesson ke aakhir mein 3–5 "atoms" (chhoti chhoti testable baatein) bante hain. Har atom Leitner box mein jata hai — sahi jawab pe interval barhta hai (+1 → +3 → +7 → +16 → +35...), ghalat pe wapas girta hai. Roz ka warm-up ledger se aata hai. **Bhoolna is system mein allowed hi nahi.**
 - **Masroof din?** `BUSY DAY` (15-min micro-day, max 4/mahina). **Gap ho gaya?** `WAPSI` — koi sharmindagi nahi, narm re-entry. **Lab mein phanse?** `MADAD`. **Kuch samajh na aaye?** `SAMJHAO X`.
 - **Wall Week ka waada:** Days 13–17 jaan boojh ke halke honge — wahi jagah jahan V1 (Day 15) mara tha. Day 16 pe hum record tootne ka jashn manayenge.
 - **Git hi streak hai:** har din ke aakhir mein commit. `git log --oneline` tumhari chain hai — usay tootne mat dena.
@@ -82,7 +82,7 @@
 
 ## 3️⃣ Apne Bank ka Naam Rakho
 
-Yeh saal bhar tumhara capstone hai — asli digital bank jo TUM banao ge, scratch se. Isko naam do jo repo, packages, aur Demo Day tak chale. (Chingari chahiye to: *Neev Bank, Meezan-e-Code, Qila Pay, Daryaa Bank* — magar naam TUMHARA hoga.)
+Yeh saal bhar tumhara capstone hai — asli digital bank jo TUM banao ge, scratch se. Isko naam do jo repo, packages, aur Demo Day tak chale. (Chingari chahiye to: *Bunyaad Bank, Meezan-e-Code, Qila Pay, Daryaa Bank* — magar naam TUMHARA hoga.)
 
 ## 4️⃣ Day-365 ke Naam Khat (3 jumlay)
 
@@ -165,7 +165,7 @@ E30:
 22. **PUT.** Idempotent = ek dafa karo ya das dafa, **aakhri haalat wohi** — is liye PUT retry-safe hai, POST nahi.
 23. (a) **State-changing GET** — GET safe hona chahiye; email scanners/prefetchers link khud khol ke verify kar dete hain. (b) **Secret query string mein** — logs, browser history, referrer headers mein leak hota hai.
 24. Signal **trackable container** hai — `count.set(5)` pe Angular ko theek pata hai kya badla aur sirf wohi update hota hai; aam property pe change detection ko andaza lagana parta hai (zones ka purana daur).
-25. `x` → **stack** • `obj` reference → **stack** • Customer object → **heap**. *(Yeh Neev ka pehla mantra banega.)*
+25. `x` → **stack** • `obj` reference → **stack** • Customer object → **heap**. *(Yeh Bunyaad ka pehla mantra banega.)*
 26. **Zyada tar objects jawani mein marte hain** — is liye GC nayi generation ko baar baar (sasta) aur purani ko kam (mehnga) check karta hai.
 27. **HashMap** (value → index): har element pe "complement dekha hai?" O(1) mein poochte ho — nested loop ka O(n²) bach jata hai.
 28. Key ka **hash** bucket ka pata deta hai (array index — O(1)). Collision pe ussi bucket mein chain/list banti hai (Java 8+: lambi ho to red-black tree).

@@ -7,18 +7,18 @@
 | Cheez | Qeemat |
 |---|---|
 | **Current Day** | 0 (file ban gayi 2026-07-04 — jawab pending, Airlock lagu) |
-| **Level** | 🪨 Neev (1 of 7) |
+| **Level** | 🪨 Bunyaad (1 of 7) |
 | **Streak** | 0 |
 | **Chhutti Passes (is mahine)** | 0 / 4 |
 | **Weekday rotation state** | — (Day 1 = CONCEPT) |
 | **Capstone ka naam** | ❓ (Day 0 pe learner rakhega) |
-| **Baseline Diagnostic** | 📝 generated (`lessons/01-neev/day-000-diagnostic-baseline.md`) — 30-Q closed book, jawab pending |
+| **Baseline Diagnostic** | 📝 generated (`lessons/01-bunyaad/day-000-diagnostic-baseline.md`) — 30-Q closed book, jawab pending |
 
 ## Gates
 
 | Gate | Status | MCQ | Practical | Viva | Note |
 |---|---|---|---|---|---|
-| G1 (Neev) | 🔒 | — | — | — | — |
+| G1 (Bunyaad) | 🔒 | — | — | — | — |
 | G2 (Data) | 🔒 | — | — | — | — |
 | G3 (Backend) | 🔒 | — | — | — | — |
 | G4 (Frontend) | 🔒 | — | — | — | — |

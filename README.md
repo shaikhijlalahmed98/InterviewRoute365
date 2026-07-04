@@ -12,7 +12,7 @@
 
 **Baqi keywords:** `QUIZ CHECK` (sirf grading) • `BUSY DAY` (15-min emergency day, streak zinda) • `WAPSI` (gap ke baad narm re-entry) • `MADAD` (lab hints) • `MOCK` • `GATE` • `SAMJHAO X`
 
-## 🗺️ Nizaam ki teen dimaghi files
+## 🗺️ System ki teen dimaghi files
 
 | File | Kaam |
 |---|---|
@@ -26,7 +26,7 @@ Naya session in teen files se poori tarah resume ho jata hai. **Repo hi memory h
 
 | # | Level | Days | Pehchan |
 |---|-------|------|---------|
-| 1 | 🪨 Neev | 1–42 | Machine ke andar kya hota hai |
+| 1 | 🪨 Bunyaad | 1–42 | Machine ke andar kya hota hai |
 | 2 | 🏦 Data ka Ustaad | 43–84 | Paisa data hai; corrupt kabhi nahi hoga |
 | 3 | ⚙️ Backend Karigar | 85–140 | Framework jaadu nahi, machinery hai |
 | 4 | 🖥️ Frontend Engineer | 141–189 | UI engineering hai, sajawat nahi |
@@ -44,7 +44,7 @@ Har Saturday lab ek increment: modular monolith + **double-entry ledger** → au
 
 ```
 COURSE_ENGINE.md  STATE.md  curriculum.md
-lessons/01-neev … 07-finisher/     ← day files
+lessons/01-bunyaad … 07-finisher/  ← day files
 retention/        ← REVIEW-LEDGER + MISTAKE-BANK
 interview/        ← STORY-BANK, DSA-LOG, FLIGHT-RECORDER, mocks
 capstone/         ← Apna Bank (code + ADRs)

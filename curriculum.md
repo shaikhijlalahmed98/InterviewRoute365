@@ -6,7 +6,7 @@
 
 | # | Level | Days | Weeks | Ek line mein pehchan |
 |---|-------|------|-------|----------------------|
-| 1 | 🪨 **Neev** (Foundations Reforged) | 1–42 | 1–6 | "Main jaanta hoon machine ke andar kya hota hai" |
+| 1 | 🪨 **Bunyaad** (Foundations Reforged) | 1–42 | 1–6 | "Main jaanta hoon machine ke andar kya hota hai" |
 | 2 | 🏦 **Data ka Ustaad** | 43–84 | 7–12 | "Paisa data hai; main data kabhi corrupt nahi hone dunga" |
 | 3 | ⚙️ **Backend Karigar** | 85–140 | 13–20 | "Framework mere liye jaadu nahi, machinery hai" |
 | 4 | 🖥️ **Frontend Engineer** | 141–189 | 21–27 | "UI bhi engineering hai, sajawat nahi" |
@@ -18,7 +18,7 @@ Jama check: 42+42+56+49+63+70+43 = **365** ✓
 
 ---
 
-## Level 1 — 🪨 Neev (Days 1–42, W1–6)
+## Level 1 — 🪨 Bunyaad (Days 1–42, W1–6)
 
 **Exit competency:** Bina poochhe, English mein bata sake: `javac`/`csc` se machine code tak kya hota hai; stack vs heap; dono runtimes ka GC; value vs reference semantics (Java/.NET ka gehra tareen farq); string/equality/collection internals; HTTP pehle usoolon se; SQL Server row kaise store karta hai (pages, B-trees); ACID; aur kyun UNIQUE constraint app-level check ko hamesha harata hai.
 
@@ -39,7 +39,7 @@ Jama check: 42+42+56+49+63+70+43 = **365** ✓
 - **Day 3 (Wed, .NET):** *Value types — Java se sab se bara farq.* struct vs class (copy vs reference), boxing cost, string immutability dono taraf, struct chupke se heap pe kab jata hai. Contrast cards shuru.
 - **Day 4 (Thu, DATA-flex):** *GC dono duniyaon mein + hamara OOM hal.* Generational hypothesis, G1/ZGC vs .NET Server GC, stop-the-world. Heap dump parhna (VisualVM / dotnet-counters). Do classic leak shapes.
 - **Day 5 (Fri):** *Request aati hai to hota kya hai?* Thread pool, thread-per-request; slow-phir-dead ka anatomy (GC thrash → pauses → pool starvation → timeout cascade). Failure Museum #1: **Knight Capital 2012** ($440M, 45 min, deployment flag). DS&A #1: Big-O naap ke (string concat loop vs StringBuilder, timed) + Two Sum (Java).
-- **Day 6 (Sat, LAB 1):** *Bank ki neev.* Repo + docker-compose + Spring Boot skeleton (modules: customer/account/ledger khali) + health endpoints + **jaan boojh ke static-cache leak likho, VisualVM mein marte dekho, theek karo** + .NET minimal API mirror + ADR-001. Planted bug: SQL Server ka password complexity policy fail — container chupchaap exit (kyun?).
+- **Day 6 (Sat, LAB 1):** *Bank ki bunyaad.* Repo + docker-compose + Spring Boot skeleton (modules: customer/account/ledger khali) + health endpoints + **jaan boojh ke static-cache leak likho, VisualVM mein marte dekho, theek karo** + .NET minimal API mirror + ADR-001. Planted bug: SQL Server ka password complexity policy fail — container chupchaap exit (kyun?).
 - **Day 7 (Sun):** Weekly Exam #1 (25-Q). Mock: **story mining #1** — mentor 8 sawal poochta hai uske asli GRC/banking kaam pe → STAR skeleton → 90-second English "Tell me about yourself" script → record.
 
 ### Week 2 — "Data ki Bunyaad: SQL Server disk se upar tak"
@@ -118,7 +118,7 @@ Jama check: 42+42+56+49+63+70+43 = **365** ✓
 
 Weekdays = 60% consolidation (poora ledger ek aur chakkar) + 40% gap-filling (mock feedback se). Weekends = **full simulated onsite loops** (40-min DS&A + 45-min design + 30-min behavioral, back-to-back, English, recorded). CV/LinkedIn/portfolio finalize. 12 STAR stories polished.
 
-**Final (Days 363–365):** Day 363–364: aakhri simulated loop + 100-Q comprehensive exam (ledger saabit karega ke Day-1 ka jawab Day-364 pe bhi aata hai — nizaam ne bhoolna namumkin banaya). **Day 365: DEMO DAY + "Defend Your Bank"** — 15-min English video walkthrough + 90-min viva jisme mentor-as-CTO har ADR pe hamla karta hai. Pass = graduation.
+**Final (Days 363–365):** Day 363–364: aakhri simulated loop + 100-Q comprehensive exam (ledger saabit karega ke Day-1 ka jawab Day-364 pe bhi aata hai — system ne bhoolna namumkin banaya). **Day 365: DEMO DAY + "Defend Your Bank"** — 15-min English video walkthrough + 90-min viva jisme mentor-as-CTO har ADR pe hamla karta hai. Pass = graduation.
 
 ---
 
@@ -126,7 +126,7 @@ Weekdays = 60% consolidation (poora ledger ek aur chakkar) + 40% gap-filling (mo
 
 | Quarter | Theme | Architecture state |
 |---|---|---|
-| Q1 (D1–91) | **Neev** — monolith + THE LEDGER | Modular monolith, enforced boundaries, trial balance green |
+| Q1 (D1–91) | **Bunyaad** — monolith + THE LEDGER | Modular monolith, enforced boundaries, trial balance green |
 | Q2 (D92–182) | **Mazbooti** — auth, outbox, dono Angular apps | Hardened, secured, observable monolith |
 | Q3 (D183–273) | **Taqseem** — the split | .NET Payments + Kafka + saga + KYC + Redis; polyglot event-driven |
 | Q4 (D274–365) | **Kamaal** — fraud, GRC reporting, polish | Production-shaped platform + portfolio kit + Demo Day |
