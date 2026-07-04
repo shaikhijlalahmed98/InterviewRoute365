@@ -33,17 +33,17 @@
 ## ✍️ Mere Jawab (optional — jitna diya, utna grade hoga)
 
 ```
-W1:
-W2:
-W3:
-C1:
-C2:
-K1:
-K2:
-D1:
+W1: skipped
+W2: skipped
+W3: skipped
+C1: warm up time he
+C2: ghalat. jvm kaam krle ga
+K1: byte code beech ki language he or machine ki language machine code he jo har macine k lye alag
+K2: warm up hota he system jvm intrepret kr rha hota he
+D1: pehle se warmup req krdein
 ```
 
-**Time laga:** ___ min • **Energy (1–5):** ___
+**Time laga:** 1 min • **Energy (1–5):** 4
 
 <details>
 <summary>🔑 Key (mukhtasar — poori wazahat app mein)</summary>
