@@ -1,97 +1,146 @@
-# 📚 Curriculum — Full 365-Day Plan
+# 📚 Curriculum V2 — 365 Din ka Naqsha
 
-Auto-detected by mentor based on today's date. Day 1 = 2026-05-13.
+> Padhne ka tareeqa: `COURSE_ENGINE.md` usool batata hai, yeh file **kya kab** batati hai. Day numbers completion pe barhte hain (calendar pe nahi); din ka TYPE asal weekday se tay hota hai. Har level ka darwaza **Mastery Gate** kholta hai, calendar nahi.
 
----
+## Saal ka Arc — 7 Levels
 
-## 🟢 BEGINNER (Day 1-20) — Foundations + Basic Full-Stack Flows
+| # | Level | Days | Weeks | Ek line mein pehchan |
+|---|-------|------|-------|----------------------|
+| 1 | 🪨 **Neev** (Foundations Reforged) | 1–42 | 1–6 | "Main jaanta hoon machine ke andar kya hota hai" |
+| 2 | 🏦 **Data ka Ustaad** | 43–84 | 7–12 | "Paisa data hai; main data kabhi corrupt nahi hone dunga" |
+| 3 | ⚙️ **Backend Karigar** | 85–140 | 13–20 | "Framework mere liye jaadu nahi, machinery hai" |
+| 4 | 🖥️ **Frontend Engineer** | 141–189 | 21–27 | "UI bhi engineering hai, sajawat nahi" |
+| 5 | 🕸️ **Distributed Duniya** | 190–252 | 28–36 | "Network fail hota hai; mera system phir bhi sahi rehta hai" |
+| 6 | 🏛️ **Meymaar** (The Architect) | 253–322 | 37–46 | "Main trade-offs mein sochta hoon, tools mein nahi" |
+| 7 | 🎯 **The Finisher** (Interview Peak) | 323–365 | 47–52 | "Ab main perform karta hoon" |
 
-| Day | Scenario | OOP Focus |
-|-----|----------|-----------|
-| 1 | User registration with email verification | Encapsulation |
-| 2 | User login with JWT | Abstraction |
-| 3 | User profile update | Inheritance basics |
-| 4 | Password reset flow | Polymorphism (Method Overriding) |
-| 5 | Basic product listing | Composition over Inheritance |
-| 6 | Product search with pagination | Coupling (loose vs tight) |
-| 7 | Add to cart functionality | Cohesion |
-| 8 | View cart with totals | Interface vs Abstract Class |
-| 9 | Place a simple order | Method Overloading vs Overriding |
-| 10 | View order history | Static vs Instance members |
-| 11 | Update user address | SOLID — Single Responsibility (S) |
-| 12 | Upload profile picture | SOLID — Open/Closed (O) |
-| 13 | Form validation full-stack | SOLID — Liskov Substitution (L) |
-| 14 | Email verification flow | SOLID — Interface Segregation (I) |
-| 15 | Phone OTP verification | SOLID — Dependency Inversion (D) |
-| 16 | Basic admin panel | DRY |
-| 17 | Soft delete records | KISS |
-| 18 | Basic role checking | YAGNI |
-| 19 | Search filters (price, category) | Law of Demeter |
-| 20 | Wishlist functionality | Tell, Don't Ask |
-
-## 🟡 INTERMEDIATE (Day 21-50) — Enterprise Patterns
-
-| Day | Scenario | OOP/Pattern Focus |
-|-----|----------|-------------------|
-| 21 | RBAC full-stack | OO Composition patterns |
-| 22 | Multi-tenant data isolation | Favor immutability |
-| 23 | Audit logging for compliance | Encapsulate what varies |
-| 24 | Soft delete with restore | Program to interfaces |
-| 25 | Optimistic UI updates with rollback | Aggregation vs Composition vs Association |
-| 26 | File upload with virus scanning + S3 | Method signatures and contracts |
-| 27 | Bulk import from CSV | Exception design patterns |
-| 28 | Export large data to Excel (streaming) | Defensive programming |
-| 29 | Real-time notifications (SignalR/WebSocket) | Code smells |
-| 30 | Activity feed with pagination | Refactoring techniques |
-| 31 | Comment system with nested replies | Singleton Pattern |
-| 32 | Like/Unlike with optimistic UI | Factory Method Pattern |
-| 33 | Follow/Unfollow with counts | Abstract Factory Pattern |
-| 34 | User mentions (@username) | Builder Pattern |
-| 35 | Email notification preferences | Prototype Pattern |
-| 36 | Two-factor authentication (TOTP) | Object Pool Pattern |
-| 37 | Session management across devices | Dependency Injection (as pattern) |
-| 38 | API rate limiting basics | Service Locator (anti-pattern) |
-| 39 | Request idempotency keys | Lazy Initialization |
-| 40 | Webhook handling and retries | Multiton Pattern |
-| 41 | Pagination strategies (offset vs cursor) | Adapter Pattern |
-| 42 | Search with Elasticsearch basics | Bridge Pattern |
-| 43 | Auto-complete with debouncing | Composite Pattern |
-| 44 | Image processing pipeline | Decorator Pattern |
-| 45 | PDF generation from data | Facade Pattern |
-| 46 | Background job processing | Flyweight Pattern |
-| 47 | Scheduled tasks (cron jobs) | Proxy Pattern (Spring AOP!) |
-| 48 | Email queue with retry logic | Module Pattern |
-| 49 | Data caching strategies (Redis) | Front Controller Pattern |
-| 50 | API versioning strategies | MVC Deep Dive |
-
-## 🟠 ADVANCED (Day 51-90) — Distributed Systems
-
-Day 51-90: Distributed transactions (Saga), Event sourcing, CQRS, Read replicas, Sharding, Connection pooling, N+1 problem, Index strategies, Deadlock prevention, Circuit breaker, Bulkhead, Distributed caching, Locks (Redlock), Kafka/RabbitMQ, DLQ, Event-driven microservices, API Gateway, Service discovery, Distributed tracing, Centralized logging, Metrics, Blue-green deployment, Canary releases, Multi-region replication, GDPR, Encryption, OAuth2, Throttling, Zero-downtime migrations, Versioned APIs, GraphQL vs REST, WebSocket scaling, SSE vs WebSockets, gRPC.
-
-Day-by-day OOP/Pattern Focus: MVVM, Repository, Unit of Work, Specification, Data Mapper, DTO, Active Record, Lazy Loading, Identity Map, Pattern combinations, Observer, Strategy, Command, Chain of Responsibility, State, Template Method, Iterator, Mediator, Memento, Visitor, Interpreter, Null Object, Specification (advanced), Pub-Sub, Pipeline, Saga, Circuit Breaker, Retry with backoff, Bulkhead, Cache-Aside, God Object anti-pattern, Spaghetti Code, Singleton overuse, Premature Optimization, Magic Numbers, Hard Coding, Copy-Paste, Lava Flow, Golden Hammer, Boat Anchor.
-
-## 🔴 EXPERT (Day 91-140) — FAANG-Level System Design
-
-Day 91-140: Design payment system, notification system, rate limiter, distributed cache, real-time chat, job scheduler, feature flag system, URL shortener, recommendation engine, search autocomplete, leaderboard, news feed, video streaming, e-commerce checkout, ride-sharing, food delivery, hotel booking, ticket reservation, stock trading, banking transactions, cryptocurrency exchange, social media, content moderation, fraud detection, customer support ticketing, CRM, ERP, learning management, healthcare records, video conferencing, collaborative editor, code review platform, CI/CD pipeline, feature flag rollout, A/B testing, real-time analytics, log aggregation, metrics collection, distributed file system, key-value store, NoSQL database, graph database, time-series database, multi-region deployment, disaster recovery, backup/restore, data warehouse pipeline, real-time fraud detection, personalization engine.
-
-## ⚫ MASTER (Day 141-200) — Architecture Decisions
-
-ADRs, monolith-to-microservices migration, database selection, data lake vs warehouse, hybrid/multi-cloud, vendor lock-in mitigation, build vs buy, technical debt management, refactoring legacy systems.
-
-## 🟣 ARCHITECT (Day 201-270) — Multi-System + Organizational
-
-Enterprise Service Bus, DDD at scale, bounded contexts, anti-corruption layers, strangler fig, branch by abstraction, event storming, choreography vs orchestration, cell-based architecture.
-
-## 💎 PRINCIPAL (Day 271-365) — Industry-Defining
-
-Byzantine fault tolerance, CRDTs, consensus algorithms (Raft, Paxos), distributed snapshots, hybrid logical clocks, vector clocks, zero-downtime migrations at scale, multi-region active-active, billion-user-scale systems.
+Jama check: 42+42+56+49+63+70+43 = **365** ✓
 
 ---
 
-## 🏛️ OOP Overlay Schedule (First 90 Days)
+## Level 1 — 🪨 Neev (Days 1–42, W1–6)
 
-- **Day 1-30**: OOP Fundamentals + SOLID + DRY/KISS/YAGNI + Code smells
-- **Day 31-60**: Creational + Structural patterns
-- **Day 61-90**: Behavioral patterns + Anti-patterns
+**Exit competency:** Bina poochhe, English mein bata sake: `javac`/`csc` se machine code tak kya hota hai; stack vs heap; dono runtimes ka GC; value vs reference semantics (Java/.NET ka gehra tareen farq); string/equality/collection internals; HTTP pehle usoolon se; SQL Server row kaise store karta hai (pages, B-trees); ACID; aur kyun UNIQUE constraint app-level check ko hamesha harata hai.
 
-After Day 90, OOP section becomes "Senior Refinement" — advanced applications in distributed systems.
+**Kyun yeh tarteeb:** V1 ne Day 2 pe JWT parhaya tha — deewarein banne se pehle chhat. 2.2-GPA wala foundation gap pehle bharta hai — tez, tareekh ke saath, "what is a variable" jaisi tauheen ke baghair.
+
+**Haftawar themes:** W1 runtime & memory (JVM vs CLR) • W2 SQL Server disk se upar tak • W3 HTTP & REST (**Wall Week** — halka, Day 15 = 30-min, Day 16 = Record Ceremony) • W4 collections & generics internals • W5 exceptions/errors + logging + Git fluency • W6 testing fundamentals (JUnit5/xUnit) + clean code + **Gate week**.
+
+**Gate 1:** Sat practical: bounded LRU cache DONO languages mein, tests ke saath • Sun 40-MCQ + English viva: *"Walk me through what happens when a request hits your API and how memory is managed while serving it."*
+
+**Capstone:** repo scaffold, docker-compose (SQL Server), Spring Boot monolith walking skeleton, `customers` schema asli constraints ke saath, pehla `POST /customers` (Java) + .NET mirror kata. **ADR-001: Modular monolith first** — learner khud likhta hai.
+
+### Week 1 — "Code se Machine tak"
+*Scenario: Apne bank ka naya onboarding service prod mein pehle slow hua, phir OutOfMemory se crash. Post-mortem hum khud karenge.*
+
+- **Day 0 (pehla din, koi bhi weekday):** System tour + 30-Q Baseline Diagnostic (ghalat jawab = pehle ledger atoms) + capstone ka naam + Day-365 khat.
+- **Day 1 (Mon):** *Compiler se CPU tak.* Source → bytecode/IL → JIT → machine code. Tareekh: 1995 Java "write once, run anywhere" (C/C++ porting ka azaab), 2000 .NET (J++ muqadma → Anders Hejlsberg → C#). Tiered compilation. 2-second pehli request ka raaz (JIT warm-up; AOT/GraalVM ek-line preview).
+- **Day 2 (Tue, JAVA):** *Java memory ki sachai.* Stack frames, heap, "pass-by-value... of references" (screen-killer sawal hamesha ke liye hal), autoboxing traps (`Integer` cache −128..127 ka `==` ambush), static kahan rehta hai. OOM ka Java mujrim: static Map cache.
+- **Day 3 (Wed, .NET):** *Value types — Java se sab se bara farq.* struct vs class (copy vs reference), boxing cost, string immutability dono taraf, struct chupke se heap pe kab jata hai. Contrast cards shuru.
+- **Day 4 (Thu, DATA-flex):** *GC dono duniyaon mein + hamara OOM hal.* Generational hypothesis, G1/ZGC vs .NET Server GC, stop-the-world. Heap dump parhna (VisualVM / dotnet-counters). Do classic leak shapes.
+- **Day 5 (Fri):** *Request aati hai to hota kya hai?* Thread pool, thread-per-request; slow-phir-dead ka anatomy (GC thrash → pauses → pool starvation → timeout cascade). Failure Museum #1: **Knight Capital 2012** ($440M, 45 min, deployment flag). DS&A #1: Big-O naap ke (string concat loop vs StringBuilder, timed) + Two Sum (Java).
+- **Day 6 (Sat, LAB 1):** *Bank ki neev.* Repo + docker-compose + Spring Boot skeleton (modules: customer/account/ledger khali) + health endpoints + **jaan boojh ke static-cache leak likho, VisualVM mein marte dekho, theek karo** + .NET minimal API mirror + ADR-001. Planted bug: SQL Server ka password complexity policy fail — container chupchaap exit (kyun?).
+- **Day 7 (Sun):** Weekly Exam #1 (25-Q). Mock: **story mining #1** — mentor 8 sawal poochta hai uske asli GRC/banking kaam pe → STAR skeleton → 90-second English "Tell me about yourself" script → record.
+
+### Week 2 — "Data ki Bunyaad: SQL Server disk se upar tak"
+*Scenario: Onboarding mein duplicate CNIC ghus gaya (do parallel requests), aur customer-search 8 second leti hai.*
+
+- **Day 8 (Mon):** Pages (8KB), heap vs clustered index, B-tree pehle usoolon se. Tareekh: Codd 1970 — pehle kya tha (IMS/CODASYL pointer-chasing ka azaab), declarative kyun jeeta.
+- **Day 9 (Tue):** Indexes: 8s → 80ms. Nonclustered, key lookups, covering (INCLUDE), execution plan parhna (seek vs scan), sargability (`WHERE LTRIM(cnic)=` index ka qatil).
+- **Day 10 (Wed):** Constraints: app-level check hamesha haarta hai. TOCTOU race timeline, UNIQUE hi asli ilaaj, NVARCHAR vs VARCHAR niyat se, dono stacks mein constraint violation pakarna (contrast cards).
+- **Day 11 (Thu):** Transactions I: ACID asli zindagi mein. WAL (COMMIT tez magar crash-safe kyun — System R ki tareekh), THROW not RAISERROR, SYSUTCDATETIME discipline.
+- **Day 12 (Fri):** Connection pooling (HikariCP vs ADO.NET — pool exhaustion = classic outage). Failure Museum #2: **RBS 2012 batch collapse** (6.5M log bank se bahar). DS&A #2: hash maps under the hood ("DB ne tree kyun chuna, hash kyun nahi? — range queries!") + Group Anagrams (C#).
+- **Day 13 (Sat, LAB 2):** Customers schema + Flyway migration + EF Core mirror + **duplicate-CNIC race ko do parallel sessions se reproduce karo, UNIQUE lagao, race ko marte dekho**. Planted bug: ek migration mein GETDATE() + VARCHAR name column.
+- **Day 14 (Sun):** Exam #2 (Week-1 atoms +7 pe wapas). Mock: English technical delivery — *"Walk me through what happens when you run a Java program"* + *"Why a unique constraint instead of checking in code?"* — record, 2 fixes.
+
+### Week 3 — "HTTP aur REST: web ki zubaan" (WALL WEEK — jahan V1 mara tha, wahan V2 jashn manata hai)
+*Scenario: Mobile team ne API integrate ki — sab toot gaya: ghalat status codes, CORS block, retry pe DUPLICATE customer.*
+
+- **Day 15 (Mon — 30-MIN LIGHT DAY):** HTTP anatomy (raw request text mein parho), verbs ke waaday (safe/idempotent table), 5 zaroori status codes (200/201/400/401-vs-403/409), statelessness. Tareekh: Berners-Lee 1991, cookie ka janam (Netscape 1994). File ka aakhri jumla: *"Kal record tootega."*
+- **Day 16 (Tue — RECORD-BREAK DAY):** Pehle **Wall Ceremony** (10 min): 15 dinon ka retro + **Day-300 ke naam khat**. Phir compact lesson: DispatcherServlet lifecycle, @Valid, @RestControllerAdvice error contract.
+- **Day 17 (Wed):** ASP.NET Core middleware pipeline (tarteeb ka mental model), minimal APIs vs controllers, ProblemDetails (RFC 7807). Mapping table: filters/interceptors vs middleware.
+- **Day 18 (Thu):** DTO vs entity (over-posting/mass-assignment — banking bug class), Jackson vs System.Text.Json defaults, API versioning ek paragraph.
+- **Day 19 (Fri):** **Idempotency — duplicate customer ka qatil.** Idempotency keys (client key + unique index + stored response). Currency rule war-story: state-changing GET kabhi nahi, secrets query string mein kabhi nahi (V1 ke apne Day-14 ka `GET /verify?token=` yahan theek hota hai — apna purana code audit karna sab se senior aadat hai). Failure Museum #3: **Bangladesh Bank 2016** ($81M, SWIFT, authZ). DS&A #3: two pointers (halka — Wall Week ki riayat).
+- **Day 20 (Sat, LAB 3):** Asli `POST /customers` Java mein: validation + ProblemDetails + **idempotency-key filter** (Week-2 ka unique index kaam aya) + integration test: same request do dafa = EK customer. .NET mirror. Planted bug: validation failure pe 200-with-error-body.
+- **Day 21 (Sun):** Exam #3 (spacing ab nazar aati hai: W1 atoms +16 ke qareeb, W2 +7 pe). Mock: **pehla mini system design (20 min, guided):** *"Design the onboarding API for 10k requests/day with idempotent submission"* → `interview/DESIGN-DOCS/DD-001.md`. Retro: **21 din — zindagi ki sab se lambi streak, likh ke.**
+
+*(W4–W6: collections/generics internals • exceptions + logging + Git • testing + clean code → Gate 1. Har hafta isi Week-1–3 pattern pe mentor detail karega.)*
+
+---
+
+## Level 2 — 🏦 Data ka Ustaad (Days 43–84, W7–12)
+
+**Exit competency:** Paison ka schema design (DECIMAL, kabhi float nahi — banks ne 1960s mein kyun seekha); har isolation level us anomaly ke saath jo woh rokta hai (+ SQL Server ka RCSI twist); blocking/deadlock diagnosis; query ke liye index + plan se saboot; JPA/Hibernate AUR EF Core (N+1, change tracking, lazy traps); **double-entry bookkeeping** (Pacioli 1494 — 500 saal purana pattern kyun zinda hai) — balance kabhi UPDATE nahi hota.
+
+**Themes:** W7 transactions & isolation deep • W8 indexing & tuning • W9 ORM sach (JPA vs EF Core aamne-samne) • W10 double-entry + money types • W11 window functions, temporal tables, audit patterns • W12 migrations + Gate week.
+
+**Gate 2:** slow + deadlocking transfer procedure diya jayega — isolation + indexing + THROW/idempotent-retry se theek karo (2-session race script ke against saboot) • viva: *"Explain isolation levels to a junior using a bank-transfer example."*
+
+**Capstone:** **THE LEDGER** — taaj ka heera. `journal_entries` + `postings` (append-only, immutable), invariant SUM(debits)=SUM(credits) + nightly trial-balance job, accounts module, internal transfer via postings. Har interview mein yehi demo hoga.
+
+## Level 3 — ⚙️ Backend Karigar (Days 85–140, W13–20)
+
+**Exit competency:** DI containers + lifetimes (Spring context vs .NET host); AOP proxies — self-invocation `@Transactional` kyun torta hai; **transaction kabhi SMTP/network I/O ke upar nahi — Outbox default hai**; auth currency-rules ke mutabiq (jjwt 0.12+, ≥256-bit, JwtBearer, HttpOnly+SameSite; localStorage sirf flagged trade-off); async/concurrency (CompletableFuture vs async/await, virtual threads); testing pyramid (Testcontainers, WebApplicationFactory); resilience basics; idempotent APIs.
+
+**Themes:** W13 DI internals • W14 AOP/proxies + `@Transactional` ka sach • W15 authN/Z (OAuth2/OIDC map + tareekh) • W16 validation + error contracts + versioning • W17 async & concurrency • W18 outbox + notifications + idempotency • W19 testing deep • W20 resilience + observability basics + Gate.
+
+**Gate 3:** vulnerable API dono stacks mein secure karo (planted: localStorage token, GET-with-secret, SMTP-in-transaction) + **pehla full 45-min design mock:** *"Design the money-transfer API"* + viva.
+
+**Capstone:** auth done right (web = HttpOnly cookie session; service-to-service = JWT), payments module (idempotency keys), **transactional outbox + email**, audit-event capture har state change pe.
+
+## Level 4 — 🖥️ Frontend Engineer (Days 141–189, W21–27)
+
+**Exit competency:** Angular 17+ sirf modern idioms — standalone, signals (signal/computed/effect — aur effect kab NAHI), `@if/@for/@defer`, functional interceptors/guards, `inject()`, typed forms; RxJS kahan genuinely jeetta hai (streams over time) vs signals (state); change detection under the hood (zones ki tareekh → zoneless); XSS/CSRF/CSP — tokens localStorage mein kyun nahi. Interviewer ko samjha sake ke Angular modules+zones se standalone+signals pe KYUN gaya.
+
+**Themes:** W21 mental model reset (+tareekh) • W22 components + signals architecture • W23 typed forms + KYC form UX • W24 HTTP layer + interceptors + security • W25 state architecture (signal stores vs NgRx trade-off) • W26 performance (@defer, virtual scroll) + accessibility • W27 testing + Gate.
+
+**Gate 4:** spec se account-dashboard feature (signals, @defer, typed form, interceptor) + viva: *"Explain signals vs RxJS to a React developer."*
+
+**Capstone:** DO Angular apps — `admin-app` (customer search, audit viewer, maker-checker queue) + `customer-app` (login, accounts, transfer with idempotent double-submit-proof UX).
+
+## Level 5 — 🕸️ Distributed Duniya (Days 190–252, W28–36)
+
+**Exit competency:** Monolith KAB torna hai (aur kab nahi — strangler-fig ki kahani); bounded contexts; Kafka fundamentals (partitions, consumer groups, offsets, exactly-once ka sach); outbox→relay; **sagas vs 2PC (tareekh: XA kyun mara)**; idempotent consumers + DLQ; Redis patterns (cache-aside, stampede protection); Docker/K8s basics; distributed tracing; CAP/PACELC asaan Urdu mein, banking misaalon se. **Excursions:** Go (goroutines vs virtual threads vs async/await — rate-limiter banake mehsoos karo), Python (ops tooling).
+
+**Gate 5:** diye gaye saga mein compensation bug hai jo paisa kho deta hai — dhoondo, theek karo, duplicate-delivery ke against idempotency saabit karo + 45-min design: *"Inter-bank transfer with an unreliable partner-bank API"* + viva.
+
+**Capstone:** **THE SPLIT** — Payments service .NET 8 mein extract (strangler), Kafka backbone, saga (compensation ke saath), KYC screening service (.NET, async workflow), Redis balance read-model, tracing Java↔.NET. ADRs: why-split-now, saga-not-2PC, polyglot policy.
+
+## Level 6 — 🏛️ Meymaar (Days 253–322, W37–46)
+
+**Exit competency:** Poora 45-min open-ended system design senior ki tarah (requirements → estimates → API → data → design → deep-dive → failure modes → evolution); event-driven maturity + schema evolution; CQRS jahan jaayez (aur push-back jahan nahi); security architecture (threat modeling); multi-tenancy; **GRC/compliance architecture** (uska apna maidan, architecture level pe: immutable audit, maker-checker, SoD, regulatory reporting); fraud basics; performance engineering (k6/Gatling); ADR likhna aur difaa karna.
+
+**Gate 6:** **Architecture Review Board** — poora capstone C4 + ADR pack mein pesh karo; mentor = hostile review board, 15 cross-questions (English, timed) + ek **unseen non-banking domain** ka full design (transfer ka saboot).
+
+**Capstone:** fraud rules service (.NET) + Python scoring excursion, GRC reporting module (maker-checker + regulatory extracts), statement generation, CQRS read models (jahan reject kiya wahan ADR "where-we-said-no"), load-test report before/after.
+
+## Level 7 — 🎯 The Finisher (Days 323–365, W47–52)
+
+Weekdays = 60% consolidation (poora ledger ek aur chakkar) + 40% gap-filling (mock feedback se). Weekends = **full simulated onsite loops** (40-min DS&A + 45-min design + 30-min behavioral, back-to-back, English, recorded). CV/LinkedIn/portfolio finalize. 12 STAR stories polished.
+
+**Final (Days 363–365):** Day 363–364: aakhri simulated loop + 100-Q comprehensive exam (ledger saabit karega ke Day-1 ka jawab Day-364 pe bhi aata hai — nizaam ne bhoolna namumkin banaya). **Day 365: DEMO DAY + "Defend Your Bank"** — 15-min English video walkthrough + 90-min viva jisme mentor-as-CTO har ADR pe hamla karta hai. Pass = graduation.
+
+---
+
+## Capstone Roadmap — Quarters
+
+| Quarter | Theme | Architecture state |
+|---|---|---|
+| Q1 (D1–91) | **Neev** — monolith + THE LEDGER | Modular monolith, enforced boundaries, trial balance green |
+| Q2 (D92–182) | **Mazbooti** — auth, outbox, dono Angular apps | Hardened, secured, observable monolith |
+| Q3 (D183–273) | **Taqseem** — the split | .NET Payments + Kafka + saga + KYC + Redis; polyglot event-driven |
+| Q4 (D274–365) | **Kamaal** — fraud, GRC reporting, polish | Production-shaped platform + portfolio kit + Demo Day |
+
+**Day 365 pe sach-much keh sakega:** *"I designed and built a cross-stack (Java + .NET + Angular 17 + SQL Server) event-driven banking platform from scratch — double-entry ledger, KYC with maker-checker, saga-based payments over Kafka, GRC audit reporting, fraud scoring — and evolved it from a modular monolith with a documented ADR at every step."*
+
+---
+
+## DS&A Pattern Ladder (Fridays + monthly screens)
+
+W1–4 arrays/hashing/Big-O → W5–8 two pointers + sliding window → W9–12 stack/queue + binary search → W13–16 linked lists → W17–20 trees/BST → W21–24 recursion/BFS/DFS → W25–28 heaps → W29–32 graphs (sagas ke dependency-thinking wale hafton mein topological sort) → W33–36 intervals/greedy → W37–40 1-D DP → W41–44 2-D DP-lite + tries → W45–52 mixed timed company-style sets.
+
+Volume: ~52 fresh + ~26 spaced re-solves + 24 screen problems ≈ **100+ encounters** — senior screens ke liye kaafi, LeetCode-lifestyle ke baghair. Language haftawar Java↔C#.
+
+## Sunday Mock Rotation (4-hafta cycle)
+
+**A:** DS&A screen (2 problems, timed, English think-aloud) • **B:** System design (ramp: 20-min guided → 45-min recorded) • **C:** Behavioral STAR (mining/rehearsal + recording) • **D:** Mixed mini-loop. Gate weekends rotation ko override karte hain.

@@ -1,63 +1,55 @@
-# 🎯 InterviewRoute365
+# 🎯 InterviewRoute365 V2
 
-365-Day journey from mid-level developer → senior/principal engineer.
-Daily learning units covering **5 stacks** + **OOP/Design Patterns** + **System Design**.
+365 din ka safar: **"lagta hai mujhe zyada aata nahi"** se → enterprise systems ka ustaad jo senior international interviews jeetta hai — aur saboot ke tor pe apna banaya hua **digital bank** rakhta hai.
 
-## 🗺️ Folder Structure
+**Zubaan:** Roman Urdu (samajhne ke liye) + English delivery scripts (interview ke liye). **Stacks:** Java/Spring Boot + .NET/C# (dono, hamesha) + SQL Server + Angular 17+ (+ Go/Python/Redis/Kafka excursions jahan behtar hon).
+
+## 🚀 Kaise chalana hai
+
+1. Claude Code is repo mein kholo.
+2. Type karo: **`AGLA DIN`**
+3. Bas. Mentor kal ka kaam check karega (bina check kiye naya din NAHI milega — Airlock), phir aaj ka din banayega.
+
+**Baqi keywords:** `QUIZ CHECK` (sirf grading) • `BUSY DAY` (15-min emergency day, streak zinda) • `WAPSI` (gap ke baad narm re-entry) • `MADAD` (lab hints) • `MOCK` • `GATE` • `SAMJHAO X`
+
+## 🗺️ Nizaam ki teen dimaghi files
+
+| File | Kaam |
+|---|---|
+| [COURSE_ENGINE.md](./COURSE_ENGINE.md) | Mentor ke usool — Airlock, cadence, retention, gates, quality bar |
+| [STATE.md](./STATE.md) | Haalat — konsa din, streak, scores, gates |
+| [retention/REVIEW-LEDGER.md](./retention/REVIEW-LEDGER.md) | Yaad-dasht ka engine — kya kab wapas aayega |
+
+Naya session in teen files se poori tarah resume ho jata hai. **Repo hi memory hai.**
+
+## 📚 Saal ka Naqsha
+
+| # | Level | Days | Pehchan |
+|---|-------|------|---------|
+| 1 | 🪨 Neev | 1–42 | Machine ke andar kya hota hai |
+| 2 | 🏦 Data ka Ustaad | 43–84 | Paisa data hai; corrupt kabhi nahi hoga |
+| 3 | ⚙️ Backend Karigar | 85–140 | Framework jaadu nahi, machinery hai |
+| 4 | 🖥️ Frontend Engineer | 141–189 | UI engineering hai, sajawat nahi |
+| 5 | 🕸️ Distributed Duniya | 190–252 | Network fail hota hai; system phir bhi sahi |
+| 6 | 🏛️ Meymaar | 253–322 | Trade-offs mein sochta hoon, tools mein nahi |
+| 7 | 🎯 The Finisher | 323–365 | Ab main perform karta hoon |
+
+Poora naqsha: [curriculum.md](./curriculum.md) • Har level ka darwaza **Mastery Gate** kholta hai (80% bar + practical + English viva), calendar nahi.
+
+## 🏦 Capstone: Apna Bank
+
+Har Saturday lab ek increment: modular monolith + **double-entry ledger** → auth/outbox/Angular apps → **the split** (.NET Payments, Kafka, saga) → fraud + GRC reporting + **Day 365 Demo Day**. Har bara faisla ADR mein (`capstone/adr/`). Yeh repo hi portfolio hai.
+
+## 📁 Structure
 
 ```
-.
-├── README.md                ← you are here
-├── curriculum.md            ← full 365-day plan
-├── progress.md              ← daily tracker + streak
-│
-├── lessons/                 ← daily curriculum content
-│   ├── _CHAT_RESPONSE_TEMPLATE.md   ← short chat reply format
-│   ├── _DEPTH_STANDARD.md           ← quality bar for every lesson
-│   ├── _LESSON_TEMPLATE.md          ← full lesson skeleton
-│   ├── _STACK_INDEX.md              ← per-day per-stack coverage matrix
-│   └── day-XXX-topic-slug.md        ← e.g. day-004-password-reset.md
-│
-├── notes/                   ← personal reflections, "aha moments"
-├── labs/                    ← actual code projects per topic
-├── revision/                ← quick-read keys (5-10 min per day, pre-interview)
-├── quizzes/                 ← 50 MCQs per day, mentor evaluates
-├── interview-prep/          ← FAANG/Saudi mock Qs, behavioral STAR stories
-├── cheatsheets/             ← last-minute revision (memory hooks, comparisons)
-└── portfolio/               ← showcase-ready writeups
+COURSE_ENGINE.md  STATE.md  curriculum.md
+lessons/01-neev … 07-finisher/     ← day files
+retention/        ← REVIEW-LEDGER + MISTAKE-BANK
+interview/        ← STORY-BANK, DSA-LOG, FLIGHT-RECORDER, mocks
+capstone/         ← Apna Bank (code + ADRs)
+gates/  mentor/  cheatsheets/  standards/  notes/
+archive/v1/       ← purana V1 (izzat se retire)
 ```
 
-## 🎯 What Each Lesson Contains
-
-1. **Brainer Scenario** — real production problem (Pakistani context: Daraz, Careem, FoodPanda)
-2. **5 Stack Solutions** — Java/Spring + .NET/C# + SQL + Angular + System Design
-3. **Foundation Concepts** — every technical term inline-defined (no jargon dumps)
-4. **OOP/Design Pattern Lens** — connection to today's principle (90-day OOP overlay)
-5. **Mental Map** — visual mind map + Roman Urdu story
-6. **Interview Drill** — main Q + 3 counter-questions + senior-differentiator + red flags
-7. **Memory Hooks** — Roman Urdu mnemonics (TRACE, BARTAN BADLO, VIBES, etc.)
-
-## 📊 Levels
-
-| Level | Days | Folder Range |
-|-------|------|--------------|
-| 🟢 Beginner | 1-20 | `lessons/day-001-*.md` to `day-020-*.md` |
-| 🟡 Intermediate | 21-50 | `day-021-*.md` to `day-050-*.md` |
-| 🟠 Advanced | 51-90 | `day-051-*.md` to `day-090-*.md` |
-| 🔴 Expert | 91-140 | `day-091-*.md` to `day-140-*.md` |
-| ⚫ Master | 141-200 | `day-141-*.md` to `day-200-*.md` |
-| 🟣 Architect | 201-270 | `day-201-*.md` to `day-270-*.md` |
-| 💎 Principal | 271-365 | `day-271-*.md` to `day-365-*.md` |
-
-See [curriculum.md](./curriculum.md) for full topic list per day.
-See [progress.md](./progress.md) for current status + streak.
-
-## 🚀 How to Use This Repo
-
-- **Daily**: lesson auto-pushed to `lessons/day-XXX.md` by AI mentor routine
-- **Approach**: 45-60 min per lesson (see `lessons/_CHAT_RESPONSE_TEMPLATE.md` for phase breakdown)
-- **Notes**: write personal reflections in `notes/day-XXX.md`
-- **Labs**: build hands-on code in `labs/day-XXX-topic/`
-- **Pre-interview**: review `cheatsheets/` for last-minute polish
-
-Auto-managed by Claude AI mentor 🤖
+*Powered by Claude mentor 🤖 — lekin mehnat tumhari hai, bhai.*
