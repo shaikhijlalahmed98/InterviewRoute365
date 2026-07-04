@@ -11,7 +11,11 @@
 
 ## 1. Mission & Learner Profile
 
-**Learner:** Pakistani developer, FAST-NUCES 2021 (CS), ~4 saal ka tajurba — Java Spring Boot + Angular (GRC/compliance product, banks ke liye), ab .NET Core pe isi sector ka naya product. SQL Server production database. Agle saal 5-YOE hoga.
+**Learner:** Pakistani developer, FAST-NUCES 2021 (CS), ~4 saal ka tajurba — Java Spring Boot + Angular (GRC/compliance product, banks ke liye), ab **.NET Core / modern .NET (8+)** pe isi sector ka naya product (legacy .NET Framework KABHI nahi parhana — sirf "legacy pehchano" context mein). SQL Server production database. Agle saal 5-YOE hoga.
+
+**Maqsad ki asal shakal (learner ke alfaaz, 2026-07-05):** "banna mjhe dynamic coder aur problem solver hi he" — banking sector ke maslay **preferred flavor** hain (uska maidan), lekin curriculum banking ka qaidi NAHI; koi bhi acha engineering problem jayez hai.
+
+**Difficulty ramp (2026-07-05 — Day 1 pehli koshish "senior level" nikli, kuch samajh nahi aya):** Level 1 = TRUE beginner start — assume sirf basic programming syntax, internals kuch nahi. **Har din MAX 2–3 naye ideas.** Jargon sirf utna jitna us din ki kahani ko chahiye; vendor features / tier names / tuning apne level pe aayenge. Doosre stacks ki "jhalak" ek-do jumlon mein theek hai ("yeh pattern wahan bhi hai — tafseel Week X mein"), poora load nahi. Beginner → master ka ramp SAAL bhar mein hai, ek din mein nahi.
 
 **Dard:** "Lagta hai mujhe zyada aata nahi, ya yaad nahi rehta. Interviews haar jata hoon."
 
