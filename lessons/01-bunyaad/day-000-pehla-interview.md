@@ -1,27 +1,28 @@
-# Day 0 — System ka Tour + Baseline Diagnostic
+# Day 0 — Pehla Interview: Jo Aaj Tum Haaroge
 
-> **Level:** 🪨 Bunyaad • **Waqt:** ~45 min (tour 10 + diagnostic 30 + naam 5)
-> **Aaj koi lesson nahi.** Aaj hum do kaam karte hain: (1) tumhe system ki chabi dete hain, (2) tumhara asli naqsha banate hain — kahan mazboot ho, kahan kacha hai. Ghalat jawab yahan **inaam** hai: har ghalti saal bhar ke liye tumhara personal review card ban jayegi.
-
----
-
-## 1️⃣ System ka Tour (10 min — sirf parho)
-
-**Yeh system kaise chalta hai:**
-
-- **`AGLA DIN`** likho → main pehle tumhara pichla kaam check karta hoon, phir naya din deta hoon. **RULE 0 — Airlock:** jab tak pichle din ke jawab nahi bhare, naya din NAHI milega. V1 isi liye mara tha — quiz kabhi check nahi hue. Ab structurally namumkin hai.
-- **REVIEW-LEDGER:** har lesson ke aakhir mein 3–5 "atoms" (chhoti chhoti testable baatein) bante hain. Har atom Leitner box mein jata hai — sahi jawab pe interval barhta hai (+1 → +3 → +7 → +16 → +35...), ghalat pe wapas girta hai. Roz ka warm-up ledger se aata hai. **Bhoolna is system mein allowed hi nahi.**
-- **Masroof din?** `BUSY DAY` (15-min micro-day, max 4/mahina). **Gap ho gaya?** `WAPSI` — koi sharmindagi nahi, narm re-entry. **Lab mein phanse?** `MADAD`. **Kuch samajh na aaye?** `SAMJHAO X`.
-- **Wall Week ka waada:** Days 13–17 jaan boojh ke halke honge — wahi jagah jahan V1 (Day 15) mara tha. Day 16 pe hum record tootne ka jashn manayenge.
-- **Git hi streak hai:** har din ke aakhir mein commit. `git log --oneline` tumhari chain hai — usay tootne mat dena.
+> **Level:** 🪨 Bunyaad • **Waqt:** ~45 min • **Format:** Simulated interview loop (5 rounds, 30 sawal)
+> Yeh exam nahi hai. Yeh **woh interview hai jo aaj ke tum clear nahi kar sakte** — aur Day 365 pe yehi exact loop dobara hoga. Us din ka result aaj se likha ja raha hai.
 
 ---
 
-## 2️⃣ Baseline Diagnostic — 30 Sawal (30 min, CLOSED BOOK)
+## 📞 Call aati hai...
 
-**Usool:** Google band, notes band, IDE band. Jo nahi aata, **khali chhor do ya "nahi pata" likho** — yeh bhi qeemti data hai, sharam ki baat nahi. Jawab chhote rakho (1–2 jumlay). Urdu ya English, jo tez ho. Answer key neeche `<details>` mein hai — **jawab likhne se pehle kholna cheating apne aap se hai.**
+Jumeraat ki shaam hai. LinkedIn pe ek recruiter ka message: **Zarr Technologies** — Karachi ka sab se garam fintech, SBP license mila hai, digital bank launch kar rahe hain. Position: **Senior Software Engineer, Core Banking**. Paisa itna ke tum message do dafa parhte ho. Stack: Java + .NET + SQL Server + Angular. *Tumhara* stack.
 
-### Stack A — Java
+Recruiter kehti hai: *"Profile strong lag rahi hai. Monday ko full loop rakh dein? 5 rounds — Java, .NET, Data, Web, aur aakhir mein CTO ke saath."*
+
+Tum "haan" keh dete ho. Ab Monday hai. Office ki 14th manzil, sheeshay ki deewarein, aur panel tayyar hai.
+
+**Khel ke rules (yeh asli interview hai, is liye):**
+- **Google band, notes band, IDE band** — interview mein bhi yehi hota hai.
+- Har jawab 1–2 jumlay. Nahi aata to **"nahi pata"** likho — interview mein bluff pakra jata hai, yahan "nahi pata" tumhara dost hai: har ghalat/khali jawab saal bhar ka personal review card banega. **Yahan haarna hi jeetne ka pehla qadam hai.**
+- Jawab neeche `## ✍️ Mere Jawab` mein. Answer key `<details>` mein hai — pehle kholna apne aap se cheating.
+
+---
+
+## Round 1 — Java Panel: Bilal bhai (Principal Engineer)
+
+*Thanda banda, dheemi awaaz, lekin sawal ustray jaise. Kehta hai: "Chaliye, halke se shuru karte hain."*
 
 1. Yeh code kya print karega? <!-- A-000-01 -->
    ```java
@@ -30,12 +31,14 @@
    System.out.println((a == b) + " " + (c == d));
    ```
 2. Java "pass-by-value" hai — phir method ke andar `list.add(5)` caller ko nazar aata hai, lekin `list = new ArrayList<>()` nahi. Kyun? <!-- A-000-02 -->
-3. Ek `@Transactional` method ussi class ke doosre method se seedha call ho rahi hai — transaction lagta hi nahi. Kyun? <!-- A-000-03 -->
+3. *"Humare ek junior ka bug hai yeh —"* ek `@Transactional` method ussi class ke doosre method se seedha call ho rahi hai, transaction lagta hi nahi. Kyun? <!-- A-000-03 -->
 4. Loop mein 10,000 dafa `s += i` (String pe) sust kyun hai? Ilaaj kya? <!-- A-000-04 -->
 5. Kisi class mein `equals()` override kiya magar `hashCode()` nahi — `HashMap` mein use karne pe kya masla hoga? <!-- A-000-05 -->
 6. Spring `@Transactional` default mein kis qism ki exception pe rollback karta hai — checked ya unchecked? <!-- A-000-06 -->
 
-### Stack B — .NET / C#
+## Round 2 — .NET Panel: Sana (Staff Engineer)
+
+*Java se .NET migration khud jheli hai. Muskura ke kehti hai: "Aap bhi Java se aaye hain na? Phir yeh aasaan hoga..."*
 
 7. Yeh code kya print karega? <!-- A-000-07 -->
    ```csharp
@@ -46,12 +49,14 @@
    Console.WriteLine(p1.X);
    ```
 8. `async void` method `async Task` ke muqable mein khatarnak kyun hai? <!-- A-000-08 -->
-9. Account balance `double` mein rakhna bug kyun hai? Sahi type kya hai? <!-- A-000-09 -->
+9. *"Yeh humara favourite reject-sawal hai:"* account balance `double` mein rakhna bug kyun hai? Sahi type kya hai? <!-- A-000-09 -->
 10. LINQ: `var q = list.Where(x => x > 5);` ke BAAD list mein naya element add karo, phir `q.Count()` chalao — naya element count hoga ya nahi, aur kyun? <!-- A-000-10 -->
 11. ASP.NET Core pipeline mein `UseAuthentication()` ko `UseAuthorization()` se pehle likhna zaroori kyun hai? <!-- A-000-11 -->
 12. `object o = 42;` — is line mein andar kya hota hai, aur iski cost kya hai? <!-- A-000-12 -->
 
-### Stack C — SQL Server
+## Round 3 — Data Panel: Rehan sahab (DBA, 15 saal)
+
+*Kursi pe peeche ho ke baithta hai: "Beta, main woh banda hoon jo tum jaise developers ki queries raat 3 baje theek karta hoon. Batao —"*
 
 13. App mein code hai: "pehle SELECT se check karo CNIC hai ya nahi, na ho to INSERT karo." Phir bhi do parallel requests se duplicate CNIC ghus gaya. Kyun hua, aur pakka ilaaj kya hai? <!-- A-000-13 -->
 14. Clustered aur nonclustered index ka farq ek jumle mein. <!-- A-000-14 -->
@@ -60,7 +65,9 @@
 17. Paison ka column database mein kis type ka hona chahiye — aur `FLOAT` kyun nahi? <!-- A-000-17 -->
 18. `GETDATE()` ke bajaye `SYSUTCDATETIME()` kyun — ek banking system mein is faisle ki wajah kya hai? <!-- A-000-18 -->
 
-### Stack D — Web / HTTP / Angular
+## Round 4 — Web Panel: Maha (Full-stack, security-obsessed)
+
+*Laptop khol ke tumhari taraf ghuma deti hai: "Main aapko production ke asli zakham dikhati hoon —"*
 
 19. 401 aur 403 ka farq ek jumle mein. <!-- A-000-19 -->
 20. Client ne `POST /transfer` bheja, timeout hua, retry kiya — paisa do dafa chala gaya. API design mein kya kami thi? <!-- A-000-20 -->
@@ -69,20 +76,28 @@
 23. Email mein link hai: `GET /verify?token=abc123` — is design mein DO masle hain. Kaunse? <!-- A-000-23 -->
 24. Angular 17 signals: `count = signal(0)` aur aam class property `count = 0` mein template-update ke hawale se bunyaadi farq kya hai? <!-- A-000-24 -->
 
-### Stack E — Bunyaadein (memory, GC, DS&A)
+## Round 5 — CTO Round: "Bar Raiser"
+
+*CTO khud aata hai. Koi laptop nahi, sirf chai. "Framework sab bhool jao. Mujhe batao tumhe MACHINE samajh aati hai ya nahi —"*
 
 25. Java method ke andar: `int x = 5; var obj = new Customer();` — `x`, `obj` (reference), aur Customer object — teeno kahan rehte hain (stack/heap)? <!-- A-000-25 -->
 26. GC ka "generational hypothesis" ek jumle mein kya kehta hai? <!-- A-000-26 -->
 27. Two Sum ko O(n) mein hal karne ke liye kaunsa data structure use hota hai, aur woh kya bachaata hai? <!-- A-000-27 -->
 28. HashMap ka lookup O(1) kaise hota hai — aur do keys ka hash takra jaye (collision) to kya hota hai? <!-- A-000-28 -->
 29. Sorted array (10 lakh items) mein ek number dhoondhna hai — kaunsa algorithm, kitni complexity? <!-- A-000-29 -->
-30. Service pehle slow hui, phir OutOfMemory se mar gayi. Heap dump mein ek `static Map` mila jis mein croron entries thin. Kya hua tha, aur ilaaj kya? <!-- A-000-30 -->
+30. *CTO chai rakh ke aage jhukta hai:* "Humari service pehle slow hui, phir OutOfMemory se mar gayi. Heap dump mein ek `static Map` mila jis mein croron entries thin. Kya hua tha, aur ilaaj kya?" <!-- A-000-30 -->
 
 ---
 
-## 3️⃣ Apne Bank ka Naam Rakho
+## 🤝 Interview khatam
 
-Yeh saal bhar tumhara capstone hai — asli digital bank jo TUM banao ge, scratch se. Isko naam do jo repo, packages, aur Demo Day tak chale. (Chingari chahiye to: *Bunyaad Bank, Meezan-e-Code, Qila Pay, Daryaa Bank* — magar naam TUMHARA hoga.)
+Panel haath milata hai. Recruiter bahar chhorne aati hai: *"Feedback do din mein."*
+
+Sach yeh hai: aaj ke tum is loop ke kuch rounds mein phislo ge — **aur yehi poore saal ka point hai.** Jab main grade karunga, har ghalat jawab tumhara zaati syllabus banega. Aur ek waada likh ke rakh lo: **Day 365 pe Zarr ka yehi loop, yehi 30 sawal, cold — aur us din tum panel ko apna khud ka banaya hua bank bhi dikhaoge.** Hiring committee ka jawab us din kuch aur hoga.
+
+## 🏦 Ek aakhri kaam: apne bank ka naam
+
+Interview ke raste ghar aate hue tum sochte ho: *"Naukri to yeh log denge ya nahi denge — lekin bank to main khud bana sakta hoon."* Yehi is saal ka asli project hai. Isko naam do jo repo, packages, aur Demo Day tak chale. (Chingari: *Bunyaad Bank, Qila Pay, Daryaa Bank* — magar naam TUMHARA hoga.)
 
 ---
 
@@ -91,36 +106,36 @@ Yeh saal bhar tumhara capstone hai — asli digital bank jo TUM banao ge, scratc
 > Har number ke aage jawab likho. Nahi aata to "nahi pata" — khali line se behtar hai.
 
 ```
-A1:
-A2:
-A3:
-A4:
-A5:
-A6:
-B7:
-B8:
-B9:
-B10:
-B11:
-B12:
-C13:
-C14:
-C15:
-C16:
-C17:
-C18:
-D19:
-D20:
-D21:
-D22:
-D23:
-D24:
-E25:
-E26:
-E27:
-E28:
-E29:
-E30:
+R1-1:
+R1-2:
+R1-3:
+R1-4:
+R1-5:
+R1-6:
+R2-7:
+R2-8:
+R2-9:
+R2-10:
+R2-11:
+R2-12:
+R3-13:
+R3-14:
+R3-15:
+R3-16:
+R3-17:
+R3-18:
+R4-19:
+R4-20:
+R4-21:
+R4-22:
+R4-23:
+R4-24:
+R5-25:
+R5-26:
+R5-27:
+R5-28:
+R5-29:
+R5-30:
 ```
 
 **Bank ka naam:**
@@ -130,7 +145,7 @@ E30:
 ---
 
 <details>
-<summary>🔑 Answer Key — SIRF jawab likhne ke BAAD kholo</summary>
+<summary>🔑 Answer Key — SIRF interview dene ke BAAD kholo</summary>
 
 1. `true false` — **Integer cache trap:** −128..127 cached objects hain, `==` reference compare karta hai; 128 pe naye objects bante hain. `.equals()` use karo.
 2. Java reference ki **copy** (value) pass karta hai — copy se object mutate ho sakta hai, magar copy ko naya object dena caller ka reference nahi badalta. *Trap: "pass-by-reference" kehna.*
@@ -167,6 +182,6 @@ E30:
 
 ---
 
-*Word count: ~1,150 (Day 0 special — tour + diagnostic; aam weekday cap ≤900 Day 1 se lagu hoga.)*
+*Word count: ~1,300 (Day 0 special) • System ke mechanics (Airlock, ledger, keywords) ke liye: README.md — 2 minute ka parhna, jab dil kare.*
 
-**Ho gaya? Ab:** `git add -A && git commit -m "day-000 done"` — phir kal `AGLA DIN` likhna. Main check karke Day 1 dunga: **"Compiler se CPU tak."**
+**Interview de diya? Ab:** `git add -A && git commit -m "day-000 done"` — phir `AGLA DIN` likhna. Main hiring-committee report dunga (round-wise), aur Day 1 shuru hoga: **"Compiler se CPU tak."**

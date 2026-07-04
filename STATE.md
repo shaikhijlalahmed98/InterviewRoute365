@@ -12,7 +12,7 @@
 | **Chhutti Passes (is mahine)** | 0 / 4 |
 | **Weekday rotation state** | — (Day 1 = CONCEPT) |
 | **Capstone ka naam** | ❓ (Day 0 pe learner rakhega) |
-| **Baseline Diagnostic** | 📝 generated (`lessons/01-bunyaad/day-000-diagnostic-baseline.md`) — 30-Q closed book, jawab pending |
+| **Baseline Diagnostic** | 📝 generated (`lessons/01-bunyaad/day-000-pehla-interview.md` + interactive app `day-000-interview-app.html`) — "Zarr loop" 5 rounds / 30-Q, jawab pending |
 
 ## Gates
 
@@ -44,4 +44,6 @@
 
 - V1 archive: `archive/v1/` — 15 din ka content mehfooz hai; kabhi kabhi teaching specimen banega (misaal: V2 Day 19 mein V1 ke GET-token flaw ka post-mortem).
 - **2026-07-04:** Day 0 generate hua (pehla `AGLA DIN`). Agla `AGLA DIN`: diagnostic grade karo → ghalat jawab ledger ke pehle atoms banao (Born D0) → capstone naam yahan pin karo → Day 1 (CONCEPT: "Compiler se CPU tak", curriculum W1) generate karo. Day 1 ka type calendar se nahi — curriculum Day 1 ko Monday-type pin karta hai.
+- **2026-07-05 (2):** Learner ka feedback: "Day 0 boring hai, UI catchy nahi, motivation nahi mil rahi." Day 0 ko **simulated interview loop** bana diya — fictional Karachi fintech "Zarr Technologies", 5 rounds, 5 interviewer characters; wohi 30 sawal (atom IDs A-000-01..30 barqarar). Sath **interactive HTML app** (`day-000-interview-app.html`, artifact bhi published) jo jawab exact repo format mein export karti hai. **Day 365 pe yehi Zarr loop cold retake hoga — saal ki kahani ka arc yehi hai.** Aage bhi: special days (gates, ceremonies, Day 365) pe catchy interactive experience banao, sirf dry markdown nahi.
+- **2026-07-05 (3):** Learner ne **commit + push ki standing ijazat** de di ("tum commit push krdia kro jo bhi kro") — har session ke kaam ke baad push karo.
 - **2026-07-05:** Learner ke kehne pe **khat wala element poora hata diya** (Day-0→365 khat + Day-16→300 khat — "maza nahi aa raha"). Day 16 = sirf retro + record ka jashn; Day 300 pe Day-16 quiz ka cold retake barqarar hai (yeh retention hai, sentiment nahi). Motivation structural cheezon se aayegi: streak, record, capstone.

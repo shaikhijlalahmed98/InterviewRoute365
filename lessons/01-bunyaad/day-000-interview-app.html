@@ -1,0 +1,405 @@
+<title>Zarr Loop — Day 0</title>
+<style>
+  :root {
+    --bg: #101623;
+    --bg-deep: #0B101B;
+    --card: #171F31;
+    --card-2: #1D2740;
+    --line: #26304A;
+    --text: #F3EFE4;
+    --muted: #8E99B3;
+    --gold: #F2C94C;
+    --gold-dim: #B99534;
+    --ok: #4BC8B8;
+    --focus: #7FB4FF;
+    --r1: #E8A54B; --r2: #9B8CFF; --r3: #4BC8B8; --r4: #E86A8A; --r5: #F2C94C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { color-scheme: dark; }
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, #1A2338 0%, var(--bg) 55%, var(--bg-deep) 100%);
+    color: var(--text);
+    font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+  .bar {
+    position: fixed; top: 0; left: 0; right: 0; height: 4px;
+    background: var(--line); z-index: 10;
+  }
+  .bar i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); transition: width .35s ease; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 44px 20px 80px; }
+  .screen { display: none; }
+  .screen.on { display: block; animation: rise .35s ease; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .screen.on { animation: none; } .bar i { transition: none; } }
+
+  .wordmark {
+    font-family: Georgia, "Palatino Linotype", "Times New Roman", serif;
+    font-size: 15px; letter-spacing: .42em; color: var(--gold);
+    text-transform: uppercase; text-align: center; margin-bottom: 6px;
+  }
+  .wordmark small { display: block; letter-spacing: .18em; color: var(--muted); font-size: 10px; margin-top: 6px; }
+  h1 {
+    font-family: Georgia, "Palatino Linotype", serif;
+    font-size: clamp(28px, 6vw, 40px); font-weight: 600; text-wrap: balance;
+    text-align: center; margin: 26px 0 10px;
+  }
+  .sub { color: var(--muted); text-align: center; max-width: 46ch; margin: 0 auto 30px; }
+
+  .chat {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px 14px 14px 3px;
+    padding: 16px 18px; margin: 22px 0; font-size: 15px;
+  }
+  .chat .who { color: var(--gold); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
+  .chat p + p { margin-top: 8px; }
+
+  .rules { border-left: 2px solid var(--gold-dim); padding: 4px 0 4px 16px; margin: 26px 0; color: var(--muted); font-size: 14px; }
+  .rules li { margin: 6px 0 6px 16px; }
+  .rules b { color: var(--text); }
+
+  .btn {
+    display: inline-block; border: 0; cursor: pointer; font: inherit;
+    background: var(--gold); color: #17130A; font-weight: 700;
+    padding: 13px 26px; border-radius: 10px; letter-spacing: .02em;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:focus-visible, .ghost:focus-visible, textarea:focus-visible, input:focus-visible, .pill:focus-visible {
+    outline: 2px solid var(--focus); outline-offset: 2px;
+  }
+  .ghost {
+    background: none; border: 1px solid var(--line); color: var(--muted);
+    padding: 12px 20px; border-radius: 10px; cursor: pointer; font: inherit;
+  }
+  .ghost:hover { color: var(--text); border-color: var(--muted); }
+  .center { text-align: center; margin-top: 28px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  .interviewer {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 26px 24px; text-align: center; margin: 30px 0;
+  }
+  .interviewer .badge {
+    display: inline-block; font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--bg-deep); background: var(--accent, var(--gold)); border-radius: 99px;
+    padding: 4px 12px; font-weight: 700; margin-bottom: 16px;
+  }
+  .interviewer .avatar {
+    width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 14px;
+    display: grid; place-items: center; font-size: 30px;
+    background: var(--card-2); border: 2px solid var(--accent, var(--gold));
+  }
+  .interviewer h2 { font-family: Georgia, serif; font-size: 24px; }
+  .interviewer .role { color: var(--muted); font-size: 13px; margin: 4px 0 14px; }
+  .interviewer .say { font-style: italic; color: var(--text); max-width: 42ch; margin: 0 auto; }
+  .interviewer .say::before { content: "“"; color: var(--accent, var(--gold)); }
+  .interviewer .say::after { content: "”"; color: var(--accent, var(--gold)); }
+
+  .qhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+  .chip {
+    font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700;
+    color: var(--accent, var(--gold)); border: 1px solid var(--accent, var(--gold));
+    border-radius: 99px; padding: 4px 12px; opacity: .9;
+  }
+  .count { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .qcard { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  .qcard .qtext { font-size: 17px; }
+  .qcard .lead { font-style: italic; color: var(--muted); display: block; margin-bottom: 8px; font-size: 14px; }
+  pre {
+    background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; margin: 14px 0 4px; overflow-x: auto;
+    font-family: ui-monospace, Consolas, "Cascadia Mono", monospace; font-size: 13.5px; line-height: 1.6;
+    color: #D9E2F5;
+  }
+  textarea {
+    width: 100%; min-height: 96px; resize: vertical; margin-top: 16px;
+    background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px;
+    color: var(--text); font: inherit; font-size: 15px; padding: 12px 14px;
+  }
+  textarea::placeholder { color: #5A6580; }
+  .qnav { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .qnav .spacer { flex: 1; }
+  .hint { color: var(--muted); font-size: 12.5px; margin-top: 10px; }
+
+  .toast {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+    background: var(--card-2); border: 1px solid var(--line); color: var(--text);
+    border-radius: 10px; padding: 10px 18px; font-size: 14px; z-index: 20;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  .toast.show { opacity: 1; }
+
+  .field { margin: 18px 0; }
+  .field label { display: block; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .field input[type=text] {
+    width: 100%; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px;
+    color: var(--text); font: inherit; padding: 12px 14px;
+  }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    border: 1px solid var(--line); background: var(--bg-deep); color: var(--muted);
+    border-radius: 99px; padding: 8px 16px; cursor: pointer; font: inherit; font-size: 14px;
+  }
+  .pill.sel { background: var(--gold); border-color: var(--gold); color: #17130A; font-weight: 700; }
+  .export {
+    background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px; margin-top: 18px; overflow-x: auto; max-height: 320px; overflow-y: auto;
+    font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; white-space: pre; color: #D9E2F5;
+  }
+  .steps { margin: 22px 0 0 18px; color: var(--muted); font-size: 14px; }
+  .steps li { margin: 8px 0; }
+  .steps code { font-family: ui-monospace, Consolas, monospace; color: var(--gold); background: var(--bg-deep); padding: 2px 7px; border-radius: 6px; font-size: 12.5px; }
+  .done-title { color: var(--gold); }
+</style>
+
+<div class="bar"><i id="prog"></i></div>
+<div class="wrap">
+
+  <!-- INTRO -->
+  <section class="screen on" id="s-intro">
+    <div class="wordmark">Zarr Technologies<small>Core Banking • Karachi</small></div>
+    <h1>Pehla Interview:<br>Jo Aaj Tum Haaroge</h1>
+    <p class="sub">Day 0 — 5 rounds, 30 sawal, ~35 minute. Aur ek waada: Day 365 pe yehi loop dobara hoga.</p>
+    <div class="chat">
+      <div class="who">LinkedIn — Hira Baig (Talent, Zarr)</div>
+      <p>Salaam! Aapki profile Core Banking role ke liye strong lag rahi hai — Java + .NET + SQL Server, wohi stack jo hum chala rahe hain. SBP license mil chuka hai, launch qareeb hai. 💛</p>
+      <p>Monday ko full loop rakh dein? 5 rounds — Java, .NET, Data, Web, aur aakhir mein CTO khud baithenge. Package aap ki expectation se upar hai.</p>
+    </div>
+    <ul class="rules">
+      <li><b>Google band, notes band, IDE band</b> — asli interview mein bhi yehi hota hai.</li>
+      <li>Jawab 1–2 jumlay. Nahi aata? <b>"Nahi pata" ka button dabao</b> — bluff mat karo. Har chhoota hua sawal saal bhar ka personal review card banega. <b>Yahan haarna hi jeetne ka pehla qadam hai.</b></li>
+      <li>Progress khud save hota hai — band kar ke wapas aao, wahin se chalega.</li>
+    </ul>
+    <div class="center"><button class="btn" onclick="start()">Loop shuru karo →</button></div>
+  </section>
+
+  <!-- ROUND INTRO -->
+  <section class="screen" id="s-round">
+    <div class="interviewer" id="ivCard">
+      <span class="badge" id="ivBadge"></span>
+      <div class="avatar" id="ivAvatar"></div>
+      <h2 id="ivName"></h2>
+      <div class="role" id="ivRole"></div>
+      <p class="say" id="ivSay"></p>
+    </div>
+    <div class="center"><button class="btn" id="roundGo" onclick="enterRound()">Round shuru →</button></div>
+  </section>
+
+  <!-- QUESTION -->
+  <section class="screen" id="s-q">
+    <div class="qhead">
+      <span class="chip" id="qChip"></span>
+      <span class="count" id="qCount"></span>
+    </div>
+    <div class="qcard">
+      <div class="qtext" id="qText"></div>
+      <textarea id="qAns" placeholder="Apna jawab yahan… (1–2 jumlay, Urdu ya English)"></textarea>
+      <div class="qnav">
+        <button class="ghost" id="btnBack" onclick="prevQ()">← Pichla</button>
+        <span class="spacer"></span>
+        <button class="ghost" onclick="skipQ()">Nahi pata 🤷</button>
+        <button class="btn" onclick="nextQ()">Agla →</button>
+      </div>
+      <div class="hint">Ctrl+Enter = agla sawal</div>
+    </div>
+  </section>
+
+  <!-- FINALE -->
+  <section class="screen" id="s-end">
+    <div class="wordmark">Zarr Technologies<small>Loop mukammal</small></div>
+    <h1 class="done-title">Interview khatam. 🤝</h1>
+    <p class="sub">Panel haath milata hai. Hira bahar chhorne aati hai: <i>"Feedback do din mein."</i> Sach yeh hai — feedback tumhara mentor dega, aur har ghalat jawab tumhara zaati syllabus banega. <b>Day 365 pe yehi loop, cold — aur us din tum panel ko apna banaya hua bank bhi dikhaoge.</b></p>
+    <div class="field">
+      <label for="bankName">Ghar aate hue tum sochte ho: "Naukri yeh denge ya nahi — bank to main khud bana sakta hoon." — Apne bank ka naam:</label>
+      <input type="text" id="bankName" placeholder="e.g. Bunyaad Bank, Qila Pay, Daryaa Bank… naam TUMHARA" oninput="saveMeta()">
+    </div>
+    <div class="field">
+      <label>Energy (1–5):</label>
+      <div class="pills" id="energyPills"></div>
+    </div>
+    <div class="field">
+      <label>Closed book raha?</label>
+      <div class="pills" id="cbPills">
+        <button class="pill" onclick="setCB('haan', this)">Haan ✋</button>
+        <button class="pill" onclick="setCB('nahi', this)">Nahi 😅 (sach bolna behtar hai)</button>
+      </div>
+    </div>
+    <div class="center" style="justify-content:flex-start">
+      <button class="btn" onclick="copyAnswers()">📋 Jawab copy karo</button>
+      <button class="ghost" onclick="restart()">Loop dobara (jawab mit jayenge)</button>
+    </div>
+    <ol class="steps">
+      <li>Copy dabao — poora jawab-block clipboard pe aa jayega.</li>
+      <li><code>lessons/01-bunyaad/day-000-pehla-interview.md</code> kholo, <code>## ✍️ Mere Jawab</code> ke neeche paste karo (purane khali block ki jagah).</li>
+      <li>Phir: <code>git add -A &amp;&amp; git commit -m "day-000 done"</code> — aur kal <b>AGLA DIN</b>.</li>
+    </ol>
+    <div class="export" id="exportBox"></div>
+  </section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  var ROUNDS = [
+    { n: 1, name: "Bilal bhai", role: "Principal Engineer — Java Panel", say: "Chaliye, halke se shuru karte hain… (awaaz dheemi, sawal ustray jaise)", emoji: "🧔🏻", cls: "--r1", color: "var(--r1)", chip: "Round 1 · Java" },
+    { n: 2, name: "Sana", role: "Staff Engineer — .NET Panel", say: "Aap bhi Java se aaye hain na? Phir yeh aasaan hoga…", emoji: "👩🏻‍💻", cls: "--r2", color: "var(--r2)", chip: "Round 2 · .NET" },
+    { n: 3, name: "Rehan sahab", role: "DBA, 15 saal — Data Panel", say: "Beta, main woh banda hoon jo raat 3 baje tum jaise devs ki queries theek karta hoon. Batao —", emoji: "👨🏽‍🦳", cls: "--r3", color: "var(--r3)", chip: "Round 3 · Data" },
+    { n: 4, name: "Maha", role: "Full-stack — Web Panel (security-obsessed)", say: "Main aapko production ke asli zakham dikhati hoon —", emoji: "👩🏽‍🔬", cls: "--r4", color: "var(--r4)", chip: "Round 4 · Web" },
+    { n: 5, name: "CTO", role: "Bar Raiser — sirf chai, koi laptop nahi", say: "Framework sab bhool jao. Mujhe batao tumhe MACHINE samajh aati hai ya nahi —", emoji: "🫖", cls: "--r5", color: "var(--r5)", chip: "Round 5 · CTO" }
+  ];
+
+  var Q = [
+    { r: 0, t: "Yeh code kya print karega?<pre>Integer a = 127, b = 127;\nInteger c = 128, d = 128;\nSystem.out.println((a == b) + \" \" + (c == d));</pre>" },
+    { r: 0, t: "Java \"pass-by-value\" hai — phir method ke andar <code>list.add(5)</code> caller ko nazar aata hai, lekin <code>list = new ArrayList&lt;&gt;()</code> nahi. Kyun?" },
+    { r: 0, t: "<span class='lead'>\"Humare ek junior ka bug hai yeh —\"</span>Ek <code>@Transactional</code> method ussi class ke doosre method se seedha call ho rahi hai — transaction lagta hi nahi. Kyun?" },
+    { r: 0, t: "Loop mein 10,000 dafa <code>s += i</code> (String pe) sust kyun hai? Ilaaj kya?" },
+    { r: 0, t: "Kisi class mein <code>equals()</code> override kiya magar <code>hashCode()</code> nahi — <code>HashMap</code> mein use karne pe kya masla hoga?" },
+    { r: 0, t: "Spring <code>@Transactional</code> default mein kis qism ki exception pe rollback karta hai — checked ya unchecked?" },
+    { r: 1, t: "Yeh code kya print karega?<pre>struct Point { public int X; }\nvar p1 = new Point { X = 1 };\nvar p2 = p1;\np2.X = 99;\nConsole.WriteLine(p1.X);</pre>" },
+    { r: 1, t: "<code>async void</code> method <code>async Task</code> ke muqable mein khatarnak kyun hai?" },
+    { r: 1, t: "<span class='lead'>\"Yeh humara favourite reject-sawal hai:\"</span>Account balance <code>double</code> mein rakhna bug kyun hai? Sahi type kya hai?" },
+    { r: 1, t: "LINQ: <code>var q = list.Where(x =&gt; x &gt; 5);</code> ke BAAD list mein naya element add karo, phir <code>q.Count()</code> chalao — naya element count hoga ya nahi, aur kyun?" },
+    { r: 1, t: "ASP.NET Core pipeline mein <code>UseAuthentication()</code> ko <code>UseAuthorization()</code> se pehle likhna zaroori kyun hai?" },
+    { r: 1, t: "<code>object o = 42;</code> — is line mein andar kya hota hai, aur iski cost kya hai?" },
+    { r: 2, t: "App mein code hai: \"pehle SELECT se check karo CNIC hai ya nahi, na ho to INSERT karo.\" Phir bhi do parallel requests se duplicate CNIC ghus gaya. Kyun hua, aur pakka ilaaj kya hai?" },
+    { r: 2, t: "Clustered aur nonclustered index ka farq ek jumle mein." },
+    { r: 2, t: "<code>WHERE UPPER(email) = 'ALI@X.COM'</code> — email pe index hone ke bawajood scan hota hai. Kyun?" },
+    { r: 2, t: "<code>COMMIT</code> kamyab hua, ussi second bijli chali gayi. Data bachega? SQL Server yeh guarantee KAISE deta hai?" },
+    { r: 2, t: "Paison ka column database mein kis type ka hona chahiye — aur <code>FLOAT</code> kyun nahi?" },
+    { r: 2, t: "<code>GETDATE()</code> ke bajaye <code>SYSUTCDATETIME()</code> kyun — ek banking system mein is faisle ki wajah kya hai?" },
+    { r: 3, t: "401 aur 403 ka farq ek jumle mein." },
+    { r: 3, t: "Client ne <code>POST /transfer</code> bheja, timeout hua, retry kiya — paisa do dafa chala gaya. API design mein kya kami thi?" },
+    { r: 3, t: "JWT ko browser ke <code>localStorage</code> mein rakhna khatarnak kyun hai? Behtar jagah kya hai?" },
+    { r: 3, t: "PUT aur POST mein se kaunsa contract ke mutabiq idempotent hai — matlab kya hua iska?" },
+    { r: 3, t: "Email mein link hai: <code>GET /verify?token=abc123</code> — is design mein DO masle hain. Kaunse?" },
+    { r: 3, t: "Angular 17 signals: <code>count = signal(0)</code> aur aam class property <code>count = 0</code> mein template-update ke hawale se bunyaadi farq kya hai?" },
+    { r: 4, t: "Java method ke andar: <code>int x = 5; var obj = new Customer();</code> — <code>x</code>, <code>obj</code> (reference), aur Customer object — teeno kahan rehte hain (stack/heap)?" },
+    { r: 4, t: "GC ka \"generational hypothesis\" ek jumle mein kya kehta hai?" },
+    { r: 4, t: "Two Sum ko O(n) mein hal karne ke liye kaunsa data structure use hota hai, aur woh kya bachaata hai?" },
+    { r: 4, t: "HashMap ka lookup O(1) kaise hota hai — aur do keys ka hash takra jaye (collision) to kya hota hai?" },
+    { r: 4, t: "Sorted array (10 lakh items) mein ek number dhoondhna hai — kaunsa algorithm, kitni complexity?" },
+    { r: 4, t: "<span class='lead'>CTO chai rakh ke aage jhukta hai:</span>\"Humari service pehle slow hui, phir OutOfMemory se mar gayi. Heap dump mein ek <code>static Map</code> mila jis mein croron entries thin. Kya hua tha, aur ilaaj kya?\"" }
+  ];
+
+  var S = { i: -1, ans: {}, bank: "", energy: "", cb: "", startedAt: null, minutes: 0 };
+  try { var saved = JSON.parse(localStorage.getItem("zarr-day0") || "null"); if (saved) S = saved; } catch (e) {}
+
+  function save() { try { localStorage.setItem("zarr-day0", JSON.stringify(S)); } catch (e) {} }
+  function show(id) {
+    document.querySelectorAll(".screen").forEach(function (s) { s.classList.remove("on"); });
+    document.getElementById(id).classList.add("on");
+    window.scrollTo(0, 0);
+  }
+  function setProg() {
+    var done = Object.keys(S.ans).length;
+    document.getElementById("prog").style.width = (done / Q.length * 100) + "%";
+  }
+  function toast(msg) {
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove("show"); }, 1800);
+  }
+
+  function start() {
+    if (S.i >= 0 && S.i < Q.length) { S.i = S.i; showQ(); toast("Wapas aa gaye — wahin se chalte hain 👊"); return; }
+    if (!S.startedAt) { S.startedAt = new Date().getTime(); }
+    S.i = 0; save(); roundIntro(0);
+  }
+  function roundIntro(r) {
+    var R = ROUNDS[r];
+    var card = document.getElementById("ivCard");
+    card.style.setProperty("--accent", R.color);
+    document.getElementById("ivBadge").textContent = R.chip;
+    document.getElementById("ivAvatar").textContent = R.emoji;
+    document.getElementById("ivName").textContent = R.name;
+    document.getElementById("ivRole").textContent = R.role;
+    document.getElementById("ivSay").textContent = R.say;
+    show("s-round");
+  }
+  function enterRound() { showQ(); }
+  function showQ() {
+    var q = Q[S.i], R = ROUNDS[q.r];
+    var chip = document.getElementById("qChip");
+    chip.textContent = R.chip;
+    chip.style.setProperty("--accent", R.color);
+    document.getElementById("qCount").textContent = "Sawal " + (S.i + 1) + " / " + Q.length;
+    document.getElementById("qText").innerHTML = q.t;
+    var ta = document.getElementById("qAns");
+    ta.value = S.ans[S.i] || "";
+    document.getElementById("btnBack").style.visibility = S.i === 0 ? "hidden" : "visible";
+    show("s-q"); setProg(); ta.focus();
+  }
+  function commitAns(val) { S.ans[S.i] = val; save(); setProg(); }
+  function nextQ() {
+    var v = document.getElementById("qAns").value.trim();
+    commitAns(v === "" ? "nahi pata" : v);
+    advance();
+  }
+  function skipQ() { commitAns("nahi pata"); toast("Koi baat nahi — yehi to naqsha ban raha hai 🗺️"); advance(); }
+  function advance() {
+    if (S.i + 1 >= Q.length) { S.i = Q.length; save(); finale(); return; }
+    var was = Q[S.i].r; S.i++; save();
+    if (Q[S.i].r !== was) { roundIntro(Q[S.i].r); } else { showQ(); }
+  }
+  function prevQ() { if (S.i > 0) { S.i--; save(); showQ(); } }
+
+  function finale() {
+    if (S.startedAt && !S.minutes) { S.minutes = Math.max(1, Math.round((new Date().getTime() - S.startedAt) / 60000)); save(); }
+    var ep = document.getElementById("energyPills");
+    ep.innerHTML = "";
+    for (var i = 1; i <= 5; i++) {
+      (function (n) {
+        var b = document.createElement("button");
+        b.className = "pill" + (S.energy == n ? " sel" : "");
+        b.textContent = n + (n === 5 ? " 🔥" : "");
+        b.onclick = function () { S.energy = n; save(); ep.querySelectorAll(".pill").forEach(function (p) { p.classList.remove("sel"); }); b.classList.add("sel"); renderExport(); };
+        ep.appendChild(b);
+      })(i);
+    }
+    document.getElementById("bankName").value = S.bank || "";
+    if (S.cb) {
+      document.querySelectorAll("#cbPills .pill").forEach(function (p) {
+        if (p.textContent.indexOf(S.cb === "haan" ? "Haan" : "Nahi") === 0) p.classList.add("sel");
+      });
+    }
+    renderExport(); show("s-end");
+  }
+  function setCB(v, el) {
+    S.cb = v; save();
+    document.querySelectorAll("#cbPills .pill").forEach(function (p) { p.classList.remove("sel"); });
+    el.classList.add("sel"); renderExport();
+  }
+  function saveMeta() { S.bank = document.getElementById("bankName").value; save(); renderExport(); }
+
+  function buildBlock() {
+    var labels = ["R1", "R1", "R1", "R1", "R1", "R1", "R2", "R2", "R2", "R2", "R2", "R2", "R3", "R3", "R3", "R3", "R3", "R3", "R4", "R4", "R4", "R4", "R4", "R4", "R5", "R5", "R5", "R5", "R5", "R5"];
+    var lines = [];
+    for (var i = 0; i < Q.length; i++) {
+      lines.push(labels[i] + "-" + (i + 1) + ": " + (S.ans[i] || "nahi pata"));
+    }
+    var block = "```\n" + lines.join("\n") + "\n```\n\n";
+    block += "**Bank ka naam:** " + (S.bank || "___") + "\n\n";
+    block += "**Time laga:** " + (S.minutes || "___") + " min • **Energy (1–5):** " + (S.energy || "___") + " • **Closed book raha? (haan/nahi):** " + (S.cb || "___");
+    return block;
+  }
+  function renderExport() { document.getElementById("exportBox").textContent = buildBlock(); }
+  function copyAnswers() {
+    var txt = buildBlock();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function () { toast("Copy ho gaya ✅ — ab md file mein paste karo"); }, function () { toast("Copy nahi hua — neeche box se khud copy kar lo"); });
+    } else { toast("Neeche box se select kar ke copy kar lo"); }
+  }
+  function restart() {
+    if (!confirm("Pakka? Saare jawab mit jayenge.")) return;
+    localStorage.removeItem("zarr-day0");
+    S = { i: -1, ans: {}, bank: "", energy: "", cb: "", startedAt: null, minutes: 0 };
+    show("s-intro"); setProg();
+  }
+
+  document.getElementById("qAns").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); nextQ(); }
+  });
+
+  if (S.i >= Q.length) { finale(); }
+  else if (S.i >= 0) { showQ(); toast("Wapas aa gaye — wahin se chalte hain 👊"); }
+  setProg();
+</script>

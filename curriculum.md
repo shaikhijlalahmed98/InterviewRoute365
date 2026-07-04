@@ -33,7 +33,7 @@ Jama check: 42+42+56+49+63+70+43 = **365** ✓
 ### Week 1 — "Code se Machine tak"
 *Scenario: Apne bank ka naya onboarding service prod mein pehle slow hua, phir OutOfMemory se crash. Post-mortem hum khud karenge.*
 
-- **Day 0 (pehla din, koi bhi weekday):** System tour + 30-Q Baseline Diagnostic (ghalat jawab = pehle ledger atoms) + capstone ka naam.
+- **Day 0 (pehla din, koi bhi weekday):** **"Zarr Loop"** — simulated interview at fictional Karachi fintech (5 rounds, 30-Q diagnostic, interactive app; ghalat jawab = pehle ledger atoms) + capstone ka naam. Day 365 pe yehi loop cold retake.
 - **Day 1 (Mon):** *Compiler se CPU tak.* Source → bytecode/IL → JIT → machine code. Tareekh: 1995 Java "write once, run anywhere" (C/C++ porting ka azaab), 2000 .NET (J++ muqadma → Anders Hejlsberg → C#). Tiered compilation. 2-second pehli request ka raaz (JIT warm-up; AOT/GraalVM ek-line preview).
 - **Day 2 (Tue, JAVA):** *Java memory ki sachai.* Stack frames, heap, "pass-by-value... of references" (screen-killer sawal hamesha ke liye hal), autoboxing traps (`Integer` cache −128..127 ka `==` ambush), static kahan rehta hai. OOM ka Java mujrim: static Map cache.
 - **Day 3 (Wed, .NET):** *Value types — Java se sab se bara farq.* struct vs class (copy vs reference), boxing cost, string immutability dono taraf, struct chupke se heap pe kab jata hai. Contrast cards shuru.
@@ -118,7 +118,7 @@ Jama check: 42+42+56+49+63+70+43 = **365** ✓
 
 Weekdays = 60% consolidation (poora ledger ek aur chakkar) + 40% gap-filling (mock feedback se). Weekends = **full simulated onsite loops** (40-min DS&A + 45-min design + 30-min behavioral, back-to-back, English, recorded). CV/LinkedIn/portfolio finalize. 12 STAR stories polished.
 
-**Final (Days 363–365):** Day 363–364: aakhri simulated loop + 100-Q comprehensive exam (ledger saabit karega ke Day-1 ka jawab Day-364 pe bhi aata hai — system ne bhoolna namumkin banaya). **Day 365: DEMO DAY + "Defend Your Bank"** — 15-min English video walkthrough + 90-min viva jisme mentor-as-CTO har ADR pe hamla karta hai. Pass = graduation.
+**Final (Days 363–365):** Day 363–364: aakhri simulated loop + 100-Q comprehensive exam (ledger saabit karega ke Day-1 ka jawab Day-364 pe bhi aata hai — system ne bhoolna namumkin banaya) + **Zarr Day-0 loop ka cold retake — is dafa jeet ke**. **Day 365: DEMO DAY + "Defend Your Bank"** — 15-min English video walkthrough + 90-min viva jisme mentor-as-CTO har ADR pe hamla karta hai. Pass = graduation.
 
 ---
 

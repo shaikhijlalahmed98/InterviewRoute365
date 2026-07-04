@@ -70,7 +70,7 @@ Yehi rule Sunday exam (`exam` answers) aur Saturday lab (acceptance checklist) p
 6. **Warm-up chuno:** ledger se `Due ≤ aaj ka day number` filter karo, sort: sab se overdue pehle, phir sab se zyada lapses. Top 3 lo. Har atom ke liye **naya sawal likho** (purana copy-paste mana — wohi atom, naya libaas; cross-language contrast bhi chal sakta hai).
 7. **Din ka type tay karo:** asal calendar weekday se (Section 6). Day NUMBER sirf completion pe barhta hai — chhoota hua Tuesday kabhi qarz nahi banta.
 8. **Generate karo** size caps ke andar (Section 7). File ka naam: `lessons/<level-folder>/day-NNN-<type>-<slug>.md` (NNN zero-padded, e.g. `day-001-concept-compiler-se-cpu.md`).
-9. **Chat summary do** (mukhtasar, scannable): kya grade hua, aaj ka topic, kitna time lagega, aakhri line hamesha commit command: `git add -A && git commit -m "day-NNN done"`.
+9. **Chat summary do** (mukhtasar, scannable): kya grade hua, aaj ka topic, kitna time lagega, aakhri line hamesha commit command: `git add -A && git commit -m "day-NNN done"`. Mentor apna generated content khud commit + **push** karta hai (standing ijazat 2026-07-05).
 
 ---
 
@@ -201,12 +201,13 @@ archive/v1/                   ← purana V1 (izzat se retire; kabhi kabhi teachi
 
 ---
 
-## 15. Day 0 (pehla `AGLA DIN`)
+## 15. Day 0 (pehla `AGLA DIN`) — "Zarr Loop"
 
-Pehli dafa `AGLA DIN` aaye to Day 0 generate karo (kisi bhi weekday pe chalta hai):
-1. **System tour** (10 min): keywords, Airlock, ledger, Wall Week ka waada.
-2. **Baseline Diagnostic** (30-Q, closed book, 5 stacks): har ghalat jawab ledger ka pehla atom banta hai — uska zaati weak-spot naqsha saal bhar card-priority chalayega.
-3. **Capstone ka naam:** learner apne bank ka naam rakhta hai.
-4. Agla din (Day 1, Monday-type): "Compiler se CPU tak" — curriculum.md Week 1.
+Day 0 = **simulated interview loop** (2026-07-05 redesign — learner ko dry exam boring laga, aur woh sahi tha):
+1. **Kahani:** fictional Karachi fintech **Zarr Technologies** ka Senior SWE (Core Banking) loop — 5 rounds, 5 interviewer characters (Java/Bilal, .NET/Sana, Data/Rehan, Web/Maha, CTO bar-raiser). Wohi 30-Q closed-book diagnostic, 5 stacks — har ghalat jawab ledger ka pehla atom (uska zaati weak-spot naqsha saal bhar card-priority chalayega).
+2. **Interactive app:** `day-000-interview-app.html` — jawab exact repo format mein export hote hain, md file mein paste, commit.
+3. **Capstone ka naam:** learner apne bank ka naam rakhta hai (app ke finale mein).
+4. **Day 365:** yehi Zarr loop cold retake + "Defend Your Bank" — saal ka arc Day 0 pe shuru hota hai.
+5. Agla din (Day 1, Monday-type): "Compiler se CPU tak" — curriculum.md Week 1.
 
-*(Day-365 khat element tha yahan — learner ne 2026-07-05 ko hatwa diya.)*
+*(Khat element hata diya gaya — learner request 2026-07-05. Experience ka rule: special days pe interactive/catchy format, sirf markdown nahi.)*
