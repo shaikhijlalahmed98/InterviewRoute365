@@ -6,13 +6,13 @@
 
 | Cheez | Qeemat |
 |---|---|
-| **Current Day** | 0 (abhi shuru nahi hua — pehla `AGLA DIN` Day 0 banayega) |
+| **Current Day** | 0 (file ban gayi 2026-07-04 — jawab pending, Airlock lagu) |
 | **Level** | 🪨 Neev (1 of 7) |
 | **Streak** | 0 |
 | **Chhutti Passes (is mahine)** | 0 / 4 |
 | **Weekday rotation state** | — (Day 1 = CONCEPT) |
 | **Capstone ka naam** | ❓ (Day 0 pe learner rakhega) |
-| **Baseline Diagnostic** | ⏳ pending (Day 0) |
+| **Baseline Diagnostic** | 📝 generated (`lessons/01-neev/day-000-diagnostic-baseline.md`) — 30-Q closed book, jawab pending |
 
 ## Gates
 
@@ -47,3 +47,4 @@
 ## Flags / Mentor Notes
 
 - V1 archive: `archive/v1/` — 15 din ka content mehfooz hai; kabhi kabhi teaching specimen banega (misaal: V2 Day 19 mein V1 ke GET-token flaw ka post-mortem).
+- **2026-07-04:** Day 0 generate hua (pehla `AGLA DIN`). Agla `AGLA DIN`: diagnostic grade karo → ghalat jawab ledger ke pehle atoms banao (Born D0) → capstone naam + Day-365 khat yahan pin karo → Day 1 (CONCEPT: "Compiler se CPU tak", curriculum W1) generate karo. Day 1 ka type calendar se nahi — curriculum Day 1 ko Monday-type pin karta hai.
