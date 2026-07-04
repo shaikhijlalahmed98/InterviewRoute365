@@ -42,6 +42,7 @@
 
 ## Flags / Mentor Notes
 
+- **2026-07-05 (5):** Day 1 naye pattern mein REGENERATE hua — "Pehli Dafa ka Tax" (`day-001-pehli-dafa-ka-tax.md` + `day-001-app.html`): ek problem (2.1s pehli request) × 5 stacks (JVM JIT / CLR / SQL plan cache+buffer pool / Angular+V8 / design warm-up) + Interlock + W4 recap + twisted drill (C1 thanda-benchmark, C2 portability-ka-dhoka, K1/K2 cross-chains, D1 design twist). Atoms A-001-1..5 (naya set — ledger mein grading pe aayenge). **W4 lens rule** (WHY/WHAT/HOW/WHEN har concept pe + recap box) DEPTH-STANDARD rule 2 + engine §6 mein codify hua.
 - **2026-07-05 (4) — BARA REDESIGN (learner ke 2 messages):** (1) **V1 ka one-problem-×-5-stacks pattern bahaal** (engine §6) — "ek problem ke through sab concepts... fulfillment hoti thi"; din ke types (CONCEPT/JAVA/DOTNET...) khatam, Day 2 se har din poora. (2) **Airlock naram** (engine §4): daily drill optional-tracked; gates sirf Sunday comprehensive 25-Q + level gates. (3) Roz quiz ki jagah **INTERVIEW DRILL** — concept + code + design, TWISTED: trap-sawal (trick ka naam), cross-question chains, senior differentiator, red flags. Day 1 purane format mein ja chuka tha — uske drill-jawab bhi optional; Week 1 ka comprehensive quiz Day 7 (Sunday) pe.
 
 - V1 archive: `archive/v1/` — 15 din ka content mehfooz hai; kabhi kabhi teaching specimen banega (misaal: V2 Day 19 mein V1 ke GET-token flaw ka post-mortem).

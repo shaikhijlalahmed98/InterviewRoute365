@@ -80,7 +80,7 @@ Saturday lab checklist tracked hai, gated nahi.
 **Daily lesson ka dhancha (story-app + md record — V1 ka pattern, interesting + memorative banaya hua):**
 1. **Cold open** — scenario/scene, TICH-KOLEY cast (Danish, etc.)
 2. **Warm-up** — 3 due ledger atoms, naye sawal (jawab optional, tracked)
-3. **Stack 1: Java/Spring** → **Stack 2: .NET/C#** → **Stack 3: SQL Server** → **Stack 4: Angular** (jahan relevant) → **Stack 5: System Design** — sab EK problem pe; har section DEPTH-STANDARD blocks ke saath (T+0, ❌/✅, real companies, concrete numbers, inline jargon)
+3. **Stack 1: Java/Spring** → **Stack 2: .NET/C#** → **Stack 3: SQL Server** → **Stack 4: Angular** (jahan relevant) → **Stack 5: System Design** — sab EK problem pe; har section DEPTH-STANDARD blocks ke saath (T+0, ❌/✅, real companies, concrete numbers, inline jargon). **Har concept W4 lens se: WHY (dard/tareekh) → WHAT (definition+analogy) → HOW (mechanism) → WHEN (kab use, kab nahi)** — aur core concept ka **W4 recap box** Mental Map se pehle (learner ka seekhne ka lens, 2026-07-05)
 4. **Interlock** — paanchon lenses ek doosre mein kaise phanste hain (request ka end-to-end safar)
 5. **Mental Map + memory hooks** (mnemonic/acronym)
 6. **🎤 INTERVIEW DRILL** (roz ke quiz ki JAGAH) — Zarr-style mini-panel, **concept + code + design, TWISTED (learner ki farmaish 2026-07-05: "cross-questions bhi, tricks bhi"):**

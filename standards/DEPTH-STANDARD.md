@@ -15,14 +15,17 @@ This is the **non-negotiable quality bar** for every daily lesson. Mentor must m
 
 **Rule**: First mention of any technical term → 2-3 sentence inline explanation. No assumptions.
 
-### 2. **Foundation Concepts BEFORE Code**
+### 2. **Foundation Concepts BEFORE Code — the W4 lens (learner's own words, 2026-07-05: "concepts tab samajh aate hain jab clear ho why how what when")**
 
 Don't dump code first. Build foundation in this order:
-1. **Why** is this concept needed? (problem statement)
-2. **What** is the concept? (definition + analogy)
-3. **How** does it work? (step-by-step mechanism)
-4. **Where** does it apply? (today's scenario)
-5. **Now** show code (code becomes obvious after foundation)
+1. **WHY** is this concept needed? (kya dard tha — problem statement + tareekh)
+2. **WHAT** is the concept? (definition + Pakistani analogy)
+3. **HOW** does it work? (step-by-step mechanism, T+0 breakdown)
+4. **WHEN** to use it — and when NOT? (trade-off, alternatives ke against)
+5. **Where** does it apply? (today's scenario/problem)
+6. **Now** show code (code becomes obvious after foundation)
+
+**Plus:** har day ke core concept ka ek compact **W4 recap box** (WHY • WHAT • HOW • WHEN — 4 lines) Mental Map se pehle — revision ke waqt yehi box parha jayega.
 
 ### 3. **Roman Urdu Analogies for Every Abstract Concept**
 
