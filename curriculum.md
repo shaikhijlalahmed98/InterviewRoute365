@@ -33,7 +33,7 @@ Jama check: 42+42+56+49+63+70+43 = **365** ✓
 ### Week 1 — "Code se Machine tak"
 *Scenario: Apne bank ka naya onboarding service prod mein pehle slow hua, phir OutOfMemory se crash. Post-mortem hum khud karenge.*
 
-- **Day 0 (pehla din, koi bhi weekday):** System tour + 30-Q Baseline Diagnostic (ghalat jawab = pehle ledger atoms) + capstone ka naam + Day-365 khat.
+- **Day 0 (pehla din, koi bhi weekday):** System tour + 30-Q Baseline Diagnostic (ghalat jawab = pehle ledger atoms) + capstone ka naam.
 - **Day 1 (Mon):** *Compiler se CPU tak.* Source → bytecode/IL → JIT → machine code. Tareekh: 1995 Java "write once, run anywhere" (C/C++ porting ka azaab), 2000 .NET (J++ muqadma → Anders Hejlsberg → C#). Tiered compilation. 2-second pehli request ka raaz (JIT warm-up; AOT/GraalVM ek-line preview).
 - **Day 2 (Tue, JAVA):** *Java memory ki sachai.* Stack frames, heap, "pass-by-value... of references" (screen-killer sawal hamesha ke liye hal), autoboxing traps (`Integer` cache −128..127 ka `==` ambush), static kahan rehta hai. OOM ka Java mujrim: static Map cache.
 - **Day 3 (Wed, .NET):** *Value types — Java se sab se bara farq.* struct vs class (copy vs reference), boxing cost, string immutability dono taraf, struct chupke se heap pe kab jata hai. Contrast cards shuru.
@@ -57,7 +57,7 @@ Jama check: 42+42+56+49+63+70+43 = **365** ✓
 *Scenario: Mobile team ne API integrate ki — sab toot gaya: ghalat status codes, CORS block, retry pe DUPLICATE customer.*
 
 - **Day 15 (Mon — 30-MIN LIGHT DAY):** HTTP anatomy (raw request text mein parho), verbs ke waaday (safe/idempotent table), 5 zaroori status codes (200/201/400/401-vs-403/409), statelessness. Tareekh: Berners-Lee 1991, cookie ka janam (Netscape 1994). File ka aakhri jumla: *"Kal record tootega."*
-- **Day 16 (Tue — RECORD-BREAK DAY):** Pehle **Wall Ceremony** (10 min): 15 dinon ka retro + **Day-300 ke naam khat**. Phir compact lesson: DispatcherServlet lifecycle, @Valid, @RestControllerAdvice error contract.
+- **Day 16 (Tue — RECORD-BREAK DAY):** Pehle **Wall Ceremony** (10 min): 15 dinon ka score-trend retro + record ka jashn. Phir compact lesson: DispatcherServlet lifecycle, @Valid, @RestControllerAdvice error contract.
 - **Day 17 (Wed):** ASP.NET Core middleware pipeline (tarteeb ka mental model), minimal APIs vs controllers, ProblemDetails (RFC 7807). Mapping table: filters/interceptors vs middleware.
 - **Day 18 (Thu):** DTO vs entity (over-posting/mass-assignment — banking bug class), Jackson vs System.Text.Json defaults, API versioning ek paragraph.
 - **Day 19 (Fri):** **Idempotency — duplicate customer ka qatil.** Idempotency keys (client key + unique index + stored response). Currency rule war-story: state-changing GET kabhi nahi, secrets query string mein kabhi nahi (V1 ke apne Day-14 ka `GET /verify?token=` yahan theek hota hai — apna purana code audit karna sab se senior aadat hai). Failure Museum #3: **Bangladesh Bank 2016** ($81M, SWIFT, authZ). DS&A #3: two pointers (halka — Wall Week ki riayat).

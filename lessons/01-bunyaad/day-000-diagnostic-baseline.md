@@ -1,6 +1,6 @@
-# Day 0 — Nizaam ka Tour + Baseline Diagnostic
+# Day 0 — System ka Tour + Baseline Diagnostic
 
-> **Level:** 🪨 Bunyaad • **Waqt:** ~50–60 min (tour 10 + diagnostic 30 + naam & khat 10)
+> **Level:** 🪨 Bunyaad • **Waqt:** ~45 min (tour 10 + diagnostic 30 + naam 5)
 > **Aaj koi lesson nahi.** Aaj hum do kaam karte hain: (1) tumhe system ki chabi dete hain, (2) tumhara asli naqsha banate hain — kahan mazboot ho, kahan kacha hai. Ghalat jawab yahan **inaam** hai: har ghalti saal bhar ke liye tumhara personal review card ban jayegi.
 
 ---
@@ -84,10 +84,6 @@
 
 Yeh saal bhar tumhara capstone hai — asli digital bank jo TUM banao ge, scratch se. Isko naam do jo repo, packages, aur Demo Day tak chale. (Chingari chahiye to: *Bunyaad Bank, Meezan-e-Code, Qila Pay, Daryaa Bank* — magar naam TUMHARA hoga.)
 
-## 4️⃣ Day-365 ke Naam Khat (3 jumlay)
-
-Teen jumlay likho: **"Day 365 pe main kaun banna chahta hoon?"** Yeh khat STATE.md mein pin hoga aur saal ke aakhir mein tumhe wapas milega.
-
 ---
 
 ## ✍️ Mere Jawab
@@ -128,11 +124,6 @@ E30:
 ```
 
 **Bank ka naam:**
-
-**Day-365 khat (3 jumlay):**
-1.
-2.
-3.
 
 **Time laga:** ___ min • **Energy (1–5):** ___ • **Closed book raha? (haan/nahi):** ___
 

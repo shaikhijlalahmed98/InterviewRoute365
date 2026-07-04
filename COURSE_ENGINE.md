@@ -118,7 +118,7 @@ Yehi rule Sunday exam (`exam` answers) aur Saturday lab (acceptance checklist) p
 - **Chhutti Pass** (`BUSY DAY`): 15-min micro-day, max 4/mahina, STATE.md mein count. Day number barhta hai, streak zinda.
 - **Comeback Protocol** (`WAPSI`): 3+ din gap → re-entry day (15 min, sirf review). Pehla jumla hamesha: *"Wapas aa gaye — aaj bas itna hi kaafi hai."*
 - **Merge rule:** hafte mein 2+ weekday lessons chhoot gaye → Saturday lab 20-min "merge lesson" se khulta hai (marked). 365 ka naqsha kabhi nahi barhta.
-- **Wall Week (Days 13–17):** jaan boojh ke halka. Day 15 = 30-min din (yahan V1 mara tha). **Day 16 = Record-Break Ceremony:** 15 dinon ka score-trend retro + learner **Day-300 ke naam khat** likhta hai (`mentor/LETTER-TO-DAY-300.md`) — Day 300 pe mentor wohi khat wapas deta hai aur Day-16 ka quiz cold dobara leta hai.
+- **Wall Week (Days 13–17):** jaan boojh ke halka. Day 15 = 30-min din (yahan V1 mara tha). **Day 16 = Record-Break Ceremony:** 15 dinon ka score-trend retro + record ka jashn. Day 300 pe mentor Day-16 ka quiz cold dobara leta hai. *(Khat/letter element learner ne 2026-07-05 ko hatwa diya — dobara suggest na karo.)*
 - **Git hi streak hai:** har din commit; `git log --oneline` = visible chain.
 
 ---
@@ -192,7 +192,6 @@ lessons/01-bunyaad/ ... 07-finisher/   ← day files: day-NNN-<type>-<slug>.md
 capstone/                     ← Apna Bank: code + adr/ + BACKLOG.md
 interview/STORY-BANK.md, DSA-LOG.md, FLIGHT-RECORDER.md, DESIGN-DOCS/, MOCK-TRANSCRIPTS/
 gates/                        ← GATE-N.md (exam + result + remediation)
-mentor/LETTER-TO-DAY-300.md   ← Day 16 pe likha jata hai
 cheatsheets/                  ← pre-interview quick reads (mentor updates karta rahe)
 standards/                    ← DEPTH-STANDARD.md, QUIZ-FORMAT.md
 archive/v1/                   ← purana V1 (izzat se retire; kabhi kabhi teaching specimen)
@@ -208,5 +207,6 @@ Pehli dafa `AGLA DIN` aaye to Day 0 generate karo (kisi bhi weekday pe chalta ha
 1. **System tour** (10 min): keywords, Airlock, ledger, Wall Week ka waada.
 2. **Baseline Diagnostic** (30-Q, closed book, 5 stacks): har ghalat jawab ledger ka pehla atom banta hai — uska zaati weak-spot naqsha saal bhar card-priority chalayega.
 3. **Capstone ka naam:** learner apne bank ka naam rakhta hai.
-4. **Day-365 khat** (3 jumlay: main kaun banna chahta hoon) — STATE.md mein pin.
-5. Agla din (Day 1, Monday-type): "Compiler se CPU tak" — curriculum.md Week 1.
+4. Agla din (Day 1, Monday-type): "Compiler se CPU tak" — curriculum.md Week 1.
+
+*(Day-365 khat element tha yahan — learner ne 2026-07-05 ko hatwa diya.)*
