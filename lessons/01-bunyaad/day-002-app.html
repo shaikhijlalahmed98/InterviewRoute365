@@ -1,0 +1,467 @@
+<title>Day 2 — Woh Memory Jo Wapas Nahi Aayi</title>
+<style>
+  :root {
+    --bg: #101623; --bg-deep: #0B101B; --card: #171F31; --card-2: #1D2740;
+    --line: #26304A; --text: #F3EFE4; --muted: #8E99B3;
+    --gold: #F2C94C; --gold-dim: #B99534; --teal: #4BC8B8; --rose: #E86A8A; --violet: #9B8CFF; --green: #6FCF7C;
+    --focus: #7FB4FF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { color-scheme: dark; scroll-behavior: smooth; }
+  body { background: radial-gradient(1200px 600px at 50% -10%, #1A2338 0%, var(--bg) 55%, var(--bg-deep) 100%); color: var(--text); font-family: system-ui, "Segoe UI", Roboto, sans-serif; line-height: 1.85; min-height: 100vh; }
+  .bar { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--line); z-index: 10; }
+  .bar i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); }
+  .wrap { max-width: 660px; margin: 0 auto; padding: 48px 22px 90px; }
+  .kicker { font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--gold); text-align: center; }
+  .kicker small { display: block; letter-spacing: .16em; color: var(--muted); font-size: 10px; margin-top: 6px; }
+  h1 { font-family: Georgia, "Palatino Linotype", serif; font-size: clamp(30px, 7vw, 44px); font-weight: 600; text-align: center; text-wrap: balance; margin: 22px 0 8px; }
+  .meta { text-align: center; color: var(--muted); font-size: 13.5px; margin-bottom: 40px; }
+  .meta b { color: var(--gold); }
+  h2 { font-family: Georgia, serif; font-size: 25px; margin: 56px 0 8px; text-wrap: balance; }
+  h2 .no { font-size: 13px; letter-spacing: .28em; display: block; margin-bottom: 8px; font-family: system-ui; color: var(--gold); }
+  h3 { font-size: 17px; margin: 26px 0 4px; color: var(--gold); }
+  p { margin: 14px 0; max-width: 62ch; }
+  p b, li b { color: var(--gold); font-weight: 600; }
+  em { color: var(--muted); }
+  ul, ol { margin: 12px 0 12px 22px; } li { margin: 7px 0; }
+  .scene { background: var(--bg-deep); border: 1px solid var(--line); border-left: 3px solid var(--rose); border-radius: 12px; padding: 20px 22px; margin: 24px 0; font-family: ui-monospace, Consolas, "Cascadia Mono", monospace; font-size: 13.5px; line-height: 1.9; color: #D9E2F5; overflow-x: auto; }
+  .scene .t { color: var(--rose); }
+  .say { background: var(--card); border: 1px solid var(--line); border-radius: 14px 14px 14px 3px; padding: 14px 18px; margin: 18px 0; font-size: 15px; }
+  .say .who { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; color: var(--teal); }
+  .say.danish .who { color: var(--violet); }
+  .jargon { background: var(--card-2); border: 1px dashed var(--line); border-radius: 10px; padding: 12px 16px; margin: 16px 0; font-size: 14px; }
+  .jargon .w { color: var(--teal); font-weight: 700; }
+  pre.flow { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 22px 0; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.9; color: #D9E2F5; }
+  pre.flow .hl { color: var(--gold); }
+  pre.flow .dim { color: #5A6580; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: .92em; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; color: #D9E2F5; }
+  .bad, .good { border-radius: 12px; padding: 16px 18px; margin: 14px 0; border: 1px solid var(--line); }
+  .bad { background: #241722; border-left: 3px solid var(--rose); }
+  .good { background: #14231F; border-left: 3px solid var(--green); }
+  .bad .h { color: var(--rose); font-weight: 700; font-size: 13px; letter-spacing: .1em; }
+  .good .h { color: var(--green); font-weight: 700; font-size: 13px; letter-spacing: .1em; }
+  .bad pre, .good pre { background: none; border: 0; padding: 8px 0 0; margin: 0; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 1.7; color: #D9E2F5; overflow-x: auto; }
+  .atom { background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 10px; padding: 13px 16px; margin: 12px 0; font-size: 14.5px; }
+  .atom .id { color: var(--gold); font-size: 11px; letter-spacing: .12em; font-family: ui-monospace, Consolas, monospace; }
+  .hook { background: var(--card-2); border: 1px solid var(--gold-dim); border-radius: 12px; padding: 16px 20px; margin: 20px 0; font-size: 14.5px; }
+  .hook .h { color: var(--gold); font-weight: 700; letter-spacing: .1em; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
+  .drill { background: var(--card-2); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin: 24px 0; }
+  .drill .label { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--teal); margin-bottom: 10px; }
+  .drill blockquote { font-size: 15.5px; font-style: italic; border-left: 2px solid var(--teal); padding-left: 14px; }
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin: 16px 0; }
+  .q .tag { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .q .qt { margin: 8px 0 4px; font-size: 15.5px; }
+  .q pre { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 10px 0 4px; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 1.7; color: #D9E2F5; overflow-x: auto; }
+  .q textarea { width: 100%; min-height: 64px; resize: vertical; margin-top: 10px; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; color: var(--text); font: inherit; font-size: 14.5px; padding: 10px 13px; }
+  .q textarea::placeholder { color: #5A6580; }
+  details { margin: 16px 0; }
+  details summary { cursor: pointer; color: var(--gold); font-size: 14px; }
+  details[open] { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+  .flag { background: #241722; border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 10px 0; font-size: 14px; }
+  .flag b { color: var(--rose); }
+  .btn { display: inline-block; border: 0; cursor: pointer; font: inherit; background: var(--gold); color: #17130A; font-weight: 700; padding: 13px 26px; border-radius: 10px; }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:focus-visible, textarea:focus-visible, .pill:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 20px; }
+  .pill { border: 1px solid var(--line); background: var(--bg-deep); color: var(--muted); border-radius: 99px; padding: 8px 16px; cursor: pointer; font: inherit; font-size: 14px; }
+  .pill.sel { background: var(--gold); border-color: var(--gold); color: #17130A; font-weight: 700; }
+  .export { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-top: 16px; overflow: auto; max-height: 280px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; white-space: pre; color: #D9E2F5; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 18px; font-size: 14px; z-index: 20; opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .toast.show { opacity: 1; }
+  .divider { text-align: center; color: var(--gold-dim); letter-spacing: .5em; margin: 46px 0; }
+  .steps { margin: 18px 0 0 18px; color: var(--muted); font-size: 14px; }
+  .steps li { margin: 7px 0; }
+  .steps code { color: var(--gold); }
+</style>
+
+<div class="bar"><i id="prog"></i></div>
+<div class="wrap">
+
+<div class="kicker">TICH-KOLEY<small>Day 2 / 365 • 🪨 Bunyaad • 3 core ideas + C# code + SQL + pattern + architecture</small></div>
+<h1>Woh Memory Jo<br>Wapas Nahi Aayi</h1>
+<p class="meta">Problem: <b>3 hafte baad TICH-KOLEY phir slow — aur is dafa warm-up ka masla NAHI hai</b> • Kahani+code ~60 min • Drill ~30 min • <b>Total ~1:30</b></p>
+
+<!-- COLD OPEN -->
+<div class="scene">
+<span class="t">━━ TEEN HAFTE BAAD ━━</span><br>
+Din 1 — Sab theek. 40ms.<br>
+Din 18 — Kuch requests 300ms. "Chalo, thora load hoga."<br>
+Din 20 — Har cheez 2 second. Danish ne chupke se RESTART kar diya. Theek ho gaya!<br>
+Din 21 — Phir slow. Danish ne phir restart kiya. Is dafa sirf 1 din chala.<br>
+Din 22, raat 03:17 — <span class="t">java.lang.OutOfMemoryError</span>. TICH-KOLEY down. Tumhara phone baj raha hai.<br>
+Subah — Monitoring graph dekha: memory ka chart 3 hafton se <span class="t">sirf UPAR</span> ja raha tha. Seedhi charhti hui lakeer.
+</div>
+
+<div class="say danish"><div class="who">Danish</div>"Sir main ne kuch nahi kiya! Bas woh failed-login wali cheez banayi thi security ke liye..."</div>
+<div class="say"><div class="who">Tum</div>"Danish. Code lao. Aaj is ka <b>muqadma</b> chalega — gawah hogi memory khud."</div>
+
+<p>Kal tumne warm-up seekha tha — woh "pehli dafa slow, phir tez" wala scene. <b>Aaj ulta hai: pehle tez, phir aahista aahista maut.</b> Yeh samajhne ke liye bas yeh jaanna hai ke Java/C# mein cheezein memory mein KAHAN rehti hain aur KAB marti hain. Sirf 3 ideas. Chalo.</p>
+
+<!-- WARM-UP -->
+<h2><span class="no">WARM-UP • 5 MIN</span>Kal ke skipped sawal — bhaag nahi sakte 😄</h2>
+
+<div class="q"><span class="tag">W1 • A-000-25</span>
+<p class="qt">Java method ke andar: <code>int x = 5; Customer c = new Customer();</code> — <code>x</code>, <code>c</code>, aur Customer object kahan rehte hain? (Aaj ke baad yeh sawal tumhara dost banne wala hai.)</p>
+<textarea data-k="W1" placeholder="Optional — magar aaj to banta hai…"></textarea></div>
+
+<div class="q"><span class="tag">W2 • A-000-30</span>
+<p class="qt">Memory leak wale system ka <b>pehla</b> symptom OOM crash nahi, slowness kyun hota hai?</p>
+<textarea data-k="W2"></textarea></div>
+
+<div class="q"><span class="tag">W3 • A-000-01</span>
+<p class="qt"><code>Integer a = 50, b = 50;</code> — <code>a == b</code> kya dega? Aur <code>a.equals(b)</code>? Ek jumla: farq kya hai dono ka?</p>
+<textarea data-k="W3"></textarea></div>
+
+<details><summary>🔑 Warm-up key</summary>
+<p>W1: <code>x</code> → stack, <code>c</code> (reference) → stack, Customer object → heap. <em>(Aaj ki poori kahani yehi hai.)</em><br>
+W2: GC bar bar safai karne bhaagta hai magar kuch utha nahi pata (sab cheezein "zinda" hain) — yeh nakaam mehnat CPU khaati hai → sab slow. Crash aakhri stop hai.<br>
+W3: <code>==</code> → <code>true</code> (50 cache mein hai, wohi object); <code>.equals()</code> → <code>true</code> hamesha (value compare). Farq: <code>==</code> pata (address) compare karta hai, <code>.equals()</code> qeemat.</p>
+</details>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- IDEA 1 -->
+<h2><span class="no">IDEA 1 / 3</span>Stack — plates ka meenar</h2>
+
+<p>Java/C# program ki memory ke do bare hisse hote hain. Pehla: <b>stack</b>.</p>
+
+<p>Shaadi wale ghar mein plates ka meenar socho. Nayi plate hamesha <b>upar</b> rakhi jati hai, aur uthti bhi hamesha <b>upar se</b> hai. Program mein har dafa koi method call hoti hai, uske liye ek nayi "plate" upar rakh di jati hai — is plate pe us method ki saari <b>local cheezein</b> hoti hain: <code>int x = 5</code>, loop ke counters, parameters. Method khatam? <b>Poori plate utha li jati hai</b> — us pe rakhi har cheez ek saath ghayab. Koi safai wala nahi chahiye, koi dhoondhna nahi — bas ek harkat mein saaf.</p>
+
+<pre class="flow">
+main() chali          →  plate 1 rakhi   <span class="dim">[ main ke locals ]</span>
+main ne openAccount() ko bulaya
+                      →  plate 2 UPAR    <span class="dim">[ openAccount ke locals: x, c ]</span>
+openAccount ne validate() ko bulaya
+                      →  plate 3 UPAR    <span class="dim">[ validate ke locals ]</span>
+validate() khatam     →  plate 3 <span class="hl">utha li — uske sab locals gone</span>
+openAccount() khatam  →  plate 2 <span class="hl">utha li — x aur c gone</span>
+</pre>
+
+<p>Isi liye stack <b>bohot tez</b> hai — rakhna aur uthana bas "meenar ki aakhri manzil" ka hisaab badalna hai. Lekin ek shart hai: plate pe wohi cheez reh sakti hai jo <b>method ke saath khatam ho jaye.</b> Aur yahin se doosra sawal nikalta hai...</p>
+
+<!-- IDEA 2 -->
+<h2><span class="no">IDEA 2 / 3</span>Heap — godown aur parchi</h2>
+
+<p>Fatima ka account object method khatam hone ke BAAD bhi zinda rehna chahiye — warna bank kis kaam ka? Aisi cheezon ke liye doosra hissa hai: <b>heap</b> — ek bara godown jahan <b>objects</b> rehte hain.</p>
+
+<p>Jab tum likhte ho <code>Customer c = new Customer()</code>, do cheezein hoti hain:</p>
+<ul>
+<li><code>new Customer()</code> → asal object <b>godown (heap)</b> mein rakha jata hai</li>
+<li><code>c</code> → tumhari plate (stack) pe sirf ek <b>parchi</b> rakhi jati hai jis pe godown ka pata likha hai — isko <b>reference</b> kehte hain</li>
+</ul>
+
+<div class="jargon"><span class="w">Reference</span> = object ka pata. Courier ki receipt socho: parcel (object) warehouse (heap) mein hai, tumhare haath mein sirf receipt (reference) hai. Do log ek hi parcel ki receipt rakh sakte hain — object EK hai, parchiyan do. <em>(Isi liye Integer wale sawal mein <code>==</code> "same pata?" poochta hai, "same qeemat?" nahi.)</em></div>
+
+<p>Ab kal wale W1 ko dobara dekho — ab yeh ratta nahi, samajh hai: <code>x</code> (aam number) plate pe, <code>c</code> ki <b>parchi</b> plate pe, asal Customer object <b>godown</b> mein.</p>
+
+<!-- IDEA 3 -->
+<h2><span class="no">IDEA 3 / 3</span>Kaun kab marta hai — aur Danish ka muqadma</h2>
+
+<p>Stack ka hisaab saaf hai: method khatam = plate gone. Lekin godown ka? Objects wahan tab tak zinda hain jab tak... kya?</p>
+
+<p><b>Usool yaad kar lo: object tab tak zinda hai jab tak us tak pahunchne wali koi parchi maujood hai.</b> Jab aakhri parchi bhi ghayab ho jaye (plate uth gayi, ya kisi ne parchi pe naya pata likh diya), to object <b>lawaris</b> ho jata hai — us tak koi pahunch hi nahi sakta. Aise lawaris objects ko JVM/CLR ka safai-wala utha leta hai — isko <b>GC (Garbage Collector)</b> kehte hain. <em>(GC ki apni kahani bari dilchasp hai — woh Day 4 pe poori milegi. Aaj bas itna: woh SIRF lawaris cheezein uthata hai.)</em></p>
+
+<p>Ab adalat lagti hai. Danish ka code pesh ho:</p>
+
+<div class="bad"><span class="h">❌ MULZIM: Danish ka failed-login tracker</span>
+<pre>
+public class LoginSecurity {
+    // "static" = yeh Map kisi ek object ki nahi,
+    // poori CLASS ki cheez hai — program bhar zinda
+    static Map&lt;String, Integer&gt; failedAttempts = new HashMap&lt;&gt;();
+
+    public static void recordFailure(String cnic) {
+        failedAttempts.put(cnic, failedAttempts.getOrDefault(cnic, 0) + 1);
+        // ...aur NIKAALTA kabhi nahi
+    }
+}
+</pre></div>
+
+<p><b>Gawahi suno.</b> Har failed login pe ek entry godown mein gayi. Us entry ki parchi kis ke paas hai? <code>static failedAttempts</code> Map ke paas. Aur static cheez kab marti hai? <b>Kabhi nahi</b> — woh program ke saath hi khatam hoti hai, uski parchi kabhi nahi phatti. To har entry hamesha "zinda" — GC aata raha, dekhta raha, <em>"yeh to sab claimed hain"</em>, khaali haath wapas. Godown bharta gaya. GC bar bar bhaagta raha (isi liye <b>pehle slow</b> hua — W2 ka jawab!), aur aakhir mein jagah hi khatam: <b>OutOfMemoryError</b>.</p>
+
+<p><b>Faisla:</b> Map begunah, <code>static</code> begunah — <b>jurm yeh tha ke jama karte gaye aur nikaala kabhi nahi.</b> Ab saza nahi, islaah:</p>
+
+<div class="good"><span class="h">✅ ISLAAH: hadd bandho, purana nikaalo</span>
+<pre>
+// Fix ka usool bas do lafz: BOUND + EXPIRE
+// (1) size ki hadd — is se zyada kabhi na ho
+// (2) purani entries ki miyaad — kaam khatam, entry khatam
+if (failedAttempts.size() > 10_000) {
+    failedAttempts.clear();   // sab se sada ilaaj (behtar: purani nikaalo)
+}
+</pre>
+<p style="font-size:14px">Asal duniya mein is kaam ke liye ready-made "bounded cache" libraries hoti hain jo size aur miyaad dono khud sambhalti hain (Java mein mashhoor: Caffeine) — Lab wale din hum yehi Danish ke code pe lagayenge. Aaj usool pakka karo: <b>jo cheez jama hoti hai, uske nikalne ka rasta pehle likho.</b></p></div>
+
+<div class="say danish"><div class="who">Danish</div>"Sir lekin... Java mein to GC hai na. Mujhe bataya gaya tha Java mein memory leak ho hi nahi sakti."</div>
+<div class="say"><div class="who">Tum</div>"GC <b>lawaris</b> cheezein uthata hai, Danish. Tumne to har entry ko static parchi se bandh ke rakha tha — woh lawaris kabhi hui hi nahi. <b>Java mein leak hoti hai — bas uski shakal 'bhoola hua reference' hoti hai.</b> Yeh jumla likh lo, interview mein sona hai."</div>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- STACK 2: C# -->
+<h2><span class="no">STACK 2 • .NET CORE / C#</span>Danish ka juram C# mein — aur framework wala ilaaj</h2>
+
+<p>TICH-KOLEY ka aadha backend .NET Core mein hai (tumhari asli zindagi ki tarah). Wahan bilkul yehi memory model hai — stack, heap, GC, static ka wohi khatra. Danish ka juram C# mein aise dikhta:</p>
+
+<div class="bad"><span class="h">❌ WOHI JURAM, C# KI WARDI MEIN</span>
+<pre>
+public static class LoginSecurity
+{
+    // static + kabhi remove nahi = wohi amar parchi
+    static Dictionary&lt;string, int&gt; failedAttempts = new();
+
+    public static void RecordFailure(string cnic)
+        =&gt; failedAttempts[cnic] =
+             failedAttempts.GetValueOrDefault(cnic) + 1;
+}
+</pre></div>
+
+<p>Lekin .NET Core ke paas is kaam ke liye ek banaa-banaya, parha-likha auzaar hai: <b>IMemoryCache</b> — ek in-memory cache jo <b>bound + expire</b> dono khud sambhalta hai. Dekho, line-ba-line:</p>
+
+<div class="good"><span class="h">✅ .NET CORE KA SAHI TAREEQA — IMemoryCache</span>
+<pre>
+// Program.cs — cache register karo, HADD ke saath:
+builder.Services.AddMemoryCache(o =&gt; o.SizeLimit = 10_000);
+//                                    ↑ BOUND: is se zyada entries kabhi nahi
+
+// service mein:
+public void RecordFailure(string cnic)
+{
+    int attempts = _cache.Get&lt;int&gt;(cnic);   // pichli ginti (na ho to 0)
+    _cache.Set(cnic, attempts + 1, new MemoryCacheEntryOptions()
+        .SetSize(1)                              // har entry ka "wazan" = 1
+        .SetSlidingExpiration(TimeSpan.FromMinutes(15)));
+        // ↑ EXPIRE: 15 min tak koi harkat nahi? Entry khud nikal jayegi.
+}
+</pre>
+<p style="font-size:14px"><b>SizeLimit</b> = godown ki hadd (bound). <b>SlidingExpiration</b> = miyaad (expire) — "sliding" matlab har istemal pe timer reset. Java duniya mein isi kaam ki mashhoor library <b>Caffeine</b> hai. Usool ek: <b>jama karne wale har dabbe pe hadd aur miyaad likho.</b></p></div>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- STACK 3: SQL -->
+<h2><span class="no">STACK 3 • SQL SERVER</span>Ruko — yeh data memory mein hona bhi chahiye tha?</h2>
+
+<p>Ab woh sawal jo senior banata hai. Failed logins <b>security ka data</b> hai — bank mein regulator poochhega: "is account pe kab kab ghalat password laga?" Danish ka Map to restart pe <b>sab bhool jata hai.</b> Aisi cheez ki asli jagah memory nahi — <b>database</b> hai. Chalo table design karte hain:</p>
+
+<pre class="flow">
+CREATE TABLE FailedLogins (
+    Id         BIGINT IDENTITY PRIMARY KEY,  <span class="dim">-- IDENTITY = khud barhne wala number</span>
+    Cnic       VARCHAR(13)  NOT NULL,        <span class="dim">-- CNIC: sirf digits/dash — VARCHAR kaafi</span>
+    AttemptAt  DATETIME2    NOT NULL
+               DEFAULT SYSUTCDATETIME()      <span class="dim">-- UTC waqt — Day 0 ka sabaq, ab amal mein</span>
+);
+</pre>
+
+<div class="jargon"><span class="w">DEFAULT</span> = agar INSERT mein yeh column na do to database khud yeh value daal dega. <span class="w">SYSUTCDATETIME()</span> = abhi ka UTC waqt — server ka local timezone nahi, kyunke bank ke audit mein waqt ka EK sach hona chahiye (Zarr wale Rehan sahab ka sawal yaad hai?).</div>
+
+<p><b>Record karna</b> — ek line:</p>
+<pre class="flow">INSERT INTO FailedLogins (Cnic) VALUES (@cnic);   <span class="dim">-- @cnic = parameter (Day 1 ka plan-cache dost!)</span></pre>
+
+<p><b>Check karna</b> — "pichle 15 minute mein is CNIC ki kitni koshishein?":</p>
+<pre class="flow">
+SELECT COUNT(*)
+FROM   FailedLogins
+WHERE  Cnic = @cnic
+  AND  AttemptAt &gt; DATEADD(MINUTE, -15, SYSUTCDATETIME());
+       <span class="dim">-- DATEADD(MINUTE, -15, abhi) = "abhi se 15 minute pehle"</span>
+</pre>
+
+<p>Aur ab dhyan se — <b>table bhi to jama karti hai!</b> Wohi Danish wala sawal yahan bhi banta hai: "niklegi kab?" SQL duniya mein "expire" ka naam hai <b>retention job</b> — ek scheduled safai:</p>
+<pre class="flow">DELETE FROM FailedLogins
+WHERE AttemptAt &lt; DATEADD(DAY, -30, SYSUTCDATETIME());  <span class="dim">-- 30 din se purana = bahar (raat ka job)</span></pre>
+
+<p><b>To memory ya database?</b> Trade seedha hai: memory ka check <b>nanoseconds</b> ka hai, DB ka round-trip <b>milliseconds</b> ka — magar DB restart pe bachta hai, audit deta hai, aur (agla section dekho) <b>sab servers ko EK sach dikhata hai.</b> Asli banks aksar dono rakhte hain: garam check cache mein, asal sach DB mein. <em>(Redis naam ka ek beech ka kirdar bhi hai — Level 5 mein milega.)</em></p>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- DESIGN PATTERN -->
+<h2><span class="no">DESIGN PATTERN • SINGLETON</span>Danish ka static dar-asal ek pattern ka kachcha roop tha</h2>
+
+<p>Ab ek raaz: Danish jo karna chah raha tha — "poore program mein login-security ka EK hi markaz ho" — woh khwahish bilkul jaayez thi. Itni jaayez ke uska ek mashhoor <b>design pattern</b> hai: <b>Singleton</b>.</p>
+
+<div class="jargon"><span class="w">Design pattern</span> = bar bar aane wale masle ka aazmaya hua, naam-diya-gaya hal. Naye nahi banane parte — pehchan'na seekhna hota hai. Jaise khaano ki recipes: "biryani" bolo to poora tareeqa zehen mein aa jata hai.</div>
+
+<p><b>Singleton ka WHAT:</b> aisi class jiska poore program mein sirf <b>EK object</b> ban sake, aur sab usi ko use karein:</p>
+
+<pre class="flow">
+public class LoginSecurity {
+    private static final LoginSecurity INSTANCE = new LoginSecurity();
+    private LoginSecurity() {}          <span class="dim">// constructor private — bahar se "new" MANA</span>
+    public static LoginSecurity get() { return INSTANCE; }
+}
+<span class="dim">// use: LoginSecurity.get().recordFailure(cnic);</span>
+</pre>
+
+<p><b>WHY:</b> jo cheez fitratan ek honi chahiye — configuration, connection pool, cache — uske 50 nuskhe na banein. <b>WHEN NOT (khatra):</b> Singleton ke andar <b>badalne wala data</b> rakho to wohi "global state" ka jurm hai jo aaj ke muqadme mein tha — har jagah se koi bhi badal sakta hai, tests mein ek doosre ka data ghusta hai. <b>Aaj ka sach:</b> Spring aur .NET Core mein tum Singleton haath se nahi likhte — framework ka <b>DI container</b> deta hai (<code>services.AddSingleton&lt;...&gt;()</code>; Spring ki har <code>@Service</code> default singleton hai). Kaise? — Level 3 mein poora hafta isi pe. Interview ka sona: <em>"I know the Singleton pattern — and why it often turns into an anti-pattern (global mutable state), which is why we let the DI container manage lifetimes instead."</em></p>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- ARCHITECTURE -->
+<h2><span class="no">ARCHITECTURE</span>Do servers — aur security chupke se toot gayi</h2>
+
+<p>Aakhri scene, aur aaj ka sab se maza-daar twist. TICH-KOLEY chal para. Traffic barha. Tumne doosra server laga diya, aage ek <b>load balancer</b> (traffic baantne wala chowkidar). Danish ka fix (IMemoryCache — shabash) har server pe chal raha hai. Rule: 10 failed attempts = account lock.</p>
+
+<p>Ek raat ek attacker ne Fatima ke account pe <b>10 ghalat passwords</b> maare. Account lock hua? <b>Nahi.</b> Dekho kyun:</p>
+
+<pre class="flow">
+                    ┌──▶ Server A ka cache: { attacker: 5 }   <span class="dim">"abhi to 5 hi hain"</span>
+Attacker ──▶ LB ──▶─┤
+                    └──▶ Server B ka cache: { attacker: 5 }   <span class="dim">"abhi to 5 hi hain"</span>
+
+<span class="hl">10 attempts the — magar KISI EK server ne 10 nahi dekhe. Hadd kabhi cross nahi hui.</span>
+</pre>
+
+<p>Har server ki memory <b>uski apni</b> hai — load balancer ne attempts baant diye, aur security control bina kisi error ke, chupchaap, bekaar ho gaya. Yeh bug kisi log mein nahi aata. Isi liye architecture ka usool:</p>
+
+<p><b>Jo state SAB servers ko ek jaisi dikhni chahiye (security counters, balances, sessions), woh kisi EK server ki memory mein nahi reh sakti — shared jagah chahiye: database (ya shared cache).</b> Aur jab service apne paas aisi state rakhti hi nahi, usko <b>stateless</b> kehte hain — stateless services ko tum jitne marzi copies mein chala do, koi hisaab nahi bigarta. <em>(Yeh lafz Week 3 mein HTTP ke saath phir milega — aaj bas pehchan.)</em></p>
+
+<!-- W4 RECAP -->
+<div class="hook"><div class="h">🔍 WHY • WHAT • HOW • WHEN — aaj ka concept 4 lines mein</div>
+<b style="color:var(--rose)">WHY</b> — Program ko do tarah ki memory chahiye: chhoti umar wali (method ke locals) aur lambi umar wali (objects jo method ke baad bhi chahiye).<br>
+<b style="color:var(--teal)">WHAT</b> — Stack = plates ka meenar (locals + parchiyan; method khatam = plate gone). Heap = godown (objects; parchi/reference se pahunchte ho).<br>
+<b style="color:var(--violet)">HOW</b> — Object tab tak zinda jab tak koi parchi us tak pahunchti hai; lawaris ko GC uthata hai; <b>static parchi kabhi nahi phatti</b> — us se bandhi cheez kabhi nahi marti.<br>
+<b style="color:var(--green)">WHEN</b> — Jab bhi kuch <b>jama</b> karo (Map/List/cache), usi waqt poochho: "nikle ga kab?" Jawab nahi hai to leak likh rahe ho. Aur "memory chart sirf upar" dekho to restart nahi — heap mein dekho KYA barh raha hai.</div>
+
+<div class="hook"><div class="h">🧠 Yaad rakhne ke 3 hooks</div>
+<b>Plates ka meenar</b> = stack (method khatam, plate gone) • <b>Godown + parchi</b> = heap + reference (parchi hai to zinda) • <b>Static = amar parchi</b> (kabhi nahi phatti — is se bandha jama hota gaya to leak) • <b>Har dabbe pe hadd aur miyaad</b> = bound + expire (Map ho, cache ho ya SQL table) • <b>Do dukaanein, alag register</b> = per-server memory pe shared hisaab kabhi nahi.</div>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- INTERVIEW DRILL -->
+<h2><span class="no">🎤 INTERVIEW DRILL</span>Aaj ka panel</h2>
+
+<div class="drill">
+<div class="label">MAIN QUESTION + English script (bol ke DO dafa, 60 sec)</div>
+<p><b>"Explain stack vs heap — where do things live in a Java program?"</b></p>
+<blockquote>"The stack holds each method's local variables and references — every method call gets a frame, and when the method returns, the whole frame is discarded instantly, which is why stack allocation is so fast. Objects created with 'new' live on the heap, and what I hold on the stack is just a reference — an address pointing to them. An object stays alive as long as something reachable still references it; once nothing does, the garbage collector reclaims it. That's also why Java can still leak memory: if a static collection keeps referencing entries forever, they're never garbage — the classic leak is not lost memory, it's a forgotten reference."</blockquote>
+</div>
+
+<div class="q"><span class="tag">CODE ROUND • C1 — trap 🪤</span>
+<p class="qt">Danish pareshan hai: "Sir <code>c</code> to stack pe tha, method khatam hui to plate uth gayi — phir yeh object zinda kaise?"</p>
+<pre>Customer openAccount() {
+    Customer c = new Customer("Fatima");
+    return c;          // method khatam... object mar gaya?
+}
+// caller mein:
+Customer fatima = openAccount();
+fatima.getName();      // chal raha hai! Kaise?</pre>
+<textarea data-k="C1"></textarea></div>
+
+<div class="q"><span class="tag">CODE ROUND • C2 — trap 🪤 (Day-0 ka purana zakham)</span>
+<p class="qt">Yeh method chalane ke baad caller ko kya dikhega — name badla hoga? account naya hoga? Kyun?</p>
+<pre>void update(Customer c) {
+    c.setName("Ali");          // (1)
+    c = new Customer("Sara");  // (2)
+}
+// caller:
+Customer cust = new Customer("Bilal");
+update(cust);
+// cust.getName() ab kya hai?</pre>
+<textarea data-k="C2"></textarea></div>
+
+<div class="q"><span class="tag">CONCEPT ROUND • K1 — cross-chain ⛓️ (dono hisse likho!)</span>
+<p class="qt">Stack itna tez kyun hai heap ke muqable? <em>[Jawab pe agla war:]</em> <b>"To phir sab kuch stack pe hi kyun nahi rakh dete?"</b></p>
+<textarea data-k="K1"></textarea></div>
+
+<div class="q"><span class="tag">CONCEPT ROUND • K2 — cross-chain ⛓️ (dono hisse likho!)</span>
+<p class="qt">"Java mein GC hai to memory leak kaise mumkin?" <em>[Jawab pe agla war:]</em> <b>"Accha, to leak wale system ka pehla symptom crash ki jagah slowness kyun hota hai?"</b></p>
+<textarea data-k="K2"></textarea></div>
+
+<div class="q"><span class="tag">SQL ROUND • S1 — query likho ✍️</span>
+<p class="qt">FailedLogins table se query likho: <b>"pichle 30 minute mein @cnic ki kitni koshishein?"</b> (Jitna yaad hai utna likho — syntax perfect na bhi ho, soch sahi honi chahiye.)</p>
+<textarea data-k="S1"></textarea></div>
+
+<div class="q"><span class="tag">PATTERN ROUND • P1 — cross-chain ⛓️</span>
+<p class="qt">Singleton pattern ek jumle mein kya hai — aur uska sab se bara khatra kya? <em>[Jawab pe agla war:]</em> <b>"To phir Spring ya .NET Core mein tumhe singleton kaise milta hai bina khud likhe?"</b></p>
+<textarea data-k="P1"></textarea></div>
+
+<div class="q"><span class="tag">DESIGN ROUND • D1</span>
+<p class="qt">Security team kehti hai failed-login tracking <b>zaroori hai</b>. In-memory hi rakhna ho to kaunse DO hifazati kaam lazmi karoge taake yeh dobara TICH-KOLEY na gira de?</p>
+<textarea data-k="D1"></textarea></div>
+
+<div class="q"><span class="tag">ARCHITECTURE ROUND • D2 — twist 🌀</span>
+<p class="qt">TICH-KOLEY ab 2 servers pe hai, aage load balancer. Danish ka IMemoryCache wala fix har server pe laga hai, rule "10 attempts = lock". Attacker ne 10 attempts kiye — account lock kyun NAHI hua, aur asal fix kya hai?</p>
+<textarea data-k="D2"></textarea></div>
+
+<details><summary>🔑 Drill key — jawab likhne ke BAAD (trick ke naam ke saath)</summary>
+<p><b>C1:</b> Plate pe sirf <b>parchi</b> (<code>c</code>) thi — asal object godown (heap) mein hai. <code>return c</code> ne parchi ki COPY caller ko de di (<code>fatima</code>), to object ki ek zinda parchi ab bhi maujood hai → object zinda. <em>Trick: "plate pe object nahi, parchi thi".</em></p>
+<p><b>C2:</b> <code>cust.getName()</code> = <b>"Ali"</b>. (1) parchi ke raste asal object badla — caller ko dikhta hai. (2) sirf method ki APNI parchi pe naya pata likha — caller ki parchi wahi purani. Java/C# reference ki <b>copy</b> pass karte hain. <em>Trick: "parchi ki copy" — Day 0 pe yeh sawal (A-000-02) chhoot gaya tha; aaj band ho gaya.</em></p>
+<p><b>K1:</b> Stack pe rakhna/uthana = bas meenar ka sirra aage-peechhe karna, aur poori plate ek saath phenki jati hai — na dhoondhna, na safai. <b>Cross:</b> Sab kuch stack pe is liye nahi: (1) plate method ke saath MARTI hai — jo cheez baad mein chahiye (Fatima ka account) woh plate pe nahi reh sakti; (2) do methods/threads ko EK hi object share karna ho to woh kisi ek ki plate pe nahi ho sakta — godown chahiye.</p>
+<p><b>K2:</b> GC sirf <b>lawaris</b> (unreachable) cheezein uthata hai — jo cheez kisi zinda parchi (khaas kar static) se bandhi hai woh uske liye "qeemti saamaan" hai, kachra nahi. Leak = bhoola hua reference. <b>Cross:</b> Godown jitna bharta hai, GC utna bar bar aur utni lambi safai karta hai — magar utha kuch nahi pata; yeh bekaar mehnat CPU kha jati hai → requests slow. Crash to tab hai jab jagah bilkul khatam ho.</p>
+<p><b>S1:</b> <code>SELECT COUNT(*) FROM FailedLogins WHERE Cnic = @cnic AND AttemptAt &gt; DATEADD(MINUTE, -30, SYSUTCDATETIME());</code> — check karo: COUNT hai? Cnic parameter se? Waqt ki shart DATEADD se? Teeno hain to full marks (spelling maaf).</p>
+<p><b>P1:</b> Singleton = class jiska poore program mein sirf EK object ho, sab wohi use karein (config/pool/cache jaise shared cheezon ke liye). Sab se bara khatra: <b>mutable global state</b> — har jagah se badla ja sakta hai, tests aapas mein ulajh jate hain. <b>Cross:</b> framework ka <b>DI container</b> deta hai — .NET: <code>services.AddSingleton&lt;&gt;()</code>; Spring: har <code>@Service</code>/<code>@Component</code> by default singleton hai.</p>
+<p><b>D1:</b> (1) <b>Size ki hadd</b> (bound) — max entries; (2) <b>Miyaad</b> (expiry/TTL). Bonus senior line: "ready-made bounded cache (IMemoryCache/Caffeine) use karunga" + "memory metric pe alert — chart charhta dikhe to crash se pehle pata chale."</p>
+<p><b>D2:</b> Har server ka cache <b>apna</b> hai — LB ne 10 attempts 5/5 baant diye, kisi ek ne hadd cross hoti nahi dekhi. <em>Trick: "do dukaanein, alag register".</em> Asal fix: yeh counter <b>shared jagah</b> pe le jao jo sab servers ko ek dikhe — database (aaj wali FailedLogins table sahi jawab hai!) ya shared cache. Usool: shared hisaab kisi ek ki memory mein nahi rehta.</p>
+</details>
+
+<h3>⭐ Senior differentiator</h3>
+<p>Jab sab "stack fast, heap slow" ratta sunayen, tum ek jumla aage jao: <em>"The classic Java leak isn't lost memory — it's a forgotten reference, usually a static collection that only ever grows. That's why the first symptom is GC pressure and slowness, not the crash."</em> Yeh jumla bolne wala banda 4 YOE ka nahi lagta.</p>
+
+<h3>🚩 Red flags — yeh KABHI mat kehna</h3>
+<div class="flag"><b>"Java mein memory leak nahi ho sakti, GC hai na."</b> — Aaj ka poora muqadma isi jumle ke khilaf gawahi hai.</div>
+<div class="flag"><b>"Objects stack pe bante hain."</b> — Object godown mein, plate pe sirf parchi. (C# struct ki kahani alag hai — kal.)</div>
+<div class="flag"><b>"Restart kar do."</b> — Danish ne 3 dafa kiya. Chart phir bhi upar hi gaya.</div>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- ATOMS -->
+<h2><span class="no">AAJ KE ATOMS</span>5 cheezein ledger ke liye</h2>
+<div class="atom"><span class="id">A-002-1</span> — Stack = plates ka meenar: har method call ki apni plate (locals + references); return pe poori plate ek saath gone — isi liye tez.</div>
+<div class="atom"><span class="id">A-002-2</span> — Objects heap (godown) mein bante hain; stack pe sirf reference (parchi = pata). Do parchiyan, ek object — mumkin.</div>
+<div class="atom"><span class="id">A-002-3</span> — Object tab tak zinda jab tak koi reachable parchi hai; lawaris ko GC uthata hai.</div>
+<div class="atom"><span class="id">A-002-4</span> — Static reference kabhi nahi marta — static collection jo sirf barhti hai = classic Java/C# memory leak ("bhoola hua reference").</div>
+<div class="atom"><span class="id">A-002-5</span> — Jama karne wali HAR cheez pe pehla sawal: "niklegi kab?" (bound + expire) — Map ho, IMemoryCache ho ya SQL table (retention job) — aur leak ka pehla symptom slowness (GC pressure), crash baad mein.</div>
+<div class="atom"><span class="id">A-002-6</span> — Do+ servers pe per-instance memory wali state sab ko ALAG dikhti hai — shared counters/controls DB ya shared cache mein, warna threshold jaise security rules chupchaap toot jate hain.</div>
+<div class="atom"><span class="id">A-002-7</span> — Singleton = poore program mein EK instance (shared cheezon ke liye); mutable data ke saath global-state anti-pattern — aaj kal DI container (AddSingleton / Spring @Service) yeh kaam karta hai.</div>
+
+<p style="margin-top:26px"><b>Energy (1–5):</b></p>
+<div class="pills" id="energyPills"></div>
+
+<div style="margin-top:6px"><button class="btn" onclick="copyAnswers()">📋 Jawab copy karo</button></div>
+<ol class="steps">
+  <li>Copy dabao (jitne jawab diye — baaqi "skipped", koi masla nahi).</li>
+  <li><code>day-002-woh-memory-jo-wapas-nahi-aayi.md</code> mein <code>## ✍️ Mere Jawab</code> ke neeche paste karo.</li>
+  <li><code>git add -A &amp;&amp; git commit -m "day-002 done"</code> — kal <b>AGLA DIN</b>.</li>
+</ol>
+<div class="export" id="exportBox"></div>
+
+<p style="margin-top:40px"><em><b>Kal ka hook:</b> Day 3 — C# ka sab se bara farq: <b>struct</b> — woh types jo godown jaate hi nahi, poore ke poore plate pe rehte hain. Copy hoti hai to KYA copy hota hai? Aur wahin Day-0 ke "TRUE TRUE" ka asli post-mortem: boxing — jab value type ko zabardasti godown bhejna parta hai. Bilal bhai ka hisaab poora hoga. 😉</em></p>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  var KEYS = ["W1","W2","W3","C1","C2","K1","K2","S1","P1","D1","D2"];
+  var S = { ans: {}, energy: "", startedAt: null, minutes: 0 };
+  try { var sv = JSON.parse(localStorage.getItem("tk-day2") || "null"); if (sv) S = sv; } catch (e) {}
+  if (!S.startedAt) { S.startedAt = new Date().getTime(); }
+  function save() { try { localStorage.setItem("tk-day2", JSON.stringify(S)); } catch (e) {} }
+  function toast(m) { var t = document.getElementById("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove("show"); }, 1800); }
+  document.querySelectorAll("textarea[data-k]").forEach(function (ta) {
+    ta.value = S.ans[ta.dataset.k] || "";
+    ta.addEventListener("input", function () { S.ans[ta.dataset.k] = ta.value; save(); renderExport(); setProg(); });
+  });
+  var ep = document.getElementById("energyPills");
+  for (var i = 1; i <= 5; i++) (function (n) {
+    var b = document.createElement("button");
+    b.className = "pill" + (S.energy == n ? " sel" : ""); b.textContent = n + (n === 5 ? " 🔥" : "");
+    b.onclick = function () { S.energy = n; save(); ep.querySelectorAll(".pill").forEach(function (p) { p.classList.remove("sel"); }); b.classList.add("sel"); renderExport(); };
+    ep.appendChild(b);
+  })(i);
+  function setProg() {
+    var done = KEYS.filter(function (k) { return (S.ans[k] || "").trim() !== ""; }).length;
+    document.getElementById("prog").style.width = (done / KEYS.length * 100) + "%";
+  }
+  function buildBlock() {
+    if (!S.minutes) { S.minutes = Math.max(1, Math.round((new Date().getTime() - S.startedAt) / 60000)); }
+    var lines = KEYS.map(function (k) { return k + ": " + ((S.ans[k] || "").trim() || "skipped"); });
+    return "```\n" + lines.join("\n") + "\n```\n\n**Time laga:** " + S.minutes + " min • **Energy (1–5):** " + (S.energy || "___");
+  }
+  function renderExport() { document.getElementById("exportBox").textContent = buildBlock(); }
+  function copyAnswers() {
+    var t = buildBlock();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function () { toast("Copy ✅ — md file mein paste karo"); }, function () { toast("Neeche box se khud copy kar lo"); });
+    } else { toast("Neeche box se khud copy kar lo"); }
+  }
+  renderExport(); setProg();
+</script>

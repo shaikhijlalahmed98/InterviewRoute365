@@ -98,7 +98,7 @@ Saturday lab checklist tracked hai, gated nahi.
 
 | Din | Kaam | Budget |
 |---|---|---|
-| Mon–Fri | Problem-lesson (upar ka dhancha). Fri mein + **Failure Museum** (asli banking tabahi) + 1 timed DS&A problem (English think-aloud) | 45–60 min |
+| Mon–Fri | Problem-lesson (upar ka dhancha). **Har din, jahan problem allow kare: asli code (dono languages), asli SQL queries, EK design pattern ya architecture ka zaviya** — sab beginner W4 style mein, kahani ke andar. Fri mein + **Failure Museum** (asli banking tabahi) + 1 timed DS&A problem (English think-aloud) | **~1:30** (kahani+code ~60 min, drill ~30 — learner ki farmaish 2026-07-05: "1:30 ghante ka content, mazze wali tarah") |
 | Sat | **LAB** — capstone increment + acceptance checklist + planted bug + mirror kata + ADR (pehle jaisa) | 2.5–3 hr |
 | Sun | **Weekly COMPREHENSIVE Quiz 25-Q (COMPULSORY — §4 ka gate #1):** 10 is hafte ke + 10 ledger due + 5 "purana sona"; 5-section format (code-output/bug-spot/dry-run/scenario/concept) → **Mock slot 45 min** (rotation A/B/C/D) → retro (3 lines STATE mein) | 2 hr |
 
@@ -112,7 +112,7 @@ Saturday lab checklist tracked hai, gated nahi.
 
 ## 7. Retention System (yaad rakhne ka engine)
 
-**Atom:** har lesson ke aakhir mein 3–5 numbered, chhoti testable baatein — `A-011-2: T-SQL error handling THROW se, RAISERROR legacy hai — kyun`. Saal bhar mein ~1,100 atoms.
+**Atom:** har lesson ke aakhir mein 3–7 numbered, chhoti testable baatein — `A-011-2: T-SQL error handling THROW se, RAISERROR legacy hai — kyun`. Saal bhar mein ~1,100 atoms.
 
 **REVIEW-LEDGER.md row:**
 ```

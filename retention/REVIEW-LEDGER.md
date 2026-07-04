@@ -33,5 +33,10 @@
 | A-000-28 | Hash → bucket index O(1); collision pe chain (Java 8+: tree agar lambi ho) | D0 | 1 | D0 | D1 | 0 | — |
 | A-000-29 | Sorted array + binary search = O(log n) — 10 lakh ≈ 20 muqablay | D0 | 1 | D0 | D1 | 0 | — |
 | A-000-30 | Unbounded static cache = leak → GC thrash → OOM; ilaaj bounded (LRU/TTL) ya Redis | D0 | 1 | D0 | D1 | 0 | — |
+| A-001-1 | CPU sirf machine code samajhta hai; compiler tarjuma karta hai | D1 | 1 | D1 | D2 | 0 | — |
+| A-001-2 | Java/C# DO dafa compile: build pe bytecode/IL, runtime pe JIT | D1 | 1 | D1 | D2 | 0 | "do dafa pakta hai" |
+| A-001-3 | Bytecode/.class OS-portable; machine code har platform ka JVM/CLR banata hai | D1 | 1 | D1 | D2 | 0 | "charger + adapter" |
+| A-001-4 | JIT sirf HOT methods compile karta hai — warm-up slow, phir tez; restart = dobara thanda | D1 | 1 | D1 | D2 | 0 | "naya cook" |
+| A-001-5 | "Pehli dafa ka tax" har jagah (SQL plan cache, browser JS) — deploy-ke-baad-slow = warm-up pe shak | D1 | 1 | D1 | D2 | 0 | — |
 
 > A-000-06 (@Transactional unchecked rollback) Day 0 pe SAHI tha — ledger mein nahi daala; W14 (proxies/transactions week) mein naya atom ban ke aayega.

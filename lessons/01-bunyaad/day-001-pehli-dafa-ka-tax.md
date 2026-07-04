@@ -61,4 +61,22 @@ D1: launch se pehle warm-up requests — JIT garam karo, phir customers
 
 **Ho gaya (ya skip bhi theek hai)?** `git add -A && git commit -m "day-001 done"` — kal `AGLA DIN`.
 
+---
+
+## 🧑‍🏫 Mentor Evaluation (graded D1, 2026-07-05)
+
+**Score: 5/5 attempted — sab sahi.** ✅ (Warm-up W1–W3 skipped — koi jurm nahi, woh atoms kal ke warm-up mein wapas aayenge.)
+
+| Sawal | Verdict | Note |
+|---|---|---|
+| C1 (thanda benchmark) | ✅ | "warm up time he" — bilkul. JIT abhi garam nahi tha. |
+| C2 (portability) | ✅ | "ghalat, JVM kaam kar lega" — perfect. Danish ko bacha liya tumne. |
+| K1 (bytecode vs machine code) | ✅ (cross adhoora) | Farq sahi likha. Cross-chain ("JVM khud kaise chalti hai?") ka jawab nahi likha — yaad rakho: JVM khud C++ ka pehle-se-compiled aam program hai; kahin na kahin seedha machine code hi chalta hai. |
+| K2 (slow kyun + restart?) | ✅ (cross adhoora) | Warm-up/interpret sahi. Restart wale cross ka jawab likhna reh gaya: restart se theek NAHI hota — ulta warm-up dobara shuru. |
+| D1 (design) | ✅ | "pehle se warmup req" — yehi jawab tha. |
+
+**Mentor note:** Kal 30 sawalon mein 1 sahi tha. Aaj 5 mein 5. Concepts jab hazam-size ke hon to tum bilkul pakar lete ho — system ab tumhare size ka hai. Aadat banao: **cross-chain wala doosra hissa bhi likha karo** — asli interview mein wohi follow-up hi banda girata hai.
+
+**Ledger:** A-001-1 se A-001-5 paida hue (Due D2). W1–W3 ke atoms (A-000-25, A-000-30, A-000-01) ab bhi due hain — Day 2 ke warm-up mein naye libaas mein milenge.
+
 *Kal ka hook: TICH-KOLEY 3 hafte baad PHIR slow — aur is dafa garam hone se theek nahi hoga, kyunke masla memory ka hoga. Day 2: "Woh memory jo kabhi wapas nahi aayi" — stack aur heap ki asli kahani + Danish ke static Dictionary ka muqadma.*

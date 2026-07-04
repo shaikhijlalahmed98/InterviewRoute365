@@ -6,9 +6,9 @@
 
 | Cheez | Qeemat |
 |---|---|
-| **Current Day** | 1 (generate hua 2026-07-05 — drill jawab OPTIONAL; hafte ka gate = Sunday comprehensive quiz) |
+| **Current Day** | 2 (generate hua 2026-07-05 — drill jawab optional; hafte ka gate = Sunday comprehensive quiz, Day 7) |
 | **Level** | 🪨 Bunyaad (1 of 7) |
-| **Streak** | 1 🔥 (Day 0 done) |
+| **Streak** | 2 🔥 (Day 0 ✓, Day 1 ✓) |
 | **Chhutti Passes (is mahine)** | 0 / 4 |
 | **Weekday rotation state** | Day 1 = CONCEPT (curriculum-pinned) → Day 2 = JAVA-DEEP |
 | **Capstone ka naam** | 🏦 **TICH-KOLEY** (Day 0 pe rakha) |
@@ -31,6 +31,7 @@
 | Day | Type | Quiz/Exam | Energy | Note |
 |---|---|---|---|---|
 | 0 | ZARR-LOOP (baseline) | 1/30 (3%) | 4 | 8 min, closed book, zero bluff — imaandari full marks |
+| 1 | Pehli Dafa ka Tax | Drill 5/5 ✅ | 4 | Warm-up skipped; 2 cross-chains adhoore (aadat banani hai); beginner reset kaam kar gaya |
 
 ## Interview Rating (haftawar)
 
@@ -41,6 +42,8 @@
 ## Story Bank: 0 / 12 • DS&A solved: 0 • Design mocks: 0
 
 ## Flags / Mentor Notes
+
+- **2026-07-05 (7):** Day 1 graded (drill 5/5 ✅, warm-up skipped, 2 cross-chains adhoore — aadat banwani hai). Day 2 generate hua: "Woh Memory Jo Wapas Nahi Aayi" (stack/heap/static muqadma + C# IMemoryCache + SQL FailedLogins queries + Singleton + 2-server LB twist). **Naya standard (learner ki farmaish): weekday = ~1:30** — har din code (dono languages) + SQL + pattern/architecture, beginner W4 style, kahani ke andar. Atoms ab 3–7. Day 2 ke warm-up mein phir wohi 3 due atoms (A-000-25/30/01 — kal skipped).
 
 - **2026-07-05 (6) — DIFFICULTY RESET (learner: "itna senior level... kuch samajh nahi aya; beginner level pe ao"):** Day 1 BEGINNER version pe regenerate hua — sirf 3 naye ideas (compiler, bytecode, JIT), doosre stacks sirf 2-jumla jhalak. Engine §1 mein naye rules: (a) **difficulty ramp** — L1 = true beginner, max 2–3 naye ideas/din, advanced internals apne level pe; (b) **banking = preferred flavor, cage nahi** — maqsad "dynamic coder + problem solver"; (c) **.NET Core/modern .NET (8+) hi** — Framework kabhi nahi. Atoms A-001-1..5 beginner-phrased (final).
 - **2026-07-05 (5):** Day 1 naye pattern mein REGENERATE hua — "Pehli Dafa ka Tax" (`day-001-pehli-dafa-ka-tax.md` + `day-001-app.html`): ek problem (2.1s pehli request) × 5 stacks (JVM JIT / CLR / SQL plan cache+buffer pool / Angular+V8 / design warm-up) + Interlock + W4 recap + twisted drill (C1 thanda-benchmark, C2 portability-ka-dhoka, K1/K2 cross-chains, D1 design twist). Atoms A-001-1..5 (naya set — ledger mein grading pe aayenge). **W4 lens rule** (WHY/WHAT/HOW/WHEN har concept pe + recap box) DEPTH-STANDARD rule 2 + engine §6 mein codify hua.
