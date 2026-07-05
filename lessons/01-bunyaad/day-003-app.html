@@ -1,0 +1,390 @@
+<title>Day 3 — Ghayab Hone Wala Paisa</title>
+<style>
+  :root {
+    --bg: #101623; --bg-deep: #0B101B; --card: #171F31; --card-2: #1D2740;
+    --line: #26304A; --text: #F3EFE4; --muted: #8E99B3;
+    --gold: #F2C94C; --gold-dim: #B99534; --teal: #4BC8B8; --rose: #E86A8A; --violet: #9B8CFF; --green: #6FCF7C;
+    --focus: #7FB4FF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { color-scheme: dark; scroll-behavior: smooth; }
+  body { background: radial-gradient(1200px 600px at 50% -10%, #1A2338 0%, var(--bg) 55%, var(--bg-deep) 100%); color: var(--text); font-family: system-ui, "Segoe UI", Roboto, sans-serif; line-height: 1.85; min-height: 100vh; }
+  .bar { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--line); z-index: 10; }
+  .bar i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); }
+  .wrap { max-width: 660px; margin: 0 auto; padding: 48px 22px 90px; }
+  .kicker { font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--gold); text-align: center; }
+  .kicker small { display: block; letter-spacing: .16em; color: var(--muted); font-size: 10px; margin-top: 6px; }
+  h1 { font-family: Georgia, "Palatino Linotype", serif; font-size: clamp(30px, 7vw, 44px); font-weight: 600; text-align: center; text-wrap: balance; margin: 22px 0 8px; }
+  .meta { text-align: center; color: var(--muted); font-size: 13.5px; margin-bottom: 40px; }
+  .meta b { color: var(--gold); }
+  h2 { font-family: Georgia, serif; font-size: 25px; margin: 56px 0 8px; text-wrap: balance; }
+  h2 .no { font-size: 13px; letter-spacing: .28em; display: block; margin-bottom: 8px; font-family: system-ui; color: var(--gold); }
+  h3 { font-size: 17px; margin: 26px 0 4px; color: var(--gold); }
+  p { margin: 14px 0; max-width: 62ch; }
+  p b, li b { color: var(--gold); font-weight: 600; }
+  em { color: var(--muted); }
+  ul, ol { margin: 12px 0 12px 22px; } li { margin: 7px 0; }
+  .scene { background: var(--bg-deep); border: 1px solid var(--line); border-left: 3px solid var(--rose); border-radius: 12px; padding: 20px 22px; margin: 24px 0; font-family: ui-monospace, Consolas, "Cascadia Mono", monospace; font-size: 13.5px; line-height: 1.9; color: #D9E2F5; overflow-x: auto; }
+  .scene .t { color: --rose; color: var(--rose); }
+  .say { background: var(--card); border: 1px solid var(--line); border-radius: 14px 14px 14px 3px; padding: 14px 18px; margin: 18px 0; font-size: 15px; }
+  .say .who { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; color: var(--teal); }
+  .say.danish .who { color: var(--violet); }
+  .jargon { background: var(--card-2); border: 1px dashed var(--line); border-radius: 10px; padding: 12px 16px; margin: 16px 0; font-size: 14px; }
+  .jargon .w { color: var(--teal); font-weight: 700; }
+  pre.flow { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 22px 0; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.9; color: #D9E2F5; }
+  pre.flow .hl { color: var(--gold); }
+  pre.flow .dim { color: #5A6580; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: .92em; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; color: #D9E2F5; }
+  .bad, .good { border-radius: 12px; padding: 16px 18px; margin: 14px 0; border: 1px solid var(--line); }
+  .bad { background: #241722; border-left: 3px solid var(--rose); }
+  .good { background: #14231F; border-left: 3px solid var(--green); }
+  .bad .h { color: var(--rose); font-weight: 700; font-size: 13px; letter-spacing: .1em; }
+  .good .h { color: var(--green); font-weight: 700; font-size: 13px; letter-spacing: .1em; }
+  .bad pre, .good pre { background: none; border: 0; padding: 8px 0 0; margin: 0; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 1.7; color: #D9E2F5; overflow-x: auto; }
+  .tablebox { overflow-x: auto; margin: 20px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; }
+  th { background: var(--card-2); color: var(--gold); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  td { background: var(--card); }
+  .atom { background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 10px; padding: 13px 16px; margin: 12px 0; font-size: 14.5px; }
+  .atom .id { color: var(--gold); font-size: 11px; letter-spacing: .12em; font-family: ui-monospace, Consolas, monospace; }
+  .hook { background: var(--card-2); border: 1px solid var(--gold-dim); border-radius: 12px; padding: 16px 20px; margin: 20px 0; font-size: 14.5px; }
+  .hook .h { color: var(--gold); font-weight: 700; letter-spacing: .1em; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
+  .drill { background: var(--card-2); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin: 24px 0; }
+  .drill .label { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--teal); margin-bottom: 10px; }
+  .drill blockquote { font-size: 15.5px; font-style: italic; border-left: 2px solid var(--teal); padding-left: 14px; }
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin: 16px 0; }
+  .q .tag { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .q .qt { margin: 8px 0 4px; font-size: 15.5px; }
+  .q pre { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 10px 0 4px; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 1.7; color: #D9E2F5; overflow-x: auto; }
+  .q textarea { width: 100%; min-height: 64px; resize: vertical; margin-top: 10px; background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; color: var(--text); font: inherit; font-size: 14.5px; padding: 10px 13px; }
+  .q textarea::placeholder { color: #5A6580; }
+  details { margin: 16px 0; }
+  details summary { cursor: pointer; color: var(--gold); font-size: 14px; }
+  details[open] { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+  .flag { background: #241722; border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 10px 0; font-size: 14px; }
+  .flag b { color: var(--rose); }
+  .btn { display: inline-block; border: 0; cursor: pointer; font: inherit; background: var(--gold); color: #17130A; font-weight: 700; padding: 13px 26px; border-radius: 10px; }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:focus-visible, textarea:focus-visible, .pill:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 20px; }
+  .pill { border: 1px solid var(--line); background: var(--bg-deep); color: var(--muted); border-radius: 99px; padding: 8px 16px; cursor: pointer; font: inherit; font-size: 14px; }
+  .pill.sel { background: var(--gold); border-color: var(--gold); color: #17130A; font-weight: 700; }
+  .export { background: var(--bg-deep); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-top: 16px; overflow: auto; max-height: 280px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; white-space: pre; color: #D9E2F5; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 18px; font-size: 14px; z-index: 20; opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .toast.show { opacity: 1; }
+  .divider { text-align: center; color: var(--gold-dim); letter-spacing: .5em; margin: 46px 0; }
+  .steps { margin: 18px 0 0 18px; color: var(--muted); font-size: 14px; }
+  .steps li { margin: 7px 0; }
+  .steps code { color: var(--gold); }
+</style>
+
+<div class="bar"><i id="prog"></i></div>
+<div class="wrap">
+
+<div class="kicker">TICH-KOLEY<small>Day 3 / 365 • 🪨 Bunyaad • 3 core ideas + C#/Java code + SQL + pattern</small></div>
+<h1>Ghayab Hone<br>Wala Paisa</h1>
+<p class="meta">Problem: <b>Fee waiver diya — phir bhi poora fee kat gaya. Na error, na log. Paisa bas... ghalat tha.</b> • Kahani+code ~60 min • Drill ~30 min • <b>Total ~1:30</b></p>
+
+<!-- COLD OPEN -->
+<div class="scene">
+<span class="t">━━ CUSTOMER SUPPORT, MANGAL KI SUBAH ━━</span><br>
+Fatima ka call: "App ne kaha 'Rs 100 fee waived' — phir bhi poore Rs 500 kat gaye."<br>
+Tum logs kholte ho: koi error nahi. Koi exception nahi. Waiver wala code CHALA tha.<br>
+Danish: "Sir maine test kiya tha! Waiver lagta hai... method ke ANDAR. Bahar nikalte hi ghayab."<br>
+<span class="t">Bug jo chillata nahi — chupke se ghalat paisa likhta hai — banking ka sab se khatarnak bug hai.</span>
+</div>
+
+<p>Aaj ka din C# ke sab se bare farq ke naam hai — woh cheez jo Java se aane wale HAR developer ko ek dafa zaroor kaat-ti hai: <b>value types (struct)</b>. Aur isi kahani mein tumhare Day-0 wale <b>TRUE TRUE</b> ka poora post-mortem bhi hoga — Bilal bhai ka hisaab aaj band. Warm-up se shuru:</p>
+
+<!-- WARM-UP -->
+<h2><span class="no">WARM-UP • 5 MIN</span>Teeno sawal aaj ke topic ke rishtedar hain</h2>
+
+<div class="q"><span class="tag">W1 • A-000-01 — teesri dafa, aaj pakka</span>
+<p class="qt"><code>Integer a = 127, b = 127;</code> pe <code>a == b</code>? <code>Integer c = 128, d = 128;</code> pe <code>c == d</code>? — Aaj ke baad yeh sawal tumse kabhi nahi bachega, waada.</p>
+<textarea data-k="W1" placeholder="Optional — magar aaj ka lesson isi pe khatam hoga…"></textarea></div>
+
+<div class="q"><span class="tag">W2 • A-000-09</span>
+<p class="qt">C# mein account balance <code>double</code> mein rakhna bug kyun hai? Sahi type kya hai?</p>
+<textarea data-k="W2"></textarea></div>
+
+<div class="q"><span class="tag">W3 • A-000-17</span>
+<p class="qt">SQL Server mein paison ka column kis type ka — aur <code>FLOAT</code> kyun nahi?</p>
+<textarea data-k="W3"></textarea></div>
+
+<details><summary>🔑 Warm-up key</summary>
+<p>W1: <code>true</code> phir <code>false</code> — kyun? Aaj poora samjho ge (Idea 3). Abhi ke liye: chhote number ka "dabba" reuse hota hai, bara naya banta hai; <code>==</code> dabba compare karta hai.<br>
+W2: <code>double</code> binary hai — 0.1 jaisi values exactly store nahi hotin, paisa leak hota hai. Sahi: <code>decimal</code>.<br>
+W3: <code>DECIMAL(19,4)</code> — exact. FLOAT approximation hai; audit mein paise match nahi honge.</p>
+</details>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- IDEA 1 -->
+<h2><span class="no">IDEA 1 / 3</span>Value type = photocopy, reference type = parchi</h2>
+
+<p>Kal tumne seekha: object godown (heap) mein, tumhare paas parchi (reference). <b>C# mein ek doosri qisam bhi hai</b> — aisi types jo godown jati hi nahin. Unhe <b>value types</b> kehte hain, aur inka usool hai: <b>copy karo to poori cheez copy hoti hai.</b></p>
+
+<div class="jargon"><span class="w">Value type vs reference type — ek jumle mein:</span> Reference type (class) dena = <b>parchi</b> dena (dono ek hi cheez dekh rahe ho). Value type (struct) dena = <b>photocopy</b> dena (ab do alag kaghaz hain — ek pe likho, doosre ko khabar nahi). C# mein <code>int</code>, <code>decimal</code>, <code>bool</code>, <code>DateTime</code> aur har <code>struct</code> value types hain; har <code>class</code> reference type. Java mein sirf primitives (int, double...) value hain — apni struct banane ki ijazat nahi.</div>
+
+<pre class="flow">
+class  Wallet { public decimal Amount; }   <span class="dim">// reference — parchi milti hai</span>
+struct Money  { public decimal Amount; }   <span class="dim">// value — photocopy milti hai</span>
+
+var w1 = new Wallet { Amount = 500 };
+var w2 = w1;              <span class="hl">// parchi ki copy — dono EK hi wallet dekh rahe hain</span>
+w2.Amount = 400;          <span class="dim">// w1.Amount bhi 400 — ek hi cheez thi</span>
+
+var m1 = new Money { Amount = 500 };
+var m2 = m1;              <span class="hl">// PHOTOCOPY — ab do alag Money hain</span>
+m2.Amount = 400;          <span class="dim">// m1.Amount abhi bhi 500 — original ko khabar nahi</span>
+</pre>
+
+<p>Yehi Day-0 ke struct sawal (Q7) ka jawab tha jo tumne chhora tha — <code>p2 = p1</code> photocopy thi, is liye <code>p1.X</code> wahi <code>1</code> raha. Ab dekho yeh masoom si baat production mein kaisa qatal karti hai...</p>
+
+<!-- IDEA 2 -->
+<h2><span class="no">IDEA 2 / 3</span>Fatima ka case: photocopy pe dastakhat</h2>
+
+<p>Danish ka fee-waiver code pesh ho. Dhyan se — bug kahin chillata nahi:</p>
+
+<div class="bad"><span class="h">❌ MULZIM CODE — waiver jo ghayab ho gaya</span>
+<pre>
+struct Money { public decimal Amount; }
+
+List&lt;Money&gt; fees = account.Fees;   // [ {500} ]
+
+Money fee = fees[0];        // ⚠️ struct hai — list se PHOTOCOPY nikli
+fee.Amount -= 100;          // waiver PHOTOCOPY pe laga
+// fees[0].Amount == 500    // asal list ko khabar hi nahi!
+</pre>
+<p style="font-size:14px">T+0: <code>fees[0]</code> ne struct ki <b>copy</b> di → T+1: copy pe −100 hua → T+2: copy method ke saath mar gayi → asal fee poori 500 hi rahi. Na exception, na log — bas Fatima ka paisa ghalat. <em>Trick ka naam: <b>"photocopy pe dastakhat"</b> — asal document pe kuch nahi aya.</em></p></div>
+
+<p>Agar <code>Money</code> class hota, to <code>fees[0]</code> parchi deta aur waiver asal cheez pe lagta. To kya struct bura hai? Nahi — <b>badalne wala (mutable) struct bura hai.</b> Itna bura ke C# community mein baqaida jumla hai: <em>"mutable structs are evil."</em> Fix ka usool: <b>value cheez ko badlo mat — nayi banao:</b></p>
+
+<div class="good"><span class="h">✅ ISLAAH — badlo nahi, naya banao (immutable)</span>
+<pre>
+public record Money(decimal Amount, string Currency);
+//     ↑ record: C# ka shortcut immutable data-type banane ka
+//       equality bhi VALUE se karta hai (Rs 500 == Rs 500)
+
+Money fee    = new Money(500, "PKR");
+Money waived = fee with { Amount = fee.Amount - 100 };
+//             ↑ "with" = purane se naya banao, ek cheez badal ke
+// fee apni jagah salamat; waived naya sach hai — jo list mein WAPAS rakhna parega
+// (wapas rakhna bhoolna hi ab compile-level pe pakra jata hai, chupta nahi)
+</pre></div>
+
+<div class="say danish"><div class="who">Danish</div>"Sir Java mein to yeh bug ho hi nahi sakta tha na? Wahan sab reference hai..."</div>
+<div class="say"><div class="who">Tum</div>"Wahan YEH bug nahi hota — wahan iska ulta bhoot hai: sab parchi hai, to kisi aur ne tumhara object badal diya to tumhe khabar nahi (kal ka C2 yaad karo). Isi liye usool DONO duniyaon mein ek hai: <b>paisa jaisi cheez immutable rakho.</b> Java mein bhi <code>record Money(BigDecimal amount, ...)</code>."</div>
+
+<!-- IDEA 3 -->
+<h2><span class="no">IDEA 3 / 3</span>Boxing — aur TRUE TRUE ka post-mortem</h2>
+
+<p>Aakhri sawal: agar value types godown nahi jaate... to jab UNHE godown jana PARE to kya hota hai? Misaal: collections aur <code>object</code> reference cheezein heap pe maangte hain. Jawab: value ko ek <b>dabbe mein band kar ke</b> godown bhej diya jata hai. Naam bhi yehi hai: <b>boxing</b>.</p>
+
+<div class="jargon"><span class="w">Boxing</span> = value type ko heap ke object-dabbe mein lapetna (<code>object o = 42;</code> — 42 ab dabbe mein godown pe hai). <span class="w">Unboxing</span> = dabbe se wapas nikaalna. Java mein yeh <code>int</code> ↔ <code>Integer</code> ke beech hota hai, aur aksar khud-ba-khud (<b>autoboxing</b>): <code>Integer i = 5;</code> — Java ne chupke se dabba bana diya.</div>
+
+<p><b>Ab Day-0 ka raaz kholo.</b> Java ke engineers ne socha: chhote numbers (−128 se 127) itne aam hain ke inke dabbay <b>pehle se bana ke rakh lo</b> aur bar bar wohi do — naye kyun banao? Isi ko <b>Integer cache</b> kehte hain. Ab poora hisaab:</p>
+
+<pre class="flow">
+Integer a = 127, b = 127;   <span class="dim">// dono ko CACHE wala EK HI dabba mila</span>
+a == b                      <span class="hl">// true — == poochta hai "same dabba?" Haan!</span>
+
+Integer c = 128, d = 128;   <span class="dim">// cache ke bahar — DO naye dabbay bane</span>
+c == d                      <span class="hl">// false — dabbay alag (andar ki value same sahi)</span>
+
+c.equals(d)                 <span class="hl">// true — equals dabba nahi, ANDAR ki value poochta hai</span>
+</pre>
+
+<p>Tumne Day 0 pe "TRUE TRUE" likha tha — ab tum jaante ho woh kya nahi jaante the. Yeh trap har saal hazaron interviews mein aata hai, aur ab tumhare liye yeh trap nahi, <b>kahani</b> hai. Usool hamesha ka: <b>objects/dabbon pe <code>==</code> kabhi nahi — <code>.equals()</code>.</b></p>
+
+<p>Aur boxing ki qeemat bhi dekh lo — Danish ka "sahi magar ghalat" code:</p>
+
+<div class="bad"><span class="h">❌ DABBA FACTORY — sahi jawab, ghalat tareeqa</span>
+<pre>
+Long total = 0L;                          // ⚠️ Long (dabba), long (value) nahi
+for (int i = 0; i &lt; 1_000_000; i++)
+    total += i;   // har += pe: dabba kholo + naya dabba banao
+                  // = 10 lakh dabbay godown mein = slow + GC pareshan
+</pre>
+<p style="font-size:14px">Fix ek harf ka hai: <code>long total</code> (chhota l — value type). Farq naapa hua: ~5–10x. <em>Trick: <b>"dabba factory"</b> — loop ke andar chupi hui boxing.</em></p></div>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- SQL -->
+<h2><span class="no">SQL SERVER</span>Paisa database mein — TICH-KOLEY ka Accounts table</h2>
+
+<p>Ab wohi usool data layer pe. Pehle woh horror apni aankhon se dekho jo FLOAT karta hai:</p>
+
+<pre class="flow">
+SELECT CAST(0.1 AS FLOAT) + CAST(0.2 AS FLOAT);
+<span class="hl">-- 0.30000000000000004</span>   <span class="dim">← yeh "0.3" NAHI hai. Croron rows mein yeh paisa banta hai.</span>
+
+SELECT CAST(0.1 AS DECIMAL(19,4)) + CAST(0.2 AS DECIMAL(19,4));
+<span class="hl">-- 0.3000</span>              <span class="dim">← exact. Hamesha. Audit pass.</span>
+</pre>
+
+<p><b>Kyun?</b> Binary (base-2) mein 0.1 ko exactly likhna namumkin hai — bilkul waise jaise decimal mein 1/3 ko likho: 0.3333... kabhi khatam nahi hota. FLOAT wohi kata-phata 0.0999999... store karta hai. <code>DECIMAL</code> base-10 mein girvi rakhta hai — jo tumne likha, wohi hai. Ab table:</p>
+
+<pre class="flow">
+CREATE TABLE Accounts (
+    Id       BIGINT IDENTITY PRIMARY KEY,
+    Cnic     VARCHAR(13)   NOT NULL,
+    Balance  DECIMAL(19,4) NOT NULL DEFAULT 0,
+             <span class="dim">-- 19 digits total, 4 decimal ke baad — banking standard</span>
+    CONSTRAINT CK_Balance_NonNegative CHECK (Balance &gt;= 0)
+             <span class="dim">-- CHECK = database ka apna pehredaar: ghalat data ghusne hi nahi deta,</span>
+             <span class="dim">-- chahe app ka code kitna hi bhoola ho (is pehredaar ki poori kahani Week 2 mein)</span>
+);
+</pre>
+
+<p><b>Teeno manzilein ek line mein:</b> C# <code>decimal</code> ↔ Java <code>BigDecimal</code> ↔ SQL <code>DECIMAL(19,4)</code> — paisa PURE raste exact rehna chahiye. Ek bhi manzil pe float aya, sara hisaab mashkook.</p>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- PATTERN -->
+<h2><span class="no">DESIGN PATTERN • VALUE OBJECT</span>Rs 500 ki koi shanakht nahi hoti</h2>
+
+<p>Aaj ka pattern tumne dar-asal upar seekh hi liya — ab naam pakka karo. Socho: tumhare paas do 500 ke note hain. Kya farq hai un mein? <b>Kuch nahi</b> — Rs 500 = Rs 500. Lekin do CUSTOMERS jinka naam Fatima hai? Woh <b>alag log</b> hain — unki pehchan unka ID hai, naam nahi.</p>
+
+<p><b>Value Object pattern:</b> jis cheez ki pehchan sirf uski <b>qeemat</b> hai (paisa, tareekh, CNIC, address) usko immutable value banao — equality value se, badalna mana (naya banao). Jis ki apni <b>shanakht</b> hai (Customer, Account) woh <b>Entity</b> hai — uska ID hota hai, woh badal sakta hai. C# <code>record Money(...)</code> / Java <code>record Money(...)</code> tumhe Value Object ek line mein dete hain. Yeh pattern (DDD — Domain-Driven Design ka hissa) tumhare capstone ledger ki bunyaad banega — Level 2 mein iske kamaal dekho ge. Interview line: <em>"Money should be a value object — immutable, equality by value — so a fee calculation can never accidentally mutate someone's balance."</em></p>
+
+<!-- W4 RECAP -->
+<div class="hook"><div class="h">🔍 WHY • WHAT • HOW • WHEN — aaj ka concept 4 lines mein</div>
+<b style="color:var(--rose)">WHY</b> — Har cheez godown bhejna mehnga hai (dabba + GC); chhoti, qeemat-wali cheezon ke liye C# ne value types diye. Magar copy-semantics na samajhna = chupke se ghalat paisa.<br>
+<b style="color:var(--teal)">WHAT</b> — Value type (struct) = photocopy; reference type (class) = parchi. Boxing = value ko dabbe mein band kar ke godown bhejna.<br>
+<b style="color:var(--violet)">HOW</b> — Assignment/pass/list-se-nikaalna: struct pe COPY hota hai — copy pe change asal ko nahi lagta. Java chhote Integer dabbay cache karta hai (−128..127) — isi liye 127 == true, 128 == false.<br>
+<b style="color:var(--green)">WHEN</b> — Paisa/tareekh jaisi value-cheezein: immutable record (Value Object). Dabbon pe <code>==</code> kabhi nahi — <code>.equals()</code>. Loop mein wrapper types (Long/Integer) se bacho. Money = decimal/BigDecimal/DECIMAL — teeno manzilon pe.</div>
+
+<div class="hook"><div class="h">🧠 Yaad rakhne ke hooks</div>
+<b>Photocopy vs parchi</b> = struct vs class • <b>Photocopy pe dastakhat</b> = mutable struct ka bug (asal document khali) • <b>Dabba</b> = boxing (chhote dabbay pehle se bane hain: −128..127) • <b>Do 500 ke note = ek hi baat</b> = Value Object (pehchan qeemat hai, shanakht nahi).</div>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- INTERVIEW DRILL -->
+<h2><span class="no">🎤 INTERVIEW DRILL</span>Aaj ka panel — Sana ki kursi</h2>
+
+<div class="drill">
+<div class="label">MAIN QUESTION + English script (bol ke DO dafa, 60 sec)</div>
+<p><b>"You came from Java — what's the biggest difference you had to learn in C#?"</b></p>
+<blockquote>"Value types. In Java, everything except primitives is a reference — you always share the object. In C#, structs are value types: assignment and passing copy the whole value, so mutating what you got from a list silently changes a copy, not the original — a nasty class of bugs in money code. The rule I follow now: keep value-like things such as Money immutable — a record with value equality — so instead of mutating, you create a new value. And when a value type has to live as an object, it gets boxed onto the heap, which is also why Java's Integer cache makes 127 == 127 true but 128 == 128 false — == compares boxes, not values."</blockquote>
+</div>
+
+<div class="q"><span class="tag">CODE ROUND • C1 — trap 🪤</span>
+<p class="qt">Yeh code kya print karega, aur ek jumle mein kyun?</p>
+<pre>struct Money { public decimal Amount; }
+var fees = new List&lt;Money&gt; { new Money { Amount = 500 } };
+var fee = fees[0];
+fee.Amount -= 100;
+Console.WriteLine(fees[0].Amount);   // ?</pre>
+<textarea data-k="C1"></textarea></div>
+
+<div class="q"><span class="tag">CODE ROUND • C2 — trap 🪤</span>
+<p class="qt">Yeh Java code sahi jawab deta hai, tests pass hote hain — phir bhi review mein reject kyun hoga? (Hint: ek harf ka fix hai.)</p>
+<pre>Long total = 0L;
+for (int i = 0; i &lt; 1_000_000; i++)
+    total += i;</pre>
+<textarea data-k="C2"></textarea></div>
+
+<div class="q"><span class="tag">CONCEPT ROUND • K1 — cross-chain ⛓️ (dono hisse!)</span>
+<p class="qt">Struct kab use karoge class ki jagah? <em>[Jawab pe agla war:]</em> <b>"To 'mutable structs are evil' kyun kehte hain?"</b></p>
+<textarea data-k="K1"></textarea></div>
+
+<div class="q"><span class="tag">CONCEPT ROUND • K2 — cross-chain ⛓️ (dono hisse!)</span>
+<p class="qt">0.1 + 0.2 float mein 0.3 kyun nahi banta? <em>[Jawab pe agla war:]</em> <b>"Phir float/double exist hi kyun karte hain — kab THEEK hain?"</b></p>
+<textarea data-k="K2"></textarea></div>
+
+<div class="q"><span class="tag">SQL ROUND • S1 — likho ✍️</span>
+<p class="qt">TICH-KOLEY ke <code>Accounts</code> table ka CREATE likho (yaad se, jitna aata hai): Id, Cnic, Balance — balance ka type kya hoga aur ek hifazati constraint bhi lagao.</p>
+<textarea data-k="S1"></textarea></div>
+
+<div class="q"><span class="tag">PATTERN ROUND • P1 — cross-chain ⛓️</span>
+<p class="qt">Value Object aur Entity ka farq ek misaal se batao. <em>[Jawab pe agla war:]</em> <b>"C#/Java mein Value Object banane ka sab se asaan auzaar kya hai?"</b></p>
+<textarea data-k="P1"></textarea></div>
+
+<div class="q"><span class="tag">DESIGN ROUND • D1 — twist 🌀</span>
+<p class="qt">Fee ka hisaab teen jagah ho raha hai: mobile app, backend, aur statement-banane wala job — aur teeno ke rounding mein kabhi kabhi 1 paisa ka farq aa jata hai. Design fix kya hai?</p>
+<textarea data-k="D1"></textarea></div>
+
+<details><summary>🔑 Drill key — jawab likhne ke BAAD (trick ke naam ke saath)</summary>
+<p><b>C1:</b> <code>500</code> — <code>fees[0]</code> ne struct ki <b>photocopy</b> di; waiver copy pe laga, asal list waisi ki waisi. <em>Trick: "photocopy pe dastakhat".</em> (Money class hoti to 400 aata — parchi milti.)</p>
+<p><b>C2:</b> <code>Long</code> (dabba) hai — har <code>+=</code> pe unbox + NAYA dabba = 10 lakh objects godown mein = slow + GC pressure. Fix: <code>long total</code> (chhota l). <em>Trick: "dabba factory".</em></p>
+<p><b>K1:</b> Struct: chhoti, value-jaisi, aksar-immutable cheezein (Money, Point, DateTime jaisi) — allocation/GC bachta hai. <b>Cross:</b> mutable struct pe har assignment/list-access COPY deta hai — tum copy badalte ho, asal nahi; bug chillata nahi, chupke se ghalat data likhta hai. Is liye struct = immutable ya use hi na karo.</p>
+<p><b>K2:</b> Binary mein 0.1 exactly likha hi nahi ja sakta (jaise decimal mein 1/3) — approximation store hota hai, jama-tafreeq mein farq nikal aata hai. <b>Cross:</b> float/double wahan theek hain jahan "taqreeban" kaafi hai aur speed chahiye — scientific hisaab, graphics, ML. Paisa exact maangta hai → decimal/BigDecimal/DECIMAL.</p>
+<p><b>S1:</b> Check karo: <code>Balance DECIMAL(19,4)</code>? <code>NOT NULL</code>? Koi constraint — <code>CHECK (Balance &gt;= 0)</code> ya PRIMARY KEY? Teeno soch maujood = full marks (syntax ki spelling maaf).</p>
+<p><b>P1:</b> Value Object = pehchan qeemat hai (Rs 500 = Rs 500 — paisa, tareekh, CNIC); Entity = apni shanakht/ID hai (do Fatima alag customers hain). <b>Cross:</b> <code>record</code> — dono languages mein: immutable + value-equality ek line mein.</p>
+<p><b>D1:</b> Hisaab ki EK jagah — backend ka Money/fee-calculation (single source of truth); mobile app aur statement job sirf backend ka nateeja DIKHATE hain, khud hisaab nahi karte. Bonus senior line: "rounding rules ek Money type mein centralize — aur Day-2 ka sabaq: yeh singleton-jaisi shared logic DI se aayegi."</p>
+</details>
+
+<h3>⭐ Senior differentiator</h3>
+<p>Jab sab "struct stack pe hota hai" ratta sunayen, tum kaho: <em>"The real point isn't stack vs heap — it's copy semantics. A mutable struct read from a list gives you a copy, so money code can silently update nothing. That's why Money should be an immutable value object with value equality."</em> — Yeh jumla Java→C# migration walon ke interviews mein sona hai (aur tumhari asli zindagi ka scene bhi).</p>
+
+<h3>🚩 Red flags — yeh KABHI mat kehna</h3>
+<div class="flag"><b>"Struct aur class bas syntax ka farq hai."</b> — Copy vs parchi ka farq hai; paisa is pe qatal hota hai.</div>
+<div class="flag"><b>"Paise ke liye double chalta hai, round kar lenge."</b> — 0.30000000000000004. Auditor round nahi karta.</div>
+<div class="flag"><b>"== aur .equals() same hi to hain."</b> — Ek dabba poochta hai, doosra dabbe ke andar ki baat.</div>
+
+<div class="divider">✦ ✦ ✦</div>
+
+<!-- ATOMS -->
+<h2><span class="no">AAJ KE ATOMS</span>7 cheezein ledger ke liye</h2>
+<div class="atom"><span class="id">A-003-1</span> — C# struct = value type: assignment/pass/list-access pe poori PHOTOCOPY; class = parchi (reference). Java mein sirf primitives value hain.</div>
+<div class="atom"><span class="id">A-003-2</span> — List se struct nikaalna COPY hai — copy pe change asal ko nahi lagta ("photocopy pe dastakhat"); mutable struct = evil, struct ho to immutable.</div>
+<div class="atom"><span class="id">A-003-3</span> — Boxing = value ko object-dabbe mein band kar ke heap bhejna; loop mein wrapper (Long/Integer) = dabba factory = slow + GC pressure.</div>
+<div class="atom"><span class="id">A-003-4</span> — Java Integer cache: −128..127 ke dabbay pehle se bane, reuse hote hain — 127 <code>==</code> true, 128 <code>==</code> false; dabbon pe hamesha <code>.equals()</code>.</div>
+<div class="atom"><span class="id">A-003-5</span> — Paisa PURE raste exact: C# <code>decimal</code> ↔ Java <code>BigDecimal</code> ↔ SQL <code>DECIMAL(19,4)</code> — float/double kabhi nahi (binary 0.1 exact nahi likh sakta).</div>
+<div class="atom"><span class="id">A-003-6</span> — Value Object pattern: pehchan qeemat hai (paisa/tareekh/CNIC) → immutable record, value-equality; Entity ki apni ID/shanakht hoti hai.</div>
+<div class="atom"><span class="id">A-003-7</span> — Paise ka hisaab EK jagah (backend) — baqi sab sirf dikhate hain; bikhra hua calculation = rounding ke jhagray.</div>
+
+<p style="margin-top:26px"><b>Energy (1–5):</b></p>
+<div class="pills" id="energyPills"></div>
+
+<div style="margin-top:6px"><button class="btn" onclick="copyAnswers()">📋 Jawab copy karo</button></div>
+<ol class="steps">
+  <li>Copy dabao (jitne jawab diye — baaqi "skipped", koi masla nahi).</li>
+  <li><code>day-003-ghayab-hone-wala-paisa.md</code> mein <code>## ✍️ Mere Jawab</code> ke neeche paste karo.</li>
+  <li><code>git add -A &amp;&amp; git commit -m "day-003 done"</code> — kal <b>AGLA DIN</b>.</li>
+</ol>
+<div class="export" id="exportBox"></div>
+
+<p style="margin-top:40px"><em><b>Kal ka hook:</b> Danish poochta hai: "Sir, GC ko kaise PATA chalta hai ke kaun kachra hai? Woh godown mein ghoomta kaise hai? Aur jab woh safai karta hai to sab kyun ruk jata hai?" — Day 4: <b>safai-wale ki poori kahani</b> (GC generations, stop-the-world) + tum khud heap dump khol ke Danish ke Dictionary ki laash dekhoge. Forensic day. 🔬</em></p>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  var KEYS = ["W1","W2","W3","C1","C2","K1","K2","S1","P1","D1"];
+  var S = { ans: {}, energy: "", startedAt: null, minutes: 0 };
+  try { var sv = JSON.parse(localStorage.getItem("tk-day3") || "null"); if (sv) S = sv; } catch (e) {}
+  if (!S.startedAt) { S.startedAt = new Date().getTime(); }
+  function save() { try { localStorage.setItem("tk-day3", JSON.stringify(S)); } catch (e) {} }
+  function toast(m) { var t = document.getElementById("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove("show"); }, 1800); }
+  document.querySelectorAll("textarea[data-k]").forEach(function (ta) {
+    ta.value = S.ans[ta.dataset.k] || "";
+    ta.addEventListener("input", function () { S.ans[ta.dataset.k] = ta.value; save(); renderExport(); setProg(); });
+  });
+  var ep = document.getElementById("energyPills");
+  for (var i = 1; i <= 5; i++) (function (n) {
+    var b = document.createElement("button");
+    b.className = "pill" + (S.energy == n ? " sel" : ""); b.textContent = n + (n === 5 ? " 🔥" : "");
+    b.onclick = function () { S.energy = n; save(); ep.querySelectorAll(".pill").forEach(function (p) { p.classList.remove("sel"); }); b.classList.add("sel"); renderExport(); };
+    ep.appendChild(b);
+  })(i);
+  function setProg() {
+    var done = KEYS.filter(function (k) { return (S.ans[k] || "").trim() !== ""; }).length;
+    document.getElementById("prog").style.width = (done / KEYS.length * 100) + "%";
+  }
+  function buildBlock() {
+    if (!S.minutes) { S.minutes = Math.max(1, Math.round((new Date().getTime() - S.startedAt) / 60000)); }
+    var lines = KEYS.map(function (k) { return k + ": " + ((S.ans[k] || "").trim() || "skipped"); });
+    return "```\n" + lines.join("\n") + "\n```\n\n**Time laga:** " + S.minutes + " min • **Energy (1–5):** " + (S.energy || "___");
+  }
+  function renderExport() { document.getElementById("exportBox").textContent = buildBlock(); }
+  function copyAnswers() {
+    var t = buildBlock();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function () { toast("Copy ✅ — md file mein paste karo"); }, function () { toast("Neeche box se khud copy kar lo"); });
+    } else { toast("Neeche box se khud copy kar lo"); }
+  }
+  renderExport(); setProg();
+</script>

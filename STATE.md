@@ -6,9 +6,9 @@
 
 | Cheez | Qeemat |
 |---|---|
-| **Current Day** | 2 (generate hua 2026-07-05 — drill jawab optional; hafte ka gate = Sunday comprehensive quiz, Day 7) |
+| **Current Day** | 3 (generate hua 2026-07-05 — drill jawab optional; hafte ka gate = Sunday comprehensive quiz, Day 7) |
 | **Level** | 🪨 Bunyaad (1 of 7) |
-| **Streak** | 2 🔥 (Day 0 ✓, Day 1 ✓) |
+| **Streak** | 3 🔥 |
 | **Chhutti Passes (is mahine)** | 0 / 4 |
 | **Weekday rotation state** | Day 1 = CONCEPT (curriculum-pinned) → Day 2 = JAVA-DEEP |
 | **Capstone ka naam** | 🏦 **TICH-KOLEY** (Day 0 pe rakha) |
@@ -32,6 +32,7 @@
 |---|---|---|---|---|
 | 0 | ZARR-LOOP (baseline) | 1/30 (3%) | 4 | 8 min, closed book, zero bluff — imaandari full marks |
 | 1 | Pehli Dafa ka Tax | Drill 5/5 ✅ | 4 | Warm-up skipped; 2 cross-chains adhoore (aadat banani hai); beginner reset kaam kar gaya |
+| 2 | Woh Memory Jo Wapas Nahi Aayi | Drill skipped | — | Jawab nahi diye (optional — koi block nahi); atoms A-002-1..7 born, Due D3; A-000-25/30/01 ab bhi bina-verdict due |
 
 ## Interview Rating (haftawar)
 

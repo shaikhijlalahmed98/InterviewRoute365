@@ -38,5 +38,12 @@
 | A-001-3 | Bytecode/.class OS-portable; machine code har platform ka JVM/CLR banata hai | D1 | 1 | D1 | D2 | 0 | "charger + adapter" |
 | A-001-4 | JIT sirf HOT methods compile karta hai — warm-up slow, phir tez; restart = dobara thanda | D1 | 1 | D1 | D2 | 0 | "naya cook" |
 | A-001-5 | "Pehli dafa ka tax" har jagah (SQL plan cache, browser JS) — deploy-ke-baad-slow = warm-up pe shak | D1 | 1 | D1 | D2 | 0 | — |
+| A-002-1 | Stack = plates ka meenar: return pe poori plate gone — isi liye tez | D2 | 1 | D2 | D3 | 0 | "plates ka meenar" |
+| A-002-2 | Objects heap (godown) mein; stack pe sirf reference (parchi) | D2 | 1 | D2 | D3 | 0 | "godown + parchi" |
+| A-002-3 | Object zinda jab tak reachable parchi hai; lawaris ko GC uthata hai | D2 | 1 | D2 | D3 | 0 | — |
+| A-002-4 | Static reference kabhi nahi marta — barhti static collection = classic leak | D2 | 1 | D2 | D3 | 0 | "amar parchi" |
+| A-002-5 | Har jama hone wali cheez: "niklegi kab?" (bound + expire) — leak ka pehla symptom slowness | D2 | 1 | D2 | D3 | 0 | — |
+| A-002-6 | 2+ servers: per-instance memory sab ko alag — shared counters DB/shared-cache mein | D2 | 1 | D2 | D3 | 0 | "do dukaanein, alag register" |
+| A-002-7 | Singleton = EK instance; mutable data ke saath anti-pattern — DI container manage karta hai | D2 | 1 | D2 | D3 | 0 | — |
 
 > A-000-06 (@Transactional unchecked rollback) Day 0 pe SAHI tha — ledger mein nahi daala; W14 (proxies/transactions week) mein naya atom ban ke aayega.
